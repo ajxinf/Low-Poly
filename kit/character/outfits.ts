@@ -1,17 +1,17 @@
-import { Rect } from "../ps1/paintTexture";
-import { paintBoots, paintJeans, TEX } from "./textures";
-
-/** A texture: an imported image URL, or a 64×64 canvas painter. */
-export type TextureSource = string | ((rect: Rect) => void);
+import type { Tone } from "./textures";
 
 /**
- * A costume: one texture per region. Hair, face and skin are not here, so every outfit keeps them.
+ * A costume: flat colours, each with one shadow tone. Hair, face and skin are not here, so every outfit keeps them.
  * Rule: every outfit shows the rust-orange accent somewhere visible.
- * jacket tiles (RepeatWrapping) over the shell and sleeves; shirt maps once across the tee front.
  */
-export type Outfit = { jacket: TextureSource; shirt: TextureSource; legs: TextureSource; boots: TextureSource };
+export type Outfit = { jacket: Tone; shirt: Tone; legs: Tone; boots: Tone };
 
-export const DEFAULT_OUTFIT: Outfit = { jacket: TEX.jacket, shirt: TEX.tshirt, legs: paintJeans, boots: paintBoots };
+export const DEFAULT_OUTFIT: Outfit = {
+  jacket: ["#a8502c", "#7e3a20"],
+  shirt: ["#2e2f30", "#1f2021"],
+  legs: ["#33456b", "#24324f"],
+  boots: ["#5a3a26", "#3e281a"],
+};
 
 /** Named outfits for Studio dropdowns. Videos can also pass any Outfit object straight to <Protagonist outfit>. */
 export const OUTFITS = { default: DEFAULT_OUTFIT } satisfies Record<string, Outfit>;

@@ -67,7 +67,7 @@ const lookRight = mirror(lookLeft);
 const phone: KeyPose = {
   // Solved numerically so the grip lands at the right ear; no wrist joint, so the elbow rides high.
   ...relaxed, neck: [0.05, 0, 0.06],
-  shoulderR: [-1.65, 0.25, 0.15], elbowR: [-2.35, 0, 0],
+  shoulderR: [-1.7, 0.25, 0.15], elbowR: [-2.3, 0, 0],
 };
 
 const panicA: KeyPose = {
@@ -97,7 +97,7 @@ export const POSES = {
     keys: [
       both(
         { hipL: [-1.2, 0, 0.15], kneeL: [2.0, 0, 0], ankleL: [-0.8, 0, 0], shoulderL: [-0.6, 0, 0.1], elbowL: [-0.9, 0, 0] },
-        { y: -0.35, spine: [0.45, 0, 0], neck: [-0.3, 0, 0] },
+        { y: -0.33, spine: [0.45, 0, 0], neck: [-0.3, 0, 0] },
       ),
     ],
   },
@@ -107,7 +107,7 @@ export const POSES = {
     keys: [
       both(
         { hipL: [-1.6, 0, 0.1], kneeL: [0.3, 0, 0], ankleL: [0.4, 0, 0], shoulderL: [-0.5, 0, 0.15], elbowL: [-0.6, 0, 0] },
-        { y: -0.71, spine: [-0.1, 0, 0], neck: [0.1, 0, 0] },
+        { y: -0.665, spine: [-0.1, 0, 0], neck: [0.1, 0, 0] },
       ),
     ],
   },

@@ -1,16 +1,15 @@
 import { ThreeElements } from "@react-three/fiber";
 import { useMemo } from "react";
 import { useCurrentFrame } from "remotion";
-import { BufferGeometry, RepeatWrapping, Texture } from "three";
+import { BufferGeometry, Texture } from "three";
 import { PS1Material, PS1MaterialProps } from "../ps1/PS1Material";
-import { paintTexture } from "../ps1/paintTexture";
 import { usePS1Textures } from "../ps1/usePS1Texture";
-import { DEFAULT_OUTFIT, Outfit, TextureSource } from "./outfits";
+import { DEFAULT_OUTFIT, Outfit } from "./outfits";
 import { PoseName, samplePose } from "./poses";
 import {
   DESIGN_HEIGHT, FOREARM, GEO, HAND_GRIP, HIP, NECK, PELVIS_Y, SHIN, SHOULDER, SPINE_Y, THIGH, TORSO, UPPER_ARM,
 } from "./rig";
-import { Expression, EXPRESSIONS, TEX } from "./textures";
+import { Expression, EXPRESSIONS, paintPalette } from "./textures";
 
 export type ProtagonistProps = Omit<ThreeElements["group"], "scale"> & {
   pose?: PoseName;
@@ -31,8 +30,6 @@ const Part: React.FC<{ g: BufferGeometry; map: Texture; fx?: PS1MaterialProps }>
   </mesh>
 );
 
-const toUrl = (s: TextureSource) => (typeof s === "string" ? s : paintTexture(s, 64));
-
 /** The channel's recurring guy: rigid segmented PS1 rig, posed from poses.ts at 15fps. */
 export const Protagonist: React.FC<ProtagonistProps> = ({
   pose = "idle",
@@ -44,25 +41,19 @@ export const Protagonist: React.FC<ProtagonistProps> = ({
   ...group
 }) => {
   const frame = useCurrentFrame();
-  const outfitUrls = useMemo(() => [outfit.jacket, outfit.shirt, outfit.legs, outfit.boots].map(toUrl), [outfit]);
-  const [faceTex, skinTex, hairTex, jacketTex, shirtTex, legTex, bootTex] = usePS1Textures([
-    EXPRESSIONS[face], TEX.skin, TEX.hair, ...outfitUrls,
-  ]);
-  if (jacketTex.wrapS !== RepeatWrapping) {
-    jacketTex.wrapS = jacketTex.wrapT = RepeatWrapping; // the jacket crop tiles
-    jacketTex.needsUpdate = true;
-  }
+  const palette = useMemo(() => paintPalette(outfit), [outfit]);
+  const [faceTex, pal] = usePS1Textures([EXPRESSIONS[face], palette]);
 
   const { y, rot } = samplePose(pose, frame);
   const P = (g: BufferGeometry, map: Texture) => <Part g={g} map={map} fx={fx} />;
 
   const arm = (side: "L" | "R") => (
     <group key={side} position={[(side === "L" ? 1 : -1) * SHOULDER.x, SHOULDER.y, 0]} rotation={rot(`shoulder${side}`)}>
-      {P(GEO.upperArm, jacketTex)}
+      {P(GEO.upperArm, pal)}
       <group position-y={-UPPER_ARM} rotation={rot(`elbow${side}`)}>
-        {P(GEO.forearm, jacketTex)}
+        {P(GEO.forearm, pal)}
         <group position-y={-FOREARM}>
-          {P(GEO.hand, skinTex)}
+          {P(GEO.hand, pal)}
           {side === "R" && <group position={HAND_GRIP}>{rightHand}</group>}
         </group>
       </group>
@@ -71,11 +62,11 @@ export const Protagonist: React.FC<ProtagonistProps> = ({
 
   const leg = (side: "L" | "R") => (
     <group key={side} position={[(side === "L" ? 1 : -1) * HIP.x, HIP.y, 0]} rotation={rot(`hip${side}`)}>
-      {P(GEO.thigh, legTex)}
+      {P(GEO.thigh, pal)}
       <group position-y={-THIGH} rotation={rot(`knee${side}`)}>
-        {P(GEO.shin, legTex)}
+        {P(GEO.shin, pal)}
         <group position-y={-SHIN} rotation={rot(`ankle${side}`)}>
-          {P(GEO.boot, bootTex)}
+          {P(GEO.boot, pal)}
         </group>
       </group>
     </group>
@@ -84,20 +75,20 @@ export const Protagonist: React.FC<ProtagonistProps> = ({
   return (
     <group {...group} scale={height / DESIGN_HEIGHT}>
       <group position-y={PELVIS_Y + y} rotation={rot("root")}>
-        {P(GEO.pelvis, legTex)}
+        {P(GEO.pelvis, pal)}
         {leg("L")}
         {leg("R")}
         <group position-y={SPINE_Y} rotation={rot("spine")}>
-          {P(GEO.tee, shirtTex)}
-          {P(GEO.jacket, jacketTex)}
+          {P(GEO.tee, pal)}
+          {P(GEO.jacket, pal)}
           {arm("L")}
           {arm("R")}
           <group position-y={TORSO} rotation={rot("neck")}>
-            {P(GEO.neck, skinTex)}
+            {P(GEO.neck, pal)}
             <group position-y={NECK}>
               {P(GEO.face, faceTex)}
-              {P(GEO.headSkin, skinTex)}
-              {P(GEO.hair, hairTex)}
+              {P(GEO.headSkin, pal)}
+              {P(GEO.hair, pal)}
             </group>
           </group>
         </group>

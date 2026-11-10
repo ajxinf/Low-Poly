@@ -1,189 +1,168 @@
 import { Matrix4 } from "three";
 import { box, facets, loft, P, solid, toGeometry, transform, triCount, triNormal, twoSided, V } from "./loft";
+import { cellU, Slot } from "./textures";
 
 // Joint layout in metres at design height. Character faces +z, his left is +x.
-// Hip joint at 0.81 m of 1.71 m: legs ≈ 45–47% of height. Head + hair ≈ 0.3 m: slightly big.
-export const PELVIS_Y = 0.86;
-export const HIP = { x: 0.08, y: -0.05 };
-export const THIGH = 0.37;
-export const SHIN = 0.37; // ankle ends 0.07 above the floor
+// ~1.65 m with hair, head + hair ≈ 0.3 m → ~5.5 heads. Hip joint at 0.765 m ≈ 46% of height.
+export const PELVIS_Y = 0.815;
+export const HIP = { x: 0.085, y: -0.05 };
+export const THIGH = 0.35;
+export const SHIN = 0.345; // ankle ends 0.07 above the floor
 export const SPINE_Y = 0.05;
-export const TORSO = 0.44;
-export const SHOULDER = { x: 0.215, y: 0.4 };
-export const UPPER_ARM = 0.27;
-export const FOREARM = 0.24;
-export const NECK = 0.06;
-const BROW_Y = 0.175; // face texture spans chin (y=0) → brows (y=BROW_Y) on the head
-export const DESIGN_HEIGHT = 1.71;
-export const HEAD_CENTER_Y = PELVIS_Y + SPINE_Y + TORSO + NECK + 0.13;
+export const TORSO = 0.45;
+export const SHOULDER = { x: 0.235, y: 0.4 }; // a bit broad
+export const UPPER_ARM = 0.26;
+export const FOREARM = 0.23;
+export const NECK = 0.05;
+export const DESIGN_HEIGHT = 1.65;
+const HEAD = { w: 0.2, d: 0.17, h: 0.2, c: 0.035 }; // wider than deep; face front is h × w = square, so 32×32 maps 1:1
+export const HEAD_CENTER_Y = PELVIS_Y + SPINE_Y + TORSO + NECK + 0.11;
 /** Right-hand attach point, in the wrist frame: palm centre (his right palm faces +x). */
-export const HAND_GRIP: [number, number, number] = [0.025, -0.055, 0.005];
+export const HAND_GRIP: [number, number, number] = [0.028, -0.05, 0.005];
 
 type Side = 1 | -1; // +1 = his left (+x)
 
-const withUV = (vs: V[], f: (p: P) => [number, number]) => vs.map((v) => ({ ...v, uv: f(v.p) }));
+/** Paint a part from the palette: base tone, shadow tone where `shadow(p)` (default: the back half). */
+const tone = (vs: V[], slot: Slot, shadow: (p: P) => boolean = (p) => p[2] < 0) =>
+  vs.map((v) => ({ ...v, uv: [cellU(slot, shadow(v.p)), 0.5] as [number, number] }));
 
-/**
- * Bevelled-box cross-section, 8 points in loft order (back → his right → front → his left).
- * `front` = half-width of the flat front face (defaults to w/2 - c); smaller makes wide slanted front panels.
- */
+/** Rounded-box cross-section, 8 points in loft order (back → his right → front → his left). */
 const chamfer = (w: number, d: number, c: number, front = w / 2 - c): [number, number][] => [
   [w / 2 - c, -d / 2], [-w / 2 + c, -d / 2], [-w / 2, -d / 2 + c], [-w / 2, d / 2 - c],
   [-front, d / 2], [front, d / 2], [w / 2, d / 2 - c], [w / 2, -d / 2 + c],
 ];
-// Plain rectangle, 4 points in loft order.
 const rect = (w: number, back: number, front: number): [number, number][] => [
   [w / 2, back], [-w / 2, back], [-w / 2, front], [w / 2, front],
 ];
 const hex = (r: number) => Array(6).fill(r);
 
-// ---------- Head: bevelled, tapered box (64 tris); the face lives in the texture ----------
+// ---------- Head (48 tris): rounded box, face texture planar across the front ----------
 
+// Hairline per ring point (back, back, his right ×2, front ×2, his left ×2): the face front runs to the top, the back stops low.
+const HAIRLINE = [0.08, 0.08, 0.12, HEAD.h, HEAD.h, HEAD.h, HEAD.h, 0.12];
 const headAll = loft(
   [
-    { y: 0, pts: chamfer(0.11, 0.15, 0.03), z: 0.012, ao: 0.5 }, // chin underside
-    { y: 0.03, pts: chamfer(0.15, 0.2, 0.015), z: 0.01 },
-    { y: BROW_Y, pts: chamfer(0.165, 0.205, 0.015), z: 0.01 },
-    { y: 0.26, pts: chamfer(0.14, 0.15, 0.035), z: -0.008 }, // kept well inside the hair
+    { y: 0, pts: chamfer(0.15, 0.13, 0.03), z: 0.005 }, // chin bevel
+    { y: 0.03, pts: chamfer(HEAD.w, HEAD.d, HEAD.c) },
+    { y: HAIRLINE, pts: chamfer(HEAD.w, HEAD.d, HEAD.c) }, // ends where the hair cap starts: no overlap for vertex snap to poke through
   ],
-  { capTop: 0.012, capBottom: true },
+  { capTop: 0.02, capBottom: true },
 );
-// The flat front below the brows gets the face (planar UVs); everything else is the skin swatch.
-const FACE_W = 0.165 - 2 * 0.015; // front-face width at the brow line
-const isFace = (t: V[]) => triNormal(t[0].p, t[1].p, t[2].p)[2] > 0.75 && Math.max(...t.map((v) => v.p[1])) <= BROW_Y + 1e-4;
 const headTris = Array.from({ length: headAll.length / 3 }, (_, i) => headAll.slice(i * 3, i * 3 + 3));
-const face = withUV(headTris.filter(isFace).flat(), (p) => [p[0] / FACE_W + 0.5, p[1] / BROW_Y]);
-const headSkin = headTris.filter((t) => !isFace(t)).flat();
+const facesFront = (t: V[]) => triNormal(t[0].p, t[1].p, t[2].p)[2] > 0.3 && Math.max(...t.map((v) => v.p[1])) <= HEAD.h + 1e-6;
+// x ∈ ±w/2 → u 0..1, y 0..h → v 0..1: same aspect as the texture, so no stretch.
+const face = headTris.filter(facesFront).flat().map((v) => ({ ...v, uv: [v.p[0] / HEAD.w + 0.5, v.p[1] / HEAD.h] as [number, number] }));
+const headSkin = tone(headTris.filter((t) => !facesFront(t)).flat(), "skin");
 
-// ---------- Hair: 7 chunky clumps hugging the skull, swept to his right ----------
+// ---------- Hair: near-black cap + 5 chunky clumps swept to his right, inside the head width ----------
 
-// Deformed box: corners indexed x*4 + y*2 + z over {-,+} (e.g. 5 = +x, -y, +z).
+// The cap's front edge sits at the head top, where the face texture's painted fringe begins.
+const cap = loft(
+  [
+    { y: HAIRLINE, pts: chamfer(HEAD.w + 0.006, HEAD.d + 0.012, 0.04) },
+    { y: 0.245, pts: chamfer(0.18, 0.15, 0.045) },
+  ],
+  { capTop: 0.015 },
+);
+// Deformed box: corners indexed x*4 + y*2 + z over {-,+}.
 const BOX_FACES = [[0, 1, 3, 2], [4, 5, 7, 6], [0, 1, 5, 4], [2, 3, 7, 6], [0, 2, 6, 4], [1, 3, 7, 5]];
-const hairUV = (p: P): [number, number] => [(p[0] + 0.12) / 0.24, (p[1] - 0.03) / 0.3]; // side faces streak = strands
-const clump = (c: P[]) => solid(c, BOX_FACES, hairUV);
-const hair: V[] = [
-  // crown: the main mass, front-right corner highest and swept out to his right
-  ...clump([[-0.092, 0.16, -0.1], [-0.09, 0.2, 0.106], [-0.085, 0.3, -0.09], [-0.095, 0.3, 0.08],
-    [0.09, 0.16, -0.1], [0.088, 0.21, 0.106], [0.07, 0.29, -0.09], [0.07, 0.285, 0.075]]), // front flush with the forehead
-  // back of the head down to the nape
-  ...clump([[-0.09, 0.04, -0.11], [-0.08, 0.04, -0.04], [-0.097, 0.25, -0.115], [-0.09, 0.25, 0],
-    [0.09, 0.04, -0.11], [0.08, 0.04, -0.04], [0.097, 0.25, -0.115], [0.09, 0.25, 0]]),
-  // his left side, over the temple
-  ...clump([[0.07, 0.13, -0.07], [0.07, 0.15, 0.06], [0.07, 0.24, -0.07], [0.07, 0.24, 0.07],
-    [0.092, 0.12, -0.07], [0.09, 0.16, 0.05], [0.094, 0.24, -0.07], [0.092, 0.24, 0.07]]),
-  // his right side, fuller (the sweep lands here)
-  ...clump([[-0.105, 0.11, -0.07], [-0.105, 0.15, 0.06], [-0.112, 0.25, -0.07], [-0.112, 0.25, 0.08],
-    [-0.07, 0.13, -0.07], [-0.07, 0.15, 0.06], [-0.07, 0.24, -0.07], [-0.07, 0.24, 0.07]]),
-  // front sweep over his right temple
-  ...clump([[-0.106, 0.15, 0.0], [-0.1, 0.17, 0.09], [-0.112, 0.26, 0.0], [-0.11, 0.28, 0.1],
-    [-0.03, 0.22, 0.03], [-0.025, 0.235, 0.119], [-0.03, 0.29, 0.03], [-0.02, 0.295, 0.105]]),
-  // quiff lifting at the front-left of the top
-  ...clump([[-0.01, 0.27, -0.02], [-0.01, 0.27, 0.09], [0.0, 0.32, -0.03], [-0.02, 0.325, 0.08],
-    [0.07, 0.26, -0.02], [0.07, 0.25, 0.09], [0.06, 0.3, -0.03], [0.06, 0.305, 0.07]]),
-  // the V spike over the forehead, just right of centre (his right)
-  ...solid([[-0.035, 0.228, 0.118], [0.01, 0.228, 0.118], [-0.012, 0.25, 0.09], [-0.014, 0.188, 0.121]],
-    [[0, 1, 3], [0, 3, 2], [1, 2, 3], [0, 2, 1]], hairUV),
-];
+const clump = (c: P[]) => solid(c, BOX_FACES, () => [0, 0]);
+const hair = tone(
+  [
+    ...cap,
+    // front-top, swept toward his right and lifted there
+    ...clump([[-0.1, 0.22, -0.01], [-0.1, 0.2, 0.09], [-0.1, 0.29, -0.01], [-0.095, 0.3, 0.085],
+      [0.02, 0.24, -0.01], [0.02, 0.23, 0.09], [0.0, 0.28, -0.01], [0.0, 0.285, 0.08]]),
+    // crown, middle
+    ...clump([[-0.04, 0.24, -0.06], [-0.04, 0.24, 0.05], [-0.03, 0.29, -0.06], [-0.03, 0.295, 0.04],
+      [0.08, 0.235, -0.06], [0.08, 0.235, 0.05], [0.07, 0.275, -0.06], [0.07, 0.275, 0.04]]),
+    // his left top, smaller
+    ...clump([[0.03, 0.22, -0.04], [0.03, 0.22, 0.08], [0.03, 0.265, -0.04], [0.03, 0.27, 0.07],
+      [0.1, 0.2, -0.04], [0.1, 0.2, 0.08], [0.095, 0.25, -0.04], [0.095, 0.255, 0.07]]),
+    // back-top
+    ...clump([[-0.085, 0.2, -0.095], [-0.085, 0.22, -0.03], [-0.075, 0.27, -0.09], [-0.075, 0.275, -0.03],
+      [0.085, 0.2, -0.095], [0.085, 0.22, -0.03], [0.075, 0.265, -0.09], [0.075, 0.27, -0.03]]),
+    // his right side, where the sweep lands over the temple
+    ...clump([[-0.11, 0.15, -0.05], [-0.11, 0.16, 0.07], [-0.11, 0.26, -0.05], [-0.11, 0.27, 0.07],
+      [-0.07, 0.17, -0.05], [-0.07, 0.18, 0.07], [-0.07, 0.25, -0.05], [-0.07, 0.25, 0.07]]),
+  ],
+  "hair",
+  (p) => p[2] < -0.02 || p[1] < 0.15,
+);
 
-const neck = loft([
-  { y: -0.03, r: hex(0.055), ao: 0.7 },
-  { y: 0.07, r: hex(0.05), ao: 0.5 }, // under the chin
-]);
+const neck = tone(loft([{ y: -0.03, r: hex(0.052) }, { y: 0.05, r: hex(0.05) }]), "skin");
 
-// ---------- Torso: t-shirt box with an open jacket shell over it ----------
+// ---------- Torso: tee box under an open rust jacket ----------
 
-const TEE_AO = [0.5, 0.5, 0.5, 0.55, 1, 1, 0.55, 0.5]; // dark where the jacket covers it
-const tee = withUV(
+const tee = tone(
   loft(
     [
-      { y: 0, pts: chamfer(0.26, 0.17, 0.04), ao: TEE_AO },
-      { y: 0.3, pts: chamfer(0.32, 0.2, 0.05), ao: TEE_AO },
-      { y: 0.4, pts: chamfer(0.38, 0.18, 0.06), ao: TEE_AO },
-      { y: 0.445, pts: chamfer(0.15, 0.12, 0.03) },
+      { y: 0, pts: chamfer(0.26, 0.16, 0.04) },
+      { y: 0.4, pts: chamfer(0.42, 0.18, 0.05) },
+      { y: 0.455, pts: chamfer(0.16, 0.12, 0.03) },
     ],
     { capTop: 0.005 },
   ),
-  (p) => [p[0] / 0.16 + 0.5, p[1] / 0.445], // the shirt crop once across the front
+  "shirt",
+  (p) => p[2] < 0.05 || p[1] < 0.12,
 );
-
-// Jacket front edges stop ~4 cm either side of centre: the open front is the skipped column 4.
+// Front edges stop ~4.5 cm either side of centre: the open front is the skipped column 4.
 const jacketShell = loft(
   [
-    { y: -0.08, pts: chamfer(0.3, 0.21, 0.035, 0.035) },
-    { y: 0.3, pts: chamfer(0.36, 0.235, 0.04, 0.045) },
-    { y: 0.41, pts: chamfer(0.41, 0.215, 0.05, 0.05), ao: [1, 1, 1, 0.6, 1, 1, 0.6, 1] }, // armpits
-    { y: 0.465, pts: chamfer(0.17, 0.14, 0.035, 0.04) },
+    { y: -0.07, pts: chamfer(0.3, 0.2, 0.04, 0.045) },
+    { y: 0.41, pts: chamfer(0.46, 0.21, 0.055, 0.045) },
+    { y: 0.47, pts: chamfer(0.18, 0.14, 0.035, 0.045) },
   ],
   { skip: [4] },
 );
-// Two flat collar flaps folded down either side of the neck, points toward the chest.
+// Two flat collar flaps folded down either side of the neck.
 const collarFlap = (s: Side) =>
   twoSided(
     facets(
       [
-        [[s * 0.07, 0.475, -0.02], [s * 0.045, 0.46, 0.085], [s * 0.075, 0.34, 0.125]],
-        [[s * 0.07, 0.475, -0.02], [s * 0.075, 0.34, 0.125], [s * 0.15, 0.42, 0.075]],
+        [[s * 0.07, 0.48, -0.02], [s * 0.05, 0.465, 0.085], [s * 0.08, 0.35, 0.115]],
+        [[s * 0.07, 0.48, -0.02], [s * 0.08, 0.35, 0.115], [s * 0.15, 0.43, 0.07]],
       ],
       [0, 0.3, 0],
       () => [0, 0],
-      (p) => (p[1] > 0.45 ? 0.75 : 1),
     ),
   );
-// Jacket texture tiles (RepeatWrapping): 4 repeats round the body, one per 18 cm of height.
-const tileV = (p: P) => (p[1] + 0.08) / 0.18;
-const jacket = [
-  ...jacketShell.map((v) => ({ ...v, uv: [v.uv[0] * 4, tileV(v.p)] as [number, number] })),
-  ...withUV([...collarFlap(1), ...collarFlap(-1)], (p) => [p[0] / 0.06, tileV(p)]),
-];
+const jacket = tone([...jacketShell, ...collarFlap(1), ...collarFlap(-1)], "jacket");
 
-// ---------- Arms: 6-sided prisms, cuffs, mitten hands ----------
+// ---------- Arms: 6-sided prisms, mitten hands ----------
 
-const sleeve = (vs: V[]) => vs.map((v) => ({ ...v, uv: [v.uv[0] * 2, v.p[1] / 0.18] as [number, number] }));
-const upperArm = sleeve(loft([{ y: -UPPER_ARM, r: hex(0.047) }, { y: 0.03, r: hex(0.056) }], { capTop: true }));
-const forearm = sleeve(
+const upperArm = tone(loft([{ y: -UPPER_ARM, r: hex(0.05) }, { y: 0.03, r: hex(0.058) }], { capTop: true }), "jacket");
+const forearm = tone(loft([{ y: -FOREARM, r: hex(0.05) }, { y: 0.01, r: hex(0.05) }]), "jacket");
+// Mitten: one tapered block, thumb wedge forward. Palm faces ±x, so it suits both sides.
+const hand = tone(
+  [
+    ...transform(box([0.042, 0.11, 0.085], () => [0, 0], 1, 0.75), new Matrix4().setPosition(0, -0.055, 0.003)),
+    ...solid([[-0.012, -0.02, 0.04], [0.012, -0.02, 0.04], [0, -0.035, 0.03], [0, -0.07, 0.065]], [[0, 1, 3], [1, 2, 3], [2, 0, 3], [0, 2, 1]], () => [0, 0]),
+  ],
+  "skin",
+  (p) => p[2] < -0.01,
+);
+
+// ---------- Legs: prisms, block boots ----------
+
+const pelvis = tone(
+  loft([{ y: -0.08, pts: chamfer(0.25, 0.16, 0.04) }, { y: 0.08, pts: chamfer(0.28, 0.17, 0.04) }], { capBottom: 0.01 }),
+  "legs",
+  (p) => p[2] < 0 || p[1] < -0.07,
+);
+const thigh = tone(loft([{ y: -THIGH, r: hex(0.062) }, { y: 0.03, r: hex(0.082) }]), "legs");
+const shin = tone(loft([{ y: -SHIN + 0.05, r: hex(0.064) }, { y: 0.02, r: hex(0.062) }]), "legs");
+const boot = tone(
   loft(
     [
-      { y: -FOREARM, r: hex(0.052), ao: 0.7 },
-      { y: -0.205, r: hex(0.052) },
-      { y: -0.205, r: hex(0.043) }, // cuff ledge
-      { y: 0.01, r: hex(0.047) },
+      { y: -0.07, pts: rect(0.11, -0.065, 0.17) },
+      { y: -0.045, pts: rect(0.114, -0.068, 0.174) }, // sole lip
+      { y: 0.09, pts: rect(0.1, -0.055, 0.05) }, // block shaft
     ],
-    {}, // the hand fills the cuff
+    { capBottom: true },
   ),
-);
-// Mitten: one tapered block for palm + fingers, a thumb forward. Palm faces ±x, so it suits both sides.
-const hand: V[] = [
-  ...transform(box([0.034, 0.13, 0.085], () => [0.5, 0.5], 1, 0.72), new Matrix4().setPosition(0, -0.065, 0.003)),
-  ...transform(box([0.022, 0.05, 0.024], () => [0.5, 0.5], 0.9), new Matrix4().makeRotationX(-0.5).setPosition(0, -0.04, 0.045)),
-];
-
-// ---------- Legs: prisms, cuffs, block boots ----------
-
-const pelvis = loft(
-  [
-    { y: -0.08, pts: chamfer(0.24, 0.17, 0.04), ao: 0.5 },
-    { y: 0.08, pts: chamfer(0.27, 0.18, 0.04) },
-  ],
-  { capBottom: 0.01 },
-);
-const thigh = loft([{ y: -THIGH, r: hex(0.058) }, { y: 0.03, r: hex(0.075) }], { v: [0.1, 1] });
-const shin = loft(
-  [
-    { y: -0.34, r: hex(0.062), ao: 0.6 }, // hem over the boot
-    { y: -0.3, r: hex(0.062) },
-    { y: -0.3, r: hex(0.05) },
-    { y: 0.02, r: hex(0.058) },
-  ],
-  { v: [0, 0.95] }, // bottom hidden in the boot
-);
-const boot = loft(
-  [
-    { y: -0.07, pts: rect(0.1, -0.06, 0.17), ao: 0.6 }, // sole
-    { y: -0.045, pts: rect(0.106, -0.065, 0.176) }, // sole lip
-    { y: 0.0, pts: rect(0.092, -0.052, 0.1) }, // instep
-    { y: 0.09, pts: rect(0.088, -0.05, 0.04) }, // shaft
-  ],
-  { capBottom: true },
+  "boots",
+  (p) => p[1] < -0.04 || p[2] < -0.05, // sole and heel
 );
 
 const PARTS = { face, headSkin, hair, neck, tee, jacket, pelvis, upperArm, forearm, hand, thigh, shin, boot };
