@@ -12,6 +12,7 @@ import {
 
 const FRAG = /* glsl */ `
 uniform sampler2D tScene;
+uniform float uDitherScale;
 varying vec2 vUv;
 const float BAYER[16] = float[16](0., 8., 2., 10., 12., 4., 14., 6., 3., 11., 1., 9., 15., 7., 13., 5.);
 vec3 toSRGB(vec3 c) {
@@ -19,9 +20,10 @@ vec3 toSRGB(vec3 c) {
 }
 void main() {
   vec3 c = toSRGB(clamp(texture2D(tScene, vUv).rgb, 0.0, 1.0));
-  ivec2 p = ivec2(mod(gl_FragCoord.xy, 4.0));
+  ivec2 p = ivec2(mod(floor(gl_FragCoord.xy / uDitherScale), 4.0));
   float t = (BAYER[p.y * 4 + p.x] + 0.5) / 16.0;
-  gl_FragColor = vec4(floor(c * 31.0 + t) / 31.0, 1.0); // 5 bits per channel
+  c += (t - 0.5) / 31.0; // dither by up to half a 5-bit step
+  gl_FragColor = vec4(floor(c * 31.0 + 0.5) / 31.0, 1.0); // then quantize to 5 bits per channel
 }`;
 
 const VERT = /* glsl */ `
@@ -30,9 +32,13 @@ void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`;
 
 /**
  * Full-screen 4×4 Bayer dither + 15-bit color, at full output resolution.
+ * ditherScale = screen pixels per Bayer cell (3 → each cell covers 3×3 pixels).
  * Render targets skip tone mapping, so use <ThreeCanvas flat> to look the same with enabled={false}.
  */
-export const PS1PostFX: React.FC<{ enabled?: boolean }> = ({ enabled = true }) => {
+export const PS1PostFX: React.FC<{ enabled?: boolean; ditherScale?: number }> = ({
+  enabled = true,
+  ditherScale = 3,
+}) => {
   const { gl, scene, camera } = useThree();
 
   const { target, quad, quadCamera } = useMemo(() => {
@@ -40,7 +46,7 @@ export const PS1PostFX: React.FC<{ enabled?: boolean }> = ({ enabled = true }) =
     const quad = new Mesh(
       new PlaneGeometry(2, 2),
       new ShaderMaterial({
-        uniforms: { tScene: { value: target.texture } },
+        uniforms: { tScene: { value: target.texture }, uDitherScale: { value: 3 } },
         vertexShader: VERT,
         fragmentShader: FRAG,
         depthTest: false,
@@ -68,6 +74,7 @@ export const PS1PostFX: React.FC<{ enabled?: boolean }> = ({ enabled = true }) =
     }
     const size = gl.getDrawingBufferSize(new Vector2());
     target.setSize(size.x, size.y);
+    quad.material.uniforms.uDitherScale.value = ditherScale;
     gl.setRenderTarget(target);
     gl.render(scene, camera);
     gl.setRenderTarget(null);

@@ -1,5 +1,5 @@
 import { Composition } from "remotion";
-import { PS1Test } from "./PS1Test";
+import { PS1Test, ps1TestDefaults, ps1TestSchema } from "./PS1Test";
 import { TestCube } from "./TestCube";
 
 export const RemotionRoot: React.FC = () => (
@@ -15,6 +15,8 @@ export const RemotionRoot: React.FC = () => (
     <Composition
       id="PS1Test"
       component={PS1Test}
+      schema={ps1TestSchema}
+      defaultProps={ps1TestDefaults}
       fps={30}
       durationInFrames={150}
       width={1080}

@@ -17,17 +17,40 @@ export type PS1MaterialProps = {
   fogColor?: ColorRepresentation;
   fogNear?: number;
   fogFar?: number;
+  /** false = normal perspective-correct UVs, for comparing in Studio. */
+  affine?: boolean;
 };
 
 const VERT_PARS = /* glsl */ `#include <common>
+#include <lights_pars_begin>
 uniform vec2 uSnapRes;
 varying float vFogDist;
+varying vec3 vGouraud;
 #ifdef USE_MAP
 varying vec3 vAffineUv;
 #endif`;
 
+// shortcut: Gouraud path handles ambient, point and directional lights only; add spot/hemi loops if a scene needs them.
 const VERT_MAIN = /* glsl */ `#include <project_vertex>
 vFogDist = length(mvPosition.xyz);
+
+vec3 gN = normalize(transformedNormal);
+IncidentLight gL;
+vGouraud = getAmbientLightIrradiance(ambientLightColor);
+#if NUM_POINT_LIGHTS > 0
+for (int i = 0; i < NUM_POINT_LIGHTS; i++) {
+  getPointLightInfo(pointLights[i], mvPosition.xyz, gL);
+  vGouraud += saturate(dot(gN, gL.direction)) * gL.color;
+}
+#endif
+#if NUM_DIR_LIGHTS > 0
+for (int i = 0; i < NUM_DIR_LIGHTS; i++) {
+  getDirectionalLightInfo(directionalLights[i], gL);
+  vGouraud += saturate(dot(gN, gL.direction)) * gL.color;
+}
+#endif
+vGouraud *= RECIPROCAL_PI; // same scale as three's BRDF_Lambert
+
 if (gl_Position.w > 0.0) {
   vec2 grid = uSnapRes * 0.5;
   gl_Position.xy = floor(gl_Position.xy / gl_Position.w * grid + 0.5) / grid * gl_Position.w;
@@ -41,23 +64,32 @@ const FRAG_PARS = /* glsl */ `#include <common>
 uniform vec3 uFogColor;
 uniform float uFogNear;
 uniform float uFogFar;
+uniform float uAffine;
 varying float vFogDist;
+varying vec3 vGouraud;
 #ifdef USE_MAP
 varying vec3 vAffineUv;
 #endif`;
 
+const FRAG_LIGHT = /* glsl */ `outgoingLight += diffuseColor.rgb * vGouraud;
+#include <opaque_fragment>`;
+
 const FRAG_FOG = /* glsl */ `gl_FragColor.rgb = mix(gl_FragColor.rgb, uFogColor, clamp((vFogDist - uFogNear) / (uFogFar - uFogNear), 0.0, 1.0));
 #include <tonemapping_fragment>`;
 
-/** MeshLambertMaterial with PS1 vertex snapping, affine texture warp and distance fog. Use as a mesh child. */
+/**
+ * MeshLambertMaterial turned PS1: per-vertex (Gouraud) lighting, vertex snapping,
+ * affine texture warp and distance fog. Use as a mesh child.
+ */
 export const PS1Material: React.FC<PS1MaterialProps> = ({
   color = "white",
   emissive = "black",
   map = null,
   snapResolution = [320, 240],
   fogColor = "black",
-  fogNear = 5,
-  fogFar = 30,
+  fogNear = 4,
+  fogFar = 16,
+  affine = true,
 }) => {
   const uniforms = useMemo(
     () => ({
@@ -65,6 +97,7 @@ export const PS1Material: React.FC<PS1MaterialProps> = ({
       uFogColor: { value: new Color() },
       uFogNear: { value: 0 },
       uFogFar: { value: 1 },
+      uAffine: { value: 1 },
     }),
     [],
   );
@@ -80,8 +113,16 @@ export const PS1Material: React.FC<PS1MaterialProps> = ({
         .replace("#include <common>", FRAG_PARS)
         .replace(
           "#include <map_fragment>",
-          ShaderChunk.map_fragment.replace("vMapUv", "(vAffineUv.xy / vAffineUv.z)"),
+          ShaderChunk.map_fragment.replace(
+            "vMapUv",
+            "mix(vMapUv, vAffineUv.xy / vAffineUv.z, uAffine)",
+          ),
         )
+        // Per-pixel lighting off; vGouraud replaces it.
+        .replace("#include <lights_fragment_begin>", "")
+        .replace("#include <lights_fragment_maps>", "")
+        .replace("#include <lights_fragment_end>", "")
+        .replace("#include <opaque_fragment>", FRAG_LIGHT)
         .replace("#include <tonemapping_fragment>", FRAG_FOG);
     };
     return m;
@@ -93,6 +134,7 @@ export const PS1Material: React.FC<PS1MaterialProps> = ({
   uniforms.uFogColor.value.set(fogColor);
   uniforms.uFogNear.value = fogNear;
   uniforms.uFogFar.value = fogFar;
+  uniforms.uAffine.value = affine ? 1 : 0;
   material.color.set(color);
   material.emissive.set(emissive);
   if (material.map !== map) {
