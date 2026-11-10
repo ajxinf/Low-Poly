@@ -1,0 +1,10 @@
+node_modules/
+out/
+renders/
+*.mp4
+*.mov
+*.webm
+.env
+.env.*
+.DS_Store
+Thumbs.db
