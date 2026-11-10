@@ -7,6 +7,7 @@ import {
   Texture,
   Vector2,
 } from "three";
+import { HOUSE_LOOK, snapResolutionFor } from "./houseLook";
 
 export type PS1MaterialProps = {
   color?: ColorRepresentation;
@@ -85,11 +86,11 @@ export const PS1Material: React.FC<PS1MaterialProps> = ({
   color = "white",
   emissive = "black",
   map = null,
-  snapResolution = [320, 240],
-  fogColor = "black",
-  fogNear = 4,
-  fogFar = 16,
-  affine = true,
+  snapResolution = snapResolutionFor(HOUSE_LOOK.snapHeight),
+  fogColor = HOUSE_LOOK.fogColor,
+  fogNear = HOUSE_LOOK.fogNear,
+  fogFar = HOUSE_LOOK.fogFar,
+  affine = HOUSE_LOOK.affine,
 }) => {
   const uniforms = useMemo(
     () => ({

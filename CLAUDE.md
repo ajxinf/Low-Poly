@@ -24,6 +24,15 @@ Windows 11 laptop: i5-11400H, RTX 3050 4 GB VRAM, 16 GB RAM. Commands must work 
 - Shorts: word-by-word burned-in captions in a chunky pixel font. Long-form: no burned captions (export .srt).
 - Audio: no commercial music. ElevenLabs SFX + royalty-free ambient/lo-fi beds.
 
+### House look (`kit/ps1/houseLook.ts`)
+Every PS1 component defaults to these; scenes may override per prop.
+- Vertex snap: height 180, width from 4:3 (240×180)
+- Affine texture warp: on
+- Fog: near 7, far 17; colour is per scene (default `#2a332e`)
+- Post FX: on, dither scale 3 (each 4×4 Bayer cell = 3×3 px), 5 bits per channel
+- Lights: ambient 0.15; one point light per fixture, intensity 12, distance 6, decay 2, hung at y 1.9
+- Every surface gets a low-res nearest-filtered texture; no flat untextured or fully saturated materials.
+
 ## Shorts structure (61–90s)
 Hook within the first 2s → timeline markers ("Day 3…") → escalating stakes → cut/camera move every 2–3s (push-in, whip pan, top-down cutaway) → ending that loops into the opening.
 

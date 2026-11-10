@@ -5,8 +5,8 @@ import { random } from "remotion";
 type Rect = (color: string, x: number, y: number, w: number, h: number) => void;
 
 const PALETTE = [
-  "#d62828", "#f77f00", "#fcbf49", "#eae2b7", "#003049", "#2a9d8f", "#264653",
-  "#8ab17d", "#9b2226", "#ffffff", "#5e548e", "#e76f51", "#1d3557", "#111111",
+  "#b5403a", "#c9782e", "#e0b55a", "#eae2b7", "#003049", "#2a9d8f", "#264653",
+  "#8ab17d", "#9b2226", "#e8e4d8", "#5e548e", "#e76f51", "#1d3557", "#111111",
 ];
 
 const paint = (draw: (rect: Rect) => void) => {
@@ -109,4 +109,17 @@ export const makeGrimyPanel = () =>
     for (const [x, y] of [[3, 3], [28, 3], [3, 28], [28, 28]]) rect("#3e433c", x, y, 1, 1);
     speckle(rect, "panel", 60, ["#5d635a", "#6a6f63", "#4a5047"], 18); // grime collects low
     speckle(rect, "panelTop", 15, ["#6a6f63"]);
+  });
+
+// Muted promo box (the spinning hero prop): cardboard tones, faded print.
+export const makeProductBox = () =>
+  paint((rect) => {
+    rect("#8a7a5e", 0, 0, 32, 32);
+    rect("#6e604a", 0, 0, 32, 3);
+    rect("#6e604a", 0, 29, 32, 3);
+    rect("#a89a7c", 4, 7, 24, 10);
+    letters(rect, "promo", "#5b5a4c", "#a89a7c", 6, 10, 5);
+    rect("#6f7a68", 8, 20, 16, 5);
+    rect("#7f6a5a", 11, 22, 10, 1);
+    speckle(rect, "promoGrime", 25, ["#7a6b52", "#776a55"]);
   });

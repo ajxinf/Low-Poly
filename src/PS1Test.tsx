@@ -5,6 +5,7 @@ import { useMemo } from "react";
 import { AbsoluteFill, Easing, interpolate, random, useCurrentFrame, useVideoConfig } from "remotion";
 import { BoxGeometry, CylinderGeometry, RepeatWrapping, Texture } from "three";
 import { z } from "zod";
+import { HOUSE_LOOK, snapResolutionFor } from "../kit/ps1/houseLook";
 import { PS1Material, PS1MaterialProps } from "../kit/ps1/PS1Material";
 import { PS1PostFX } from "../kit/ps1/PS1PostFX";
 import { usePS1Texture, usePS1Textures } from "../kit/ps1/usePS1Texture";
@@ -16,11 +17,11 @@ import {
   makeFloorTile,
   makeGrimyPanel,
   makeLabelTextures,
+  makeProductBox,
 } from "./ps1test/textures";
 
 export const ps1TestSchema = z.object({
-  snapWidth: z.number().int().min(16).max(1920),
-  snapHeight: z.number().int().min(16).max(1920),
+  snapHeight: z.number().int().min(16).max(1440), // width follows 4:3
   affine: z.boolean(),
   fogColor: zColor(),
   fogNear: z.number().min(0).max(40).step(0.5),
@@ -34,20 +35,7 @@ export const ps1TestSchema = z.object({
 });
 type PS1TestProps = z.infer<typeof ps1TestSchema>;
 
-export const ps1TestDefaults: PS1TestProps = {
-  snapWidth: 240,
-  snapHeight: 180,
-  affine: true,
-  fogColor: "#2a332e",
-  fogNear: 4,
-  fogFar: 16,
-  postFX: true,
-  ditherScale: 3,
-  ambient: 0.15,
-  lightIntensity: 12,
-  lightDistance: 6,
-  lightY: 1.9,
-};
+export const ps1TestDefaults: PS1TestProps = HOUSE_LOOK;
 
 const AISLE_LENGTH = 32;
 const AISLE_Z = 2 - AISLE_LENGTH / 2; // aisle runs from z=2 to z=-30
@@ -100,22 +88,24 @@ const Aisle: React.FC<PS1TestProps> = (p) => {
   const { durationInFrames } = useVideoConfig();
   const camera = useThree((s) => s.camera);
 
-  const urls = useMemo(() => ({ labels: makeLabelTextures(), floor: makeFloorTile(), panel: makeGrimyPanel() }), []);
+  const urls = useMemo(() => ({ labels: makeLabelTextures(), floor: makeFloorTile(), panel: makeGrimyPanel(), box: makeProductBox() }), []);
   const labels = usePS1Textures(urls.labels);
   const floorTex = usePS1Texture(urls.floor);
   const panelTex = usePS1Texture(urls.panel);
+  const boxTex = usePS1Texture(urls.box);
   const tex = useMemo(
     () => ({
       floor: tiled(floorTex, 6, AISLE_LENGTH), // 1m tiles
       ceiling: tiled(panelTex, 3, AISLE_LENGTH / 2), // 2m panels
       sideWall: tiled(panelTex, AISLE_LENGTH / 2, ROOM_HEIGHT / 2),
       farWall: tiled(panelTex, 3, ROOM_HEIGHT / 2),
+      shelf: tiled(panelTex, AISLE_LENGTH / 2, 1),
     }),
     [floorTex, panelTex],
   );
 
   const fx: PS1MaterialProps = {
-    snapResolution: [p.snapWidth, p.snapHeight],
+    snapResolution: snapResolutionFor(p.snapHeight),
     fogColor: p.fogColor,
     fogNear: p.fogNear,
     fogFar: p.fogFar,
@@ -153,12 +143,12 @@ const Aisle: React.FC<PS1TestProps> = (p) => {
           </mesh>
           <mesh position={[side * (SHELF_X + 0.45), 1.2, AISLE_Z]}>
             <boxGeometry args={[0.1, 2.4, AISLE_LENGTH, 1, 2, AISLE_LENGTH / 2]} />
-            <PS1Material {...fx} color="#6b7068" />
+            <PS1Material {...fx} map={tex.shelf} color="#9aa098" />
           </mesh>
           {SHELF_HEIGHTS.map((y) => (
             <mesh key={y} position={[side * (SHELF_X + 0.1), y, AISLE_Z]}>
               <boxGeometry args={[0.8, 0.05, AISLE_LENGTH, 1, 1, AISLE_LENGTH / 2]} />
-              <PS1Material {...fx} color="#9aa098" />
+              <PS1Material {...fx} map={tex.shelf} />
             </mesh>
           ))}
         </group>
@@ -171,7 +161,7 @@ const Aisle: React.FC<PS1TestProps> = (p) => {
           </mesh>
           {it.kind === "bottle" && (
             <mesh geometry={GEO.neck} position-y={HEIGHT.bottle + 0.07}>
-              <PS1Material {...fx} color="#d8d8d8" />
+              <PS1Material {...fx} map={labels[it.tex]} />
             </mesh>
           )}
         </group>
@@ -189,8 +179,8 @@ const Aisle: React.FC<PS1TestProps> = (p) => {
       ))}
 
       <mesh position={[0, 2.3, -6]} rotation={[0.3, spin, 0]}>
-        <boxGeometry args={[0.6, 0.6, 0.6]} />
-        <PS1Material {...fx} color="#e63946" />
+        <boxGeometry args={[0.45, 0.6, 0.3]} />
+        <PS1Material {...fx} map={boxTex} />
       </mesh>
 
       <PS1PostFX enabled={p.postFX} ditherScale={p.ditherScale} />

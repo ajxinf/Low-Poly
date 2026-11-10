@@ -9,6 +9,7 @@ import {
   Vector2,
   WebGLRenderTarget,
 } from "three";
+import { HOUSE_LOOK } from "./houseLook";
 
 const FRAG = /* glsl */ `
 uniform sampler2D tScene;
@@ -36,8 +37,8 @@ void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`;
  * Render targets skip tone mapping, so use <ThreeCanvas flat> to look the same with enabled={false}.
  */
 export const PS1PostFX: React.FC<{ enabled?: boolean; ditherScale?: number }> = ({
-  enabled = true,
-  ditherScale = 3,
+  enabled = HOUSE_LOOK.postFX,
+  ditherScale = HOUSE_LOOK.ditherScale,
 }) => {
   const { gl, scene, camera } = useThree();
 
