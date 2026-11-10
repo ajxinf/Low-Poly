@@ -20,6 +20,9 @@ export type PS1MaterialProps = {
   fogFar?: number;
   /** false = normal perspective-correct UVs, for comparing in Studio. */
   affine?: boolean;
+  /** Multiply by the geometry's `color` attribute (baked AO). The geometry must have one. */
+  vertexColors?: boolean;
+  flatShading?: boolean;
 };
 
 const VERT_PARS = /* glsl */ `#include <common>
@@ -91,6 +94,8 @@ export const PS1Material: React.FC<PS1MaterialProps> = ({
   fogNear = HOUSE_LOOK.fogNear,
   fogFar = HOUSE_LOOK.fogFar,
   affine = HOUSE_LOOK.affine,
+  vertexColors = false,
+  flatShading = false,
 }) => {
   const uniforms = useMemo(
     () => ({
@@ -138,6 +143,11 @@ export const PS1Material: React.FC<PS1MaterialProps> = ({
   uniforms.uAffine.value = affine ? 1 : 0;
   material.color.set(color);
   material.emissive.set(emissive);
+  if (material.vertexColors !== vertexColors || material.flatShading !== flatShading) {
+    material.vertexColors = vertexColors;
+    material.flatShading = flatShading;
+    material.needsUpdate = true;
+  }
   if (material.map !== map) {
     material.map = map;
     material.needsUpdate = true; // USE_MAP define changes, so recompile

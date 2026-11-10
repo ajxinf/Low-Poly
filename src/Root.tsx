@@ -1,5 +1,6 @@
 import { Composition } from "remotion";
 import { CharacterTest, characterTestDefaults, characterTestSchema } from "./CharacterTest";
+import { CharacterTurnaround } from "./CharacterTurnaround";
 import { PS1Test, ps1TestDefaults, ps1TestSchema } from "./PS1Test";
 import { TestCube } from "./TestCube";
 
@@ -30,6 +31,14 @@ export const RemotionRoot: React.FC = () => (
       defaultProps={characterTestDefaults}
       fps={30}
       durationInFrames={300}
+      width={1080}
+      height={1920}
+    />
+    <Composition
+      id="CharacterTurnaround"
+      component={CharacterTurnaround}
+      fps={30}
+      durationInFrames={120}
       width={1080}
       height={1920}
     />

@@ -26,7 +26,7 @@ export type ProtagonistProps = Omit<ThreeElements["group"], "scale"> & {
 
 const Part: React.FC<{ g: BufferGeometry; map: Texture; fx?: PS1MaterialProps }> = ({ g, map, fx }) => (
   <mesh geometry={g}>
-    <PS1Material {...fx} map={map} />
+    <PS1Material {...fx} map={map} vertexColors flatShading />
   </mesh>
 );
 
@@ -46,17 +46,20 @@ export const Protagonist: React.FC<ProtagonistProps> = ({
     () => [paintFace({ skin, brow, eye, mouth }), paintSkin(skin), paintHair()],
     [skin, brow, eye, mouth],
   );
-  const outfitUrls = useMemo(() => [outfit.torso, outfit.sleeves, outfit.legs, outfit.boots].map((p) => paintTexture(p)), [outfit]);
-  const [faceTex, skinTex, hairTex, torsoTex, sleeveTex, legTex, bootTex] = usePS1Textures([...faceUrls, ...outfitUrls]);
+  const outfitUrls = useMemo(
+    () => [paintTexture(outfit.jacket, 128), ...[outfit.shirt, outfit.legs, outfit.boots].map((p) => paintTexture(p, 64))],
+    [outfit],
+  );
+  const [faceTex, skinTex, hairTex, jacketTex, shirtTex, legTex, bootTex] = usePS1Textures([...faceUrls, ...outfitUrls]);
 
   const { y, rot } = samplePose(pose, frame);
   const P = (g: BufferGeometry, map: Texture) => <Part g={g} map={map} fx={fx} />;
 
   const arm = (side: "L" | "R") => (
     <group key={side} position={[(side === "L" ? 1 : -1) * SHOULDER.x, SHOULDER.y, 0]} rotation={rot(`shoulder${side}`)}>
-      {P(GEO.upperArm, sleeveTex)}
+      {P(side === "L" ? GEO.upperArmL : GEO.upperArmR, jacketTex)}
       <group position-y={-UPPER_ARM} rotation={rot(`elbow${side}`)}>
-        {P(GEO.forearm, sleeveTex)}
+        {P(GEO.forearm, jacketTex)}
         <group position-y={-FOREARM}>
           {P(GEO.hand, skinTex)}
           {side === "R" && <group position={HAND_GRIP}>{rightHand}</group>}
@@ -67,11 +70,11 @@ export const Protagonist: React.FC<ProtagonistProps> = ({
 
   const leg = (side: "L" | "R") => (
     <group key={side} position={[(side === "L" ? 1 : -1) * HIP.x, HIP.y, 0]} rotation={rot(`hip${side}`)}>
-      {P(GEO.thigh, legTex)}
+      {P(side === "L" ? GEO.thighL : GEO.thighR, legTex)}
       <group position-y={-THIGH} rotation={rot(`knee${side}`)}>
         {P(GEO.shin, legTex)}
         <group position-y={-SHIN} rotation={rot(`ankle${side}`)}>
-          {P(GEO.foot, bootTex)}
+          {P(GEO.boot, bootTex)}
         </group>
       </group>
     </group>
@@ -84,7 +87,8 @@ export const Protagonist: React.FC<ProtagonistProps> = ({
         {leg("L")}
         {leg("R")}
         <group position-y={SPINE_Y} rotation={rot("spine")}>
-          {P(GEO.torso, torsoTex)}
+          {P(GEO.tee, shirtTex)}
+          {P(GEO.jacket, jacketTex)}
           {arm("L")}
           {arm("R")}
           <group position-y={TORSO} rotation={rot("neck")}>
