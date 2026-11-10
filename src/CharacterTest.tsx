@@ -1,32 +1,25 @@
 import { useThree } from "@react-three/fiber";
 import { ThreeCanvas } from "@remotion/three";
-import { zColor } from "@remotion/zod-types";
 import { AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import { z } from "zod";
 import { OUTFITS, OutfitName } from "../kit/character/outfits";
 import { POSE_NAMES } from "../kit/character/poses";
 import { Protagonist } from "../kit/character/Protagonist";
 import { DESIGN_HEIGHT, HEAD_CENTER_Y } from "../kit/character/rig";
-import { DEFAULT_FACE } from "../kit/character/textures";
+import { EXPRESSION_NAMES } from "../kit/character/textures";
 import { PS1PostFX } from "../kit/ps1/PS1PostFX";
 import { BrickPhone } from "../kit/props/BrickPhone";
 import { AisleSet, ps1TestDefaults } from "./PS1Test";
 
 export const characterTestSchema = z.object({
-  skinColor: zColor(),
-  browColor: zColor(),
-  eyeColor: zColor(),
-  mouthColor: zColor(),
+  face: z.enum(EXPRESSION_NAMES),
   height: z.number().min(1.4).max(2.1).step(0.01),
   outfit: z.enum(Object.keys(OUTFITS) as [OutfitName, ...OutfitName[]]),
 });
 type CharacterTestProps = z.infer<typeof characterTestSchema>;
 
 export const characterTestDefaults: CharacterTestProps = {
-  skinColor: DEFAULT_FACE.skin,
-  browColor: DEFAULT_FACE.brow,
-  eyeColor: DEFAULT_FACE.eye,
-  mouthColor: DEFAULT_FACE.mouth,
+  face: "neutral",
   height: DESIGN_HEIGHT,
   outfit: "default",
 };
@@ -69,7 +62,7 @@ const Scene: React.FC<CharacterTestProps> = (p) => {
         pose={pose}
         height={p.height}
         outfit={OUTFITS[p.outfit]}
-        face={{ skin: p.skinColor, brow: p.browColor, eye: p.eyeColor, mouth: p.mouthColor }}
+        face={p.face}
         rightHand={pose === "phoneToEar" ? <BrickPhone rotation-z={Math.PI} /> : null}
       />
       <PS1PostFX />

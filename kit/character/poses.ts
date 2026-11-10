@@ -32,7 +32,7 @@ export const mirror = (k: KeyPose): KeyPose => {
 /** Symmetric pose: `left` holds left-side joints only (mirrored to the right), `center` the rest. */
 const both = (left: KeyPose, center: KeyPose = {}): KeyPose => ({ ...left, ...mirror(left), ...center });
 
-const relaxed = both({ shoulderL: [0, 0, 0.08], elbowL: [-0.15, 0, 0] });
+const relaxed = both({ shoulderL: [0.05, 0, 0.035], elbowL: [-0.2, 0, 0] }); // arms hang close, never an A-pose
 
 const walkContact: KeyPose = {
   y: -0.025, spine: [0.04, 0.08, 0],
@@ -67,7 +67,7 @@ const lookRight = mirror(lookLeft);
 const phone: KeyPose = {
   // Solved numerically so the grip lands at the right ear; no wrist joint, so the elbow rides high.
   ...relaxed, neck: [0.05, 0, 0.06],
-  shoulderR: [-1.8, 0.25, -0.05], elbowR: [-2.35, 0, 0],
+  shoulderR: [-1.65, 0.25, 0.15], elbowR: [-2.35, 0, 0],
 };
 
 const panicA: KeyPose = {
@@ -87,7 +87,7 @@ export const POSES = {
     frames: 30,
     keys: [
       { ...relaxed, neck: [0.05, 0, 0] },
-      { ...both({ shoulderL: [0, 0, 0.11], elbowL: [-0.18, 0, 0] }), spine: [0.03, 0, 0], neck: [0.02, 0, 0], y: -0.005 },
+      { ...both({ shoulderL: [0.05, 0, 0.05], elbowL: [-0.24, 0, 0] }), spine: [0.03, 0, 0], neck: [0.02, 0, 0], y: -0.005 },
     ],
   },
   walk: { frames: 8, keys: [walkContact, walkPass, mirror(walkContact), mirror(walkPass)] },
@@ -97,7 +97,7 @@ export const POSES = {
     keys: [
       both(
         { hipL: [-1.2, 0, 0.15], kneeL: [2.0, 0, 0], ankleL: [-0.8, 0, 0], shoulderL: [-0.6, 0, 0.1], elbowL: [-0.9, 0, 0] },
-        { y: -0.38, spine: [0.45, 0, 0], neck: [-0.3, 0, 0] },
+        { y: -0.35, spine: [0.45, 0, 0], neck: [-0.3, 0, 0] },
       ),
     ],
   },
@@ -107,7 +107,7 @@ export const POSES = {
     keys: [
       both(
         { hipL: [-1.6, 0, 0.1], kneeL: [0.3, 0, 0], ankleL: [0.4, 0, 0], shoulderL: [-0.5, 0, 0.15], elbowL: [-0.6, 0, 0] },
-        { y: -0.79, spine: [-0.1, 0, 0], neck: [0.1, 0, 0] },
+        { y: -0.71, spine: [-0.1, 0, 0], neck: [0.1, 0, 0] },
       ),
     ],
   },

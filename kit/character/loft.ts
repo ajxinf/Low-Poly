@@ -6,9 +6,9 @@ export type V = { p: P; uv: [number, number]; ao: number };
 
 /**
  * A cross-section: points go round from the back (θ=-π) through his right (-x), the front (+z), his left (+x).
- * x = r·sinθ, z = r·cosθ. `y` and `ao` may be per point.
+ * x = r·sinθ, z = r·cosθ, or give `pts` as [x, z] in the same order. `y` and `ao` may be per point.
  */
-export type Ring = { y: number | number[]; r: number[]; x?: number; z?: number; ao?: number | number[] };
+export type Ring = { y: number | number[]; r?: number[]; pts?: [number, number][]; x?: number; z?: number; ao?: number | number[] };
 
 export type LoftOptions = {
   /** true, or a number = how far the centre point rises above the ring (domes). */
@@ -32,7 +32,7 @@ const mean = (v: number | number[]) => (Array.isArray(v) ? v.reduce((a, b) => a 
 
 /** Joins cross-section rings into a faceted tube. Shapes stay editable as plain numbers. */
 export const loft = (rings: Ring[], o: LoftOptions = {}): V[] => {
-  const n = rings[0].r.length;
+  const n = rings[0].pts?.length ?? rings[0].r!.length;
   const uMap = o.uMap ?? ((t: number) => (t + Math.PI) / (2 * Math.PI));
   const [v0, v1] = o.v ?? [0, 1];
   const ys = rings.map((r) => mean(r.y));
@@ -41,9 +41,9 @@ export const loft = (rings: Ring[], o: LoftOptions = {}): V[] => {
     const ring = rings[i];
     const kk = k % n;
     const th = -Math.PI + (2 * Math.PI * k) / n;
-    const r = ring.r[kk];
+    const [px, pz] = ring.pts?.[kk] ?? [ring.r![kk] * Math.sin(th), ring.r![kk] * Math.cos(th)];
     return {
-      p: [(ring.x ?? 0) + r * Math.sin(th), at(ring.y, kk), (ring.z ?? 0) + r * Math.cos(th)],
+      p: [(ring.x ?? 0) + px, at(ring.y, kk), (ring.z ?? 0) + pz],
       uv: [uMap(th), vOf(i)],
       ao: at(ring.ao ?? 1, kk),
     };
@@ -79,6 +79,12 @@ export const loft = (rings: Ring[], o: LoftOptions = {}): V[] => {
 const sub = (a: P, b: P): P => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const cross = (a: P, b: P): P => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 const dot = (a: P, b: P) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+/** Unit normal of triangle abc (counter-clockwise = front). */
+export const triNormal = (a: P, b: P, c: P): P => {
+  const n = cross(sub(b, a), sub(c, a));
+  const l = Math.hypot(...n) || 1;
+  return [n[0] / l, n[1] / l, n[2] / l];
+};
 export const avgP = (ps: P[]): P => [mean(ps.map((p) => p[0])), mean(ps.map((p) => p[1])), mean(ps.map((p) => p[2]))];
 
 /** Free triangles, each wound to face away from `inside`. */
