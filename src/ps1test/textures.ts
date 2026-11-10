@@ -1,24 +1,12 @@
 import { random } from "remotion";
+import { paintTexture as paint, Rect } from "../../kit/ps1/paintTexture";
 
 // Procedural 32×32 textures for the PS1Test aisle. Browser-only (uses <canvas>).
-
-type Rect = (color: string, x: number, y: number, w: number, h: number) => void;
 
 const PALETTE = [
   "#b5403a", "#c9782e", "#e0b55a", "#eae2b7", "#003049", "#2a9d8f", "#264653",
   "#8ab17d", "#9b2226", "#e8e4d8", "#5e548e", "#e76f51", "#1d3557", "#111111",
 ];
-
-const paint = (draw: (rect: Rect) => void) => {
-  const canvas = document.createElement("canvas");
-  canvas.width = canvas.height = 32;
-  const ctx = canvas.getContext("2d")!;
-  draw((color, x, y, w, h) => {
-    ctx.fillStyle = color;
-    ctx.fillRect(x, y, w, h);
-  });
-  return canvas.toDataURL();
-};
 
 const pickColors = (seed: string, n: number) => {
   const pool = [...PALETTE];

@@ -83,11 +83,9 @@ const tiled = (t: Texture, x: number, y: number) => {
   return c;
 };
 
-const Aisle: React.FC<PS1TestProps> = (p) => {
+/** The aisle set (geometry, lights, hero box), no camera or post FX, so other compositions can reuse it. */
+export const AisleSet: React.FC<PS1TestProps & { heroBox?: boolean }> = ({ heroBox = true, ...p }) => {
   const frame = useCurrentFrame();
-  const { durationInFrames } = useVideoConfig();
-  const camera = useThree((s) => s.camera);
-
   const urls = useMemo(() => ({ labels: makeLabelTextures(), floor: makeFloorTile(), panel: makeGrimyPanel(), box: makeProductBox() }), []);
   const labels = usePS1Textures(urls.labels);
   const floorTex = usePS1Texture(urls.floor);
@@ -112,8 +110,6 @@ const Aisle: React.FC<PS1TestProps> = (p) => {
     affine: p.affine,
   };
 
-  // Smooth 30fps camera push down the aisle.
-  camera.position.set(0, 1.6, interpolate(frame, [0, durationInFrames], [3, -7], { easing: Easing.inOut(Easing.quad) }));
   const spin = steppedFrame(frame) * 0.06;
 
   return (
@@ -178,11 +174,25 @@ const Aisle: React.FC<PS1TestProps> = (p) => {
         </group>
       ))}
 
-      <mesh position={[0, 2.3, -6]} rotation={[0.3, spin, 0]}>
-        <boxGeometry args={[0.45, 0.6, 0.3]} />
-        <PS1Material {...fx} map={boxTex} />
-      </mesh>
+      {heroBox && (
+        <mesh position={[0, 2.3, -6]} rotation={[0.3, spin, 0]}>
+          <boxGeometry args={[0.45, 0.6, 0.3]} />
+          <PS1Material {...fx} map={boxTex} />
+        </mesh>
+      )}
+    </>
+  );
+};
 
+const Aisle: React.FC<PS1TestProps> = (p) => {
+  const frame = useCurrentFrame();
+  const { durationInFrames } = useVideoConfig();
+  const camera = useThree((s) => s.camera);
+  // Smooth 30fps camera push down the aisle.
+  camera.position.set(0, 1.6, interpolate(frame, [0, durationInFrames], [3, -7], { easing: Easing.inOut(Easing.quad) }));
+  return (
+    <>
+      <AisleSet {...p} />
       <PS1PostFX enabled={p.postFX} ditherScale={p.ditherScale} />
     </>
   );
