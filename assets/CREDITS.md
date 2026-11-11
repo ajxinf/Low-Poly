@@ -1,6 +1,6 @@
 # Asset credits
 
+Every third-party asset (CC0 only) gets a row: what it is, where it came from, its license.
+
 | Asset | Source | License |
 | --- | --- | --- |
-| `reference/protagonist.jpg` | LowPolyFeed original character art (style reference) | Ours (all rights reserved) |
-| `characters/protagonist/faces/*.png` | LowPolyFeed original 32×32 pixel-art faces | Ours (all rights reserved) |

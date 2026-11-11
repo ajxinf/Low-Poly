@@ -1,11 +1,11 @@
 ---
 name: toon-world-short
-description: Make a LowPolyFeed vertical Short (61-90 s) in the "2D cartoon characters in a painted 3D world" style - flat bean-head cartoon cards with plum ink outlines, ink-lined painted 3D world, saturated sky, depth-of-field, gliding cameras, second-person ElevenLabs narration, synthesized SFX and an original score - rendered with three.js inside Remotion. Use for any new LowPolyFeed video, "make the next short", a what-if scenario or strange-true-history short, building the toon kit, or "use the toon world skill".
+description: Make a Stickrified vertical Short (61-90 s) in the "2D stickman cartoon characters in a painted 3D world" style - flat bean-head stickman cards with plum ink outlines, ink-lined painted 3D world, saturated sky, depth-of-field, gliding cameras, second-person ElevenLabs narration, synthesized SFX and an original score - rendered with three.js inside Remotion. Use for any new Stickrified video, "make the next short", a what-if scenario or strange-true-history short, building the toon kit, or "use the toon world skill".
 ---
 
 # Toon-world short (three.js + Remotion)
 
-LowPolyFeed Shorts: flat 2D cartoon **cards** (characters) living in a **painted 3D world** with black ink lines.
+Stickrified Shorts: flat 2D stickman cartoon **cards** (characters) living in a **painted 3D world** with black ink lines.
 Two pillars, both narrated in **second person ("you")**:
 - **Scenario**: "What if you were trapped in a supermarket for 30 days during a zombie apocalypse?"
 - **Strange true history**: "You're one of 74 soldiers about to knock down an iron bridge just by walking across it."

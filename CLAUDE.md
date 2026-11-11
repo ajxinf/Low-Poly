@@ -1,6 +1,6 @@
-# LowPolyFeed — project instructions
+# Stickrified — project instructions
 
-Faceless channel (YouTube Shorts, TikTok, Facebook Reels; long-form later). **Style: flat 2D cartoon characters in a painted, ink-lined 3D world.** Two pillars: survival "what if" scenarios and strange true history. All narration in **second person ("you")**. Audience: US/UK/Canada, Gen Z + Millennials. English only.
+Faceless channel **Stickrified** (YouTube Shorts, TikTok, Facebook Reels; long-form later). **Style: flat 2D cartoon characters in a painted, ink-lined 3D world.** Two pillars: survival "what if" scenarios and strange true history. All narration in **second person ("you")**. Audience: US/UK/Canada, Gen Z + Millennials. English only.
 
 **How to make a video: follow `.claude/skills/toon-world-short/SKILL.md`.** It holds the pipeline, story formulas, look values, protagonist spec and gotchas. This file only holds the project-wide rules.
 
@@ -35,7 +35,6 @@ templates/base/    starting point for new videos (made after the pilot)
 docs/STYLE.md      style bible + approved frames in docs/style/frames/
 scripts/           tts, audio, stills, QA helpers
 ```
-`kit/ps1/`, `kit/character/` and the PS1 test compositions are the **retired PS1 style**: don't build on them; delete them once the toon kit replaces them.
 Rendered output (`out/`, `*.mp4`) is git-ignored.
 
 ## Current phase

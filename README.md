@@ -1,5 +1,6 @@
-# LowPolyFeed
+# Stickrified
 
-3D low-poly PS1-style short-form videos (YouTube Shorts, TikTok, Facebook Reels) and long-form, built with Three.js + Remotion, voiced with ElevenLabs Eleven v4.
+Vertical Shorts (YouTube, TikTok, Facebook) in a "2D stickman cartoon characters in a painted 3D world" style, built with three.js + Remotion and narrated with ElevenLabs Eleven v4.
 
-Plan: see the "LowPolyFeed-plan" doc in the Claude Project.
+- Project rules: `CLAUDE.md`
+- How to make a video: `.claude/skills/toon-world-short/SKILL.md`
