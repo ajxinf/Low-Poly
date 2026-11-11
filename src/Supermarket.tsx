@@ -2,6 +2,7 @@ import { ThreeCanvas } from "@remotion/three";
 import { useMemo } from "react";
 import { AbsoluteFill, useCurrentFrame, useVideoConfig } from "remotion";
 import { Vector3 } from "three";
+import { CaptionWord, Captions } from "../kit/toon/Captions";
 import { PRESETS } from "../kit/toon/build/presets";
 import { Street } from "../kit/toon/build/street";
 import { CamPose, drift, pushIn, shot } from "../kit/toon/camera";
@@ -39,15 +40,24 @@ const Scene: React.FC<{ id: string; night?: boolean; pose: (f: number) => CamPos
 const WIDE = shot({ pos: at(-2.2, 1.5, 1.7), look: at(30, 0.8, 1.15), fov: 60 }, [pushIn(1.2), drift(0.3)], 90);
 export const SupermarketWide: React.FC = () => <Scene id="SupermarketWide" pose={WIDE} frames={90} />;
 
-/** Medium: the protagonist in aisle 3/4 (between the shelves at x -1 and 3), holding a can. */
+/** Demo caption line at ~3.7 words/s (key words marked like script.json). */
+const LINE: CaptionWord[] = ["You", "have", "*thirty*", "days.", "The", "doors", "are", "*locked.*"].map((text, i) => {
+  const start = 0.2 + i * 0.27 + (i >= 4 ? 0.25 : 0);
+  return { text, start, end: start + 0.25 };
+});
+
+/** Medium: the protagonist in aisle 3/4 (between the shelves at x -1 and 3), holding a can; captions on. */
 const P = at(23, 1.0);
 const MED = shot({ pos: at(19.6, 1.25, 1.3), look: P.clone().setY(1.1), fov: 42 }, [pushIn(0.35)], 90);
 export const SupermarketMedium: React.FC = () => {
   const f = useCurrentFrame();
   return (
-    <Scene id="SupermarketMedium" pose={MED} frames={90} dof={DOF.medium(3.4)}>
-      <Character position={P} state={{ pose: posed("hold", f / 30), expr: "worried", blink: blinkAt(f, 30, 4), fx: {}, prop: "can" }} />
-    </Scene>
+    <AbsoluteFill>
+      <Scene id="SupermarketMedium" pose={MED} frames={90} dof={DOF.medium(3.4)}>
+        <Character position={P} state={{ pose: posed("hold", f / 30), expr: "worried", blink: blinkAt(f, 30, 4), fx: {}, prop: "can" }} />
+      </Scene>
+      <Captions words={LINE} />
+    </AbsoluteFill>
   );
 };
 

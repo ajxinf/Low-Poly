@@ -1,6 +1,7 @@
 import { Composition } from "remotion";
 import { CastLineup, CloseUp } from "./CastLineup";
 import { CharacterTest } from "./CharacterTest";
+import { CastSheet } from "./CastSheet";
 import { ExpressionSheet } from "./ExpressionSheet";
 import { ToonTest } from "./ToonTest";
 import { PresetWide, StreetMedium, StreetWide } from "./StreetShots";
@@ -22,5 +23,6 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="SupermarketMedium" component={SupermarketMedium} fps={30} durationInFrames={90} width={1080} height={1920} />
     <Composition id="SupermarketNight" component={SupermarketNight} fps={30} durationInFrames={90} width={1080} height={1920} />
     <Composition id="ExpressionSheet" component={ExpressionSheet} fps={30} durationInFrames={1} width={1080} height={1920} />
+    <Composition id="CastSheet" component={CastSheet} fps={30} durationInFrames={1} width={1080} height={1920} />
   </>
 );

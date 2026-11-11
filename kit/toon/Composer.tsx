@@ -22,6 +22,7 @@ import {
   WebGLRenderTarget,
 } from "three";
 import { CARD_PASS } from "./cardshade";
+import { GRADE_GLSL, gradeState, setGradeUniforms } from "./grade";
 import { NOINK, inkMaterial } from "./ink";
 
 /** Post look values. Pixel sizes are at 1080x1920 and scale with output height / 1920. */
@@ -29,9 +30,7 @@ export const POST = {
   // Lens blur on close-ups and mediums only; wides and establishing shots stay sharp (the default).
   dof: { maxPx: 0, near: 14, far: 45 },
   bloom: { threshold: 1.0, intensity: 0.5, levels: 6, radius: 0.6 },
-  // sat/lift re-tuned after the 1.6x lit cap and aerial haze flattened the frame; `black` lowers the black point
-  // (darkest tones, p5 ~.15-.17) without touching the lighting.
-  grade: { sat: 1.28, contrast: 1.06, lift: 0.02, black: 0.07, vignette: 0.85, warm: 0.02 },
+  // The grade itself is per light preset (grade.ts).
 };
 
 const vert = /* glsl */ `
@@ -96,16 +95,15 @@ void main() {
   gl_FragColor = vec4(mix(texture2D(tSrc, vUv).rgb, t / 16.0, uRadius), 1.0);
 }`;
 
-// Bloom add -> NEUTRAL tone map -> grade (saturation, contrast, warm split, vignette) -> sRGB.
+// Bloom add -> NEUTRAL tone map (highlight shoulder only: its toe crushed the small channel of coloured shadows into
+// grey, lighting.md 3) -> sRGB -> fitted grade (grade.ts).
 const finalFrag = /* glsl */ `
 uniform sampler2D tColor, tBloom;
-uniform float uBloom, uSat, uContrast, uLift, uBlack, uVignette, uWarm, uAspect;
+uniform float uBloom;
 varying vec2 vUv;
+${GRADE_GLSL}
 vec3 neutral(vec3 color) {
   const float S = 0.76, D = 0.15;
-  float x = min(color.r, min(color.g, color.b));
-  float off = x < 0.08 ? x - 6.25 * x * x : 0.04;
-  color -= off;
   float peak = max(color.r, max(color.g, color.b));
   if (peak < S) return color;
   float d = 1.0 - S;
@@ -119,14 +117,7 @@ void main() {
   vec3 c = texture2D(tColor, vUv).rgb + uBloom * texture2D(tBloom, vUv).rgb;
   c = neutral(max(c, 0.0));
   c = toSRGB(clamp(c, 0.0, 1.0));
-  float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
-  c = mix(vec3(l), c, uSat);
-  c = (c - 0.5) * uContrast + 0.5 + uLift;
-  c = max(c - uBlack, 0.0) / (1.0 - uBlack); // black point: darks drop, whites stay
-  c += uWarm * vec3(1.0, 0.2, -0.6) * (l - 0.35); // warm highlights, cooler shadows
-  vec2 q = (vUv - 0.5) * vec2(uAspect, 1.0) * 2.0;
-  c *= mix(1.0, uVignette, smoothstep(0.35, 1.25, dot(q, q)));
-  gl_FragColor = vec4(clamp(c, 0.0, 1.0), 1.0);
+  gl_FragColor = vec4(grade(c, vUv), 1.0);
 }`;
 
 /**
@@ -177,18 +168,18 @@ export const Composer: React.FC<{ dof?: Dof }> = ({ dof = POST.dof }) => {
     });
     const downM = pass(downFrag, { tSrc: { value: null }, uTexel: { value: new Vector2() }, uThreshold: { value: B.threshold }, uFirst: { value: 0 } });
     const upM = pass(upFrag, { tSrc: { value: null }, tLow: { value: null }, uTexel: { value: new Vector2() }, uRadius: { value: B.radius } });
-    const G = POST.grade;
     const fin = pass(finalFrag, {
       tColor: { value: dofRT.texture },
       tBloom: { value: up[0].texture },
       uBloom: { value: B.intensity },
-      uSat: { value: G.sat },
-      uContrast: { value: G.contrast },
-      uLift: { value: G.lift },
-      uBlack: { value: G.black },
-      uVignette: { value: G.vignette },
-      uWarm: { value: G.warm },
-      uAspect: { value: size.x / size.y },
+      uKy: { value: [] },
+      uKm: { value: [] },
+      uGSat: { value: [1, 1, 1] },
+      uTintS: { value: [0, 0, 0] },
+      uTintM: { value: [0, 0, 0] },
+      uTintH: { value: [0, 0, 0] },
+      uVig: { value: [0, 0.5] },
+      uGAmount: { value: 1 },
     });
     const quad = new Mesh(new PlaneGeometry(2, 2), ink);
     quad.frustumCulled = false;
@@ -272,6 +263,7 @@ export const Composer: React.FC<{ dof?: Dof }> = ({ dof = POST.dof }) => {
       p.upM.uniforms.uTexel.value.set(1 / low.width, 1 / low.height);
       draw(p.upM, p.up[i]);
     }
+    setGradeUniforms(p.fin.uniforms, gradeState.current);
     draw(p.fin, null);
   }, 1);
 

@@ -7,6 +7,9 @@ p5       5th percentile luma of non-ink pixels (ink = luma < .08)
 C*p90    90th percentile CIELAB chroma
 sat      mean HSV saturation
 vignette mean luma of the outer corners (ellipse r > .9) / centre (r < .3); content-dependent, read as a trend
+dark L*  2nd percentile CIELAB L* outside the ink (ink = luma < .15, grown by 1 px): darks stay >= 19 (LOOK_SPEC)
+dark C*  median chroma of the darkest 10 % outside the ink: coloured darks, never grey (>= 10)
+dark hue hue of those darks (deg): brown (40-80) is out
 
 Videos also get camera motion (every frame, block phase correlation on a 4x7 grid, px per frame at 1080 wide):
 drift p50   median per-frame motion over textured blocks (flat sky is skipped) (target >= 2.5)
@@ -22,15 +25,21 @@ import tempfile
 import numpy as np
 from PIL import Image
 
-TARGETS = {"luma": (0.39, 0.51), "p5": (0.08, 0.17), "C*p90": (57, 68), "sat": (0.50, 0.58), "vignette": (0.85, 0.85)}
+TARGETS = {"luma": (0.39, 0.51), "p5": (0.08, 0.17), "C*p90": (57, 68), "sat": (0.50, 0.58), "vignette": (0.85, 0.85),
+           "dark L*": (19, 100), "dark C*": (10, 200)}
 
 
-def lab_chroma(rgb):
+def lab(rgb):
     c = np.where(rgb <= 0.04045, rgb / 12.92, ((rgb + 0.055) / 1.055) ** 2.4)
     m = np.array([[0.4124, 0.3576, 0.1805], [0.2126, 0.7152, 0.0722], [0.0193, 0.1192, 0.9505]])
     xyz = c @ m.T / np.array([0.95047, 1.0, 1.08883])
     f = np.where(xyz > 0.008856, np.cbrt(xyz), 7.787 * xyz + 16 / 116)
-    return np.hypot(500 * (f[..., 0] - f[..., 1]), 200 * (f[..., 1] - f[..., 2]))
+    return 116 * f[..., 1] - 16, 500 * (f[..., 0] - f[..., 1]), 200 * (f[..., 1] - f[..., 2])
+
+
+def lab_chroma(rgb):
+    _, a, b = lab(rgb)
+    return np.hypot(a, b)
 
 
 def measure(img):
@@ -41,12 +50,20 @@ def measure(img):
     h, w = y.shape
     cy, cx = np.mgrid[0:h, 0:w]
     r = np.hypot((cx - w / 2) / (w / 2), (cy - h / 2) / (h / 2))
+    ink = y < 0.15  # world ink #1c1210 and graded character ink #2a1a14 (~.13); L* 19 is luma ~.18
+    ink = ink | np.roll(ink, 1, 0) | np.roll(ink, -1, 0) | np.roll(ink, 1, 1) | np.roll(ink, -1, 1)
+    L, A, B = lab(x)
+    Ln = L[~ink]
+    dark = (~ink) & (L <= np.percentile(Ln, 10))
     return {
         "luma": float(np.median(y)),
         "p5": float(np.percentile(y[y >= 0.08], 5)),
         "C*p90": float(np.percentile(lab_chroma(x), 90)),
         "sat": float(sat.mean()),
         "vignette": float(y[r > 0.9].mean() / y[r < 0.3].mean()),
+        "dark L*": float(np.percentile(Ln, 2)),
+        "dark C*": float(np.median(np.hypot(A[dark], B[dark]))),
+        "dark hue": float(np.degrees(np.arctan2(np.median(B[dark]), np.median(A[dark]))) % 360),
     }
 
 
@@ -131,6 +148,8 @@ def main():
             ok = "ok" if (lo - 0.02 * max(hi, 1) <= v <= hi + 0.02 * max(hi, 1) if lo == hi else lo <= v <= hi) else "OFF"
             tgt = f"{lo}" if lo == hi else f"{lo}-{hi}"
             print(f"  {k:9s} {v:7.3f}   target {tgt:10s} {ok}")
+        hue = float(np.mean([m["dark hue"] for m in ms]))
+        print(f"  dark hue  {hue:7.1f}   target not 40-80 {'OFF (brown)' if 40 <= hue <= 80 else 'ok'}")
         if not path.lower().endswith((".png", ".jpg", ".jpeg")):
             for k, v in motion(path).items():
                 lo, hi = MOTION_TARGETS[k]

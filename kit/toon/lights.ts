@@ -1,4 +1,5 @@
 import { Color, Vector3 } from "three";
+import type { GradeName } from "./grade";
 
 type RGB = [number, number, number];
 
@@ -30,15 +31,22 @@ export type LightPreset = {
   clouds?: { lit: string; shade: string; cover: number };
   /** Street lamps and lit windows: colour and HDR strength of their light pools. */
   lamp?: [string, number];
+  /**
+   * Character cards: linear tint of the scene light on the (cream) heads and how far they dim in a street shadow.
+   * Heads stay at V >= .86 in every light (lighting.md 5): day near-white, golden peach, lamp warm, moon lavender.
+   */
+  char: { tint: RGB; shade: number };
+  /** Grade preset (grade.ts) applied after the tone map. */
+  grade: GradeName;
 };
 
 export const LIGHTS = {
   day: {
     az: 75,
     el: 48,
-    lit: [1.58, 1.5, 1.33],
-    shade: [0.3, 0.29, 0.36],
-    lift: [0.05, 0.06, 0.11],
+    lit: [1.54, 1.47, 1.35],
+    shade: [0.8, 0.71, 0.83],
+    lift: [0, 0, 0],
     skyTop: "#3e7fd2",
     skyHorizon: "#b8d0ec",
     fog: "#b8d0ec",
@@ -47,15 +55,19 @@ export const LIGHTS = {
     sat: 1.08,
     haze: { color: "#b8d0ec", start: 30, amount: 0.3 },
     litTint: "#fff2dc",
+    char: { tint: [1.0, 0.97, 0.96], shade: 0.86 },
+    grade: "day",
   },
   golden: {
     az: 6,
     el: 7,
-    lit: [1.5, 1.05, 0.63], // #FFB36B x1.5
-    shade: [0.3, 0.29, 0.56],
-    lift: [0.05, 0.04, 0.12],
-    skyTop: "#ffc47c",
-    skyHorizon: "#8a6f8a",
+    lit: [1.42, 0.79, 0.48],
+    shade: [0.176, 0.206, 0.72],
+    lift: [0.035, 0.03, 0.075],
+    litMax: 4,
+    skyTop: "#6a4f8c",
+    skyMid: "#d88a96",
+    skyHorizon: "#ffd08a",
     fog: "#f0b48c",
     fogNear: 50,
     fogFar: 300,
@@ -63,6 +75,8 @@ export const LIGHTS = {
     haze: { color: "#f0b48c", start: 30, amount: 0.3 },
     litTint: "#ffc89c",
     sunDisc: "#ffcf9e",
+    char: { tint: [1.0, 0.88, 0.76], shade: 0.88 },
+    grade: "golden",
   },
   // Low warm key from ahead-left; shade is cool and ~45 % of the lit luma; low ambient; fog = horizon, past 40 m.
   dusk: {
@@ -83,6 +97,8 @@ export const LIGHTS = {
     sunGlow: ["#ffb27a", 0.9],
     clouds: { lit: "#ffa58f", shade: "#9070b8", cover: 0.68 },
     lamp: ["#ffa245", 2.4],
+    char: { tint: [1.0, 0.9, 0.86], shade: 0.86 },
+    grade: "golden",
   },
   // Moon-blue key, warm practicals carry the scene (lamp pools, lit windows).
   night: {
@@ -101,43 +117,49 @@ export const LIGHTS = {
     haze: { color: "#4a5e9a", start: 30, amount: 0.3 },
     litTint: "#a9c4ff",
     lamp: ["#ffa245", 3.2],
+    char: { tint: [0.8, 0.8, 0.97], shade: 0.86 },
+    grade: "night",
   },
   // Indoors (supermarket): overhead key through the (non-shadowing) ceiling, soft shade, ceiling panels as practicals.
   interior: {
     az: 20,
     el: 72,
-    lit: [1.3, 1.28, 1.2],
-    shade: [0.86, 0.86, 0.92],
+    lit: [0.92, 0.91, 0.86],
+    shade: [0.52, 0.48, 0.54],
     lift: [0.02, 0.02, 0.03],
     skyTop: "#e8eef2",
     skyHorizon: "#f2f0ea",
-    fog: "#e8e6e0",
+    fog: "#cfc6dc",
     fogNear: 40,
     fogFar: 160,
-    sat: 1.04,
-    haze: { color: "#e8e6e0", start: 30, amount: 0.25 },
+    sat: 1.1,
+    haze: { color: "#cfc6dc", start: 40, amount: 0.12 },
     litTint: "#f4fff4",
-    lamp: ["#e6fff0", 0.9], // fluorescent strips: slightly green-white
+    lamp: ["#e6fff0", 0.5], // fluorescent strips: slightly green-white
+    char: { tint: [1.0, 1.0, 0.97], shade: 0.9 },
+    grade: "interior",
   },
-  // Abandoned interior at night: power off, moonlight through the front windows (key from behind the lens), deep
-  // shade. litMax is raised here on purpose: a dark store lit only by window light needs more than 1.6x.
+  // Abandoned interior at night: power off, lavender moonlight through the front windows (key from behind the lens),
+  // violet-blue coloured shade (never black). litMax is raised on purpose: a store lit only by window light needs it.
   moonInterior: {
     az: 180,
     el: 24,
-    lit: [0.62, 0.74, 1.1],
-    shade: [0.05, 0.06, 0.11],
-    lift: [0.004, 0.006, 0.014],
+    lit: [0.8, 0.76, 1.12],
+    shade: [0.14, 0.12, 0.29],
+    lift: [0.014, 0.01, 0.034],
     litMax: 8,
-    litTint: "#a8c0ff",
+    litTint: "#b8b0f0",
     skyTop: "#0d1838",
     skyMid: "#1f3266",
     skyHorizon: "#3a4a7a",
-    fog: "#121828",
+    fog: "#1e1a36",
     fogNear: 20,
     fogFar: 80,
     sat: 1.0,
-    haze: { color: "#1a2236", start: 14, amount: 0.3 },
+    haze: { color: "#2a2446", start: 14, amount: 0.3 },
     lamp: ["#e6fff0", 0.7],
+    char: { tint: [0.8, 0.78, 0.98], shade: 0.88 },
+    grade: "night",
   },
 } satisfies Record<string, LightPreset>;
 

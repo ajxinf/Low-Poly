@@ -1,4 +1,5 @@
 import { Color, Group, PointLight, ShaderMaterial, Texture, UniformsLib, UniformsUtils, Vector2, Vector3 } from "three";
+import { GRADE, gradeState } from "./grade";
 import { LightPreset, linear } from "./lights";
 
 // Shared by every toon material, so one applyLight() relights the whole world.
@@ -11,6 +12,9 @@ export const shared = {
   uHazeColor: { value: new Color() },
   uHazeStart: { value: 30 },
   uHazeAmount: { value: 0 },
+  /** Character cards: scene light tint and street-shadow dimming (lights.ts `char`). */
+  uCharTint: { value: new Vector3(1, 1, 1) },
+  uCharShade: { value: 0.86 },
 };
 
 /** Practical light positions (world), for the lamp-thrown card shadow; the lights themselves are three PointLights. */
@@ -20,13 +24,13 @@ const W = [0.2126, 0.7152, 0.0722];
 const luma = (v: number[]) => v[0] * W[0] + v[1] * W[1] + v[2] * W[2];
 
 /**
- * Sunlit vs shade: lit is at most `litMax` (1.6) x the shade luma (both pulled toward each other around their
+ * Sunlit vs shade: lit is at most `litMax` (2.1) x the shade luma (measured day shade/lit ~0.5) (both pulled toward each other around their
  * geometric mean, so exposure holds), and its hue is pulled 75 % toward the preset's palette tint (peach at dusk,
  * not orange).
  */
 export const litAndShade = (p: LightPreset) => {
   let lit = [...p.lit], shade = [...p.shade];
-  const ratio = luma(lit) / luma(shade), max = p.litMax ?? 1.6;
+  const ratio = luma(lit) / luma(shade), max = p.litMax ?? 2.1;
   if (ratio > max) {
     const k = Math.sqrt(ratio / max);
     lit = lit.map((v) => v / k);
@@ -49,10 +53,13 @@ export const applyLight = (p: LightPreset, sunDir: Vector3) => {
   shared.uHazeColor.value.copy(linear(p.haze.color));
   shared.uHazeStart.value = p.haze.start;
   shared.uHazeAmount.value = p.haze.amount;
+  shared.uCharTint.value.set(...p.char.tint);
+  shared.uCharShade.value = p.char.shade;
+  gradeState.current = GRADE[p.grade];
 };
 
 export type PracticalKind = "lamp" | "window" | "shop" | "fire";
-/** Reach (m) and strength (x the preset's lamp strength) per kind: a lamp pool on the ground is ~3.5 m wide. */
+/** Reach (m) and strength (x the preset's lamp strength) per kind. */
 const PRACTICAL = { lamp: [4.4, 1], window: [3.0, 0.45], shop: [3.6, 0.6], fire: [4.0, 1.2] } as const;
 
 /**
@@ -73,7 +80,7 @@ export const practicalLights = (list: { pos: Vector3; kind: PracticalKind; color
   return g;
 };
 
-/** GLSL: sum of practical point lights at a view-space point with view-space normal (plateau, then a soft edge). */
+/** GLSL: sum of practical point lights at a view-space point with view-space normal (soft falloff, no flat disc). */
 export const POINT_LIGHTS = /* glsl */ `
 vec3 practicalLight(vec3 vp, vec3 vn) {
   vec3 sum = vec3(0.0);
@@ -82,7 +89,7 @@ vec3 practicalLight(vec3 vp, vec3 vn) {
     vec3 L = pointLights[i].position - vp;
     float r = length(L);
     float D = pointLights[i].distance;
-    float f = 1.0 - smoothstep(0.55 * D, D, r);
+    float f = 1.0 - smoothstep(0.0, D, r);
     sum += pointLights[i].color * f * (0.35 + 0.65 * max(dot(vn, L / max(r, 1e-3)), 0.0));
   }
   #endif

@@ -6,7 +6,7 @@ import { SKY } from "../ink";
 import { LightPreset, linear } from "../lights";
 import { rng } from "../paint";
 import { PracticalKind, practicalLights, toonMaterial } from "../shade";
-import { groundMaterial, scraps } from "./ground";
+import { groundMaterial, groundTex, scraps } from "./ground";
 import { Kit, M, MAT } from "./kit";
 import { EraPreset } from "./presets";
 import { aisleSign, checkout, crate } from "./props";
@@ -80,7 +80,7 @@ const floorOverlay = (power: boolean) => {
     uniforms: {
       uStrips: { value: STRIPS.map((p) => new Vector4(p.x, -p.s, STRIP.w / 2, STRIP.d / 2)) },
       uStripI: { value: STRIPS.map(() => (power ? 1 : 0)) },
-      uColor: { value: linear("#e6fff0").multiplyScalar(1.6) },
+      uColor: { value: linear("#e6fff0").multiplyScalar(0.8) },
       uH: { value: H - 0.2 },
       uHW: { value: HW },
       uS0: { value: FRONT_S },
@@ -121,7 +121,8 @@ class Stock {
       const mat = M(`label${label}`, () => toonMaterial({ map: labelTex(Number(label)) })) as Material;
       const im = new InstancedMesh(geos[kind], mat, list.length);
       list.forEach((m, i) => im.setMatrixAt(i, m));
-      im.castShadow = im.receiveShadow = true;
+      im.receiveShadow = true;
+      im.layers.set(SKY); // colour pass only: no ink on product creases (painted, LOOK_SPEC 1 outlines)
       g.add(im);
     }
     return g;
@@ -132,11 +133,14 @@ class Stock {
 const size = (kind: Kind, r: () => number): [number, number, number] =>
   kind === "box" ? [0.1 + r() * 0.14, 0.16 + r() * 0.16, 0.1 + r() * 0.1] : kind === "can" ? [0.04 + r() * 0.012, 0.11 + r() * 0.03, 0] : [0.04 + r() * 0.01, 0.24 + r() * 0.08, 0];
 
-/** One shelf unit (length L along local x, both faces), stocked; `empty` = chance a bay is half-empty. */
+/**
+ * One shelf unit (length L along local x, both faces), stocked; `empty` = chance a bay is half-empty. The frame
+ * (back panel, uprights, header) is inked; boards, lips and price tags are painted lines only (colour layer).
+ */
 const stockedShelf = (L: number, seed: number, stock: Stock, empty: number) => {
   const r = rng(seed);
-  const k = new Kit();
-  const metal = MAT.color("#c8c4c0"), edge = MAT.color("#d84a3a"), tag = MAT.color("#f2e85a");
+  const k = new Kit(), inner = new Kit();
+  const metal = MAT.color("#d6cfc2"), edge = MAT.color("#2f8f86"), tag = MAT.color("#f2e85a");
   k.box(metal, L, 1.9, 0.08, 0, 0.95, 0); // back panel
   for (const x of [-L / 2, L / 2]) k.box(metal, 0.06, 2.0, 0.92, x, 1.0, 0); // end uprights
   k.box(edge, L, 0.18, 0.92, 0, 2.0, 0); // top header
@@ -144,9 +148,9 @@ const stockedShelf = (L: number, seed: number, stock: Stock, empty: number) => {
   const levels = [0.12, 0.54, 0.96, 1.38];
   for (const side of [-1, 1])
     levels.forEach((y, j) => {
-      k.box(metal, L, 0.04, 0.42, 0, y, side * 0.25);
-      k.box(edge, L, 0.07, 0.02, 0, y - 0.01, side * 0.47); // shelf-edge strip
-      for (let x = -L / 2 + 0.2; x < L / 2 - 0.1; x += 0.36) k.box(tag, 0.07, 0.04, 0.012, x, y - 0.005, side * 0.485); // price tags
+      inner.box(metal, L, 0.04, 0.42, 0, y, side * 0.25);
+      inner.box(edge, L, 0.07, 0.02, 0, y - 0.01, side * 0.47); // shelf-edge strip
+      for (let x = -L / 2 + 0.2; x < L / 2 - 0.1; x += 0.36) inner.box(tag, 0.07, 0.04, 0.012, x, y - 0.005, side * 0.485); // price tags
       // Fill bay by bay (1.2 m); each bay one product kind/label, some bays half-empty.
       for (let bx = -L / 2; bx < L / 2 - 0.01; bx += 1.2) {
         const kind: Kind = (["box", "can", "bottle"] as const)[Math.floor(r() * 3)];
@@ -168,7 +172,9 @@ const stockedShelf = (L: number, seed: number, stock: Stock, empty: number) => {
         }
       }
     });
-  return { g: k.build(), items };
+  const g = k.build(), ig = inner.build();
+  ig.traverse((m) => m.layers.set(SKY));
+  return { g: g.add(ig), items };
 };
 
 export const buildSupermarket = (p: EraPreset, light: LightPreset, o: { seed?: number; lightCenter?: Vector3; maxLights?: number }) => {
@@ -211,7 +217,8 @@ export const buildSupermarket = (p: EraPreset, light: LightPreset, o: { seed?: n
     // Ceiling: suspended tile grid (world-metre mapping). Casts only when the power is out (the moon must come in
     // through the windows, not through the roof); by day the key stands in for the strips.
     const k = new Kit();
-    k.box(M("ceilTiles", () => groundMaterial({ kind: "tiles", base: "#e6e2d8", accent: "#dcd6c8", contrast: 0.3 })), HW * 2, 0.3, LEN - FRONT_S, 0, 0, 0);
+    const ceil = p.roofs.colors[0];
+    k.box(M(`ceil${ceil}`, () => toonMaterial({ map: groundTex({ kind: "tiles", base: ceil, accent: ceil, contrast: 0.15 }), repeat: [0.0625, 0.0625] })), HW * 2, 0.3, LEN - FRONT_S, 0, 0, 0);
     const cg = k.build();
     cg.traverse((m) => ((m as Mesh).castShadow = !power));
     add(cg, at((LEN + FRONT_S) / 2, 0, H + 0.15));
@@ -227,7 +234,7 @@ export const buildSupermarket = (p: EraPreset, light: LightPreset, o: { seed?: n
     for (const x of [-HW + 0.3, -8.2, -4.6, -1.6, 1.6, 4.6, 8.2, HW - 0.3]) k.box(fw, 0.6, 2.7, 0.3, x, 0.9 + 1.35, z);
     k.box(fw, 3.2, 1.0, 0.3, 0, 3.1, z); // over the doors
     // Window panes glow with what is outside: daylight, or a pale moonlit sky when the power is out.
-    const glass = M(`shopGlass${power}`, () => toonMaterial({ map: storeGlass(!power), emissive: power ? ["#dfe8f0", 1.0] : ["#8a9ad8", 0.9] }));
+    const glass = M(`shopGlass${power}`, () => toonMaterial({ map: storeGlass(!power), emissive: power ? ["#dfe8f0", 1.0] : ["#9a92e0", 0.9] }));
     for (const [x0, x1] of [[-HW + 0.6, -8.5], [-7.9, -4.9], [-4.3, -1.9], [1.9, 4.3], [4.9, 7.9], [8.5, HW - 0.6]] as const)
       k.box(glass, x1 - x0, 2.7, 0.04, (x0 + x1) / 2, 0.9 + 1.35, z, false);
     const fg = k.build();
@@ -282,6 +289,15 @@ export const buildSupermarket = (p: EraPreset, light: LightPreset, o: { seed?: n
 
   // Checkouts by the entrance; produce crates on the left.
   for (const x of [-6, -1, 4]) add(checkout(power), at(4.5, x), Math.PI / 2, `checkout x ${x}`);
+  if (abandoned) {
+    // Battery lantern on the checkout by the barricade: the warm practical of the night palette.
+    const k = new Kit();
+    k.box(MAT.metal(), 0.2, 0.05, 0.2, 0, 0.025, 0);
+    k.box(MAT.glow("#ffc070", 5), 0.16, 0.22, 0.16, 0, 0.16, 0);
+    k.box(MAT.metal(), 0.2, 0.04, 0.2, 0, 0.29, 0);
+    add(k.build(), at(4.3, 3.6, 0.92), 0.4);
+    lights.push({ pos: at(4.3, 3.6, 1.2), kind: "fire", color: ["#ffa24a", 2.2] });
+  }
   for (let i = 0; i < 6; i++) {
     const c = add(crate(0.7), at(8 + (i % 3) * 1.1, -10.5 + Math.floor(i / 3) * 1.1), 0, "produce crate");
     for (let j = 0; j < (abandoned ? 2 : 5); j++) {
@@ -293,7 +309,7 @@ export const buildSupermarket = (p: EraPreset, light: LightPreset, o: { seed?: n
 
   // Department signs on the back wall.
   p.shops.signs.slice(0, 4).forEach((t, i) => {
-    const s = new Mesh(new BoxGeometry(4, 0.8, 0.06), M(`dept${t}`, () => toonMaterial({ map: signTex(t, "#2a5a9a", "#ffffff") })));
+    const s = new Mesh(new BoxGeometry(4, 0.8, 0.06), M(`dept${t}`, () => toonMaterial({ map: signTex(t, "#1f6f6a", "#fff6e8") })));
     s.position.copy(at(LEN - 0.2, -HW + 3.2 + i * 5.8, 4.4));
     g.add(s);
   });
@@ -318,7 +334,6 @@ export const buildSupermarket = (p: EraPreset, light: LightPreset, o: { seed?: n
         const k = flicker(f);
         (flickMat.uniforms.uEmissive.value as Color).copy(linear("#e6fff0")).multiplyScalar(3.2 * k);
         if (flickLight) (flickLight as unknown as { intensity: number }).intensity = baseI * k;
-        ((overlay.material as ShaderMaterial).uniforms.uStripI.value as number[])[FLICKER] = k;
       };
   return { group: g, smoke: [] as Vector3[], animate };
 };

@@ -1,250 +1,338 @@
 import { CanvasTexture, LinearFilter, LinearMipmapLinearFilter, SRGBColorSpace } from "three";
 
 /**
- * Pen API: characters are drawn on a 600x1000 Canvas2D design canvas (soles at y = 975, 500 px = 1 m) and uploaded
- * as a texture on a camera-facing card (see cast.ts / cardshade.ts). The canvas is RES x the design size.
- * Each card also gets a shade mask (alpha = form-shadow side), drawn by the same code with a mask-mode Pen.
+ * Character construction (LOOK_SPEC section 1, ported from vendor/cartoon-3d-short/reports/characters.md section 3).
+ * Characters are drawn on a 600x1000 Canvas2D design canvas (soles at y = 975, 500 px = 1 m) and uploaded as a
+ * texture on a camera-facing card (cast.ts / cardshade.ts). Shading (soft crescents, torso gradient) is painted into
+ * the card; the card shader only adds the scene light tint and the street shadow.
+ *
+ * Units: W = head path width, u = 1 % of W, HH = head height. Angles are canvas angles (0 = right, 90 deg = down).
  */
 export const DESIGN = { W: 600, H: 1000, SOLE: 975, PX_PER_M: 500, RES: 2 };
-export const CARD_INK = "#1d1416";
-/** Head frame: every head, face, hair and hat is drawn around (0, 0) for a head this wide, then scaled to the build. */
-export const HEAD = { W: 350 };
-/** Fallback outline width in design px; cards set it per frame from inkPx(). */
-export const LINE = 9;
+
+/** Character ink: warm brown-black, one family with the world ink #1c1210 (identity, LOOK_SPEC section 2). */
+export const INK = "#2a1a14";
+/** Cast heads: pale cream (identity). */
+export const CREAM = "#f4ece0";
+export const WHITE = "#fdfaf4";
+export const MOUTH = "#5a1e28";
+export const TONGUE = "#e86e78";
+
+export type P2 = [number, number];
+export type C3 = [number, number, number];
+/** Shadow/lit multipliers (measured): pale heads go lavender, cloth ~0.65. */
+export const SH_PALE: C3 = [0.92, 0.9, 0.96];
+export const SH_CLOTH: C3 = [0.64, 0.66, 0.74];
+export const SH_HAIR: C3 = [0.7, 0.68, 0.78];
+
+export const rad = (d: number) => (d * Math.PI) / 180;
+const hex = (c: string) => parseInt(c.slice(1), 16);
+const h2 = (v: number) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0");
+export const mul = (c: string, m: C3) => {
+  const n = hex(c);
+  return `#${h2(((n >> 16) & 255) * m[0])}${h2(((n >> 8) & 255) * m[1])}${h2((n & 255) * m[2])}`;
+};
+export const mix = (a: string, b: string, t: number) => {
+  const A = hex(a), B = hex(b);
+  const ch = (s: number) => h2(((A >> s) & 255) * (1 - t) + ((B >> s) & 255) * t);
+  return `#${ch(16)}${ch(8)}${ch(0)}`;
+};
+/** Deterministic per-character random in [0, 1). */
+export const rnd = (seed: number, k: number) => {
+  const x = Math.sin(seed * 127.1 + k * 311.7) * 43758.5453;
+  return x - Math.floor(x);
+};
+export const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
+
+// ---------------------------------------------------------------- contours
+
+export type Blob = { a: number; b: number; nTop: number; nBot: number; egg: number; asym: number; rot: number; noise: number; seed: number };
 
 /**
- * Outline width in screen px (at 1920 tall) when a standard head (the protagonist's, so every character on a shot gets
- * the same ink) is `headPx` tall on screen: 8 px for a medium (head ~400 px), growing slowly to a 14 px cap in
- * close-ups, thinner in wides (min 3).
+ * Superellipse bean: separate crown / jaw exponents, egg taper (neg = narrower chin), one-side bulge, soft noise.
+ * Points run right -> down -> left -> up (clockwise on screen), n per contour.
  */
-export const inkPx = (headPx: number) => Math.min(14, Math.max(3, 8 * Math.sqrt(headPx / 400)));
-
-type Path = (c: CanvasRenderingContext2D) => void;
-/** color = the card; shade = soft form-shadow band (alpha); ink = where the outline/limb ink is (alpha). */
-export type PenMode = "color" | "shade" | "ink";
-/** Warm band just inside the outline of dark fills, so dark skin/clothes separate from dark backgrounds. */
-const WARM_RIM = "#c9875a";
-export const isDark = (hex: string) => {
-  if (!/^#[0-9a-f]{6}$/i.test(hex)) return false;
-  const v = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
-  return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2] < 0.33;
+export const blobPts = (cx: number, cy: number, B: Blob, n = 96): P2[] => {
+  const ph = [rnd(B.seed, 11), rnd(B.seed, 12), rnd(B.seed, 13)].map((v) => v * Math.PI * 2);
+  const pts: P2[] = [];
+  for (let i = 0; i < n; i++) {
+    const t = (i / n) * Math.PI * 2, c = Math.cos(t), s = Math.sin(t), e = 2 / (s < 0 ? B.nTop : B.nBot);
+    let X = Math.sign(c) * Math.abs(c) ** e;
+    const Y = Math.sign(s) * Math.abs(s) ** e;
+    X *= (1 + B.egg * Y) * (1 + B.asym * Math.sign(X));
+    const r = 1 + B.noise * (Math.cos(2 * t + ph[0]) + 0.7 * Math.cos(3 * t + ph[1]) + 0.5 * Math.cos(4 * t + ph[2]));
+    const x = B.a * X * r, y = B.b * Y * r;
+    pts.push([cx + x * Math.cos(B.rot) - y * Math.sin(B.rot), cy + x * Math.sin(B.rot) + y * Math.cos(B.rot)]);
+  }
+  return pts;
 };
 
+/**
+ * Measured head: H/W 0.94, slightly pointed crown (1.75), fuller jaw (2.3), chin taper -0.12, 6-10 % bulge toward
+ * the facing side. `facing` is continuous (-1..1, the pose's head turn) so the bulge slides instead of popping.
+ */
+export const headBlob = (seed: number, a: number, facing = 0): Blob => {
+  const side = rnd(seed, 6) < 0.5 ? -1 : 1, f = clamp(facing * 2, -1, 1);
+  return {
+    a,
+    b: a * (0.94 + 0.08 * (rnd(seed, 1) - 0.5)),
+    nTop: 1.75 + 0.3 * (rnd(seed, 2) - 0.5),
+    nBot: 2.3 + 0.3 * (rnd(seed, 3) - 0.5),
+    egg: -0.12 + 0.06 * (rnd(seed, 4) - 0.5),
+    asym: (0.06 + 0.04 * rnd(seed, 5)) * (side * (1 - Math.abs(f)) + f),
+    rot: rad(8 * (rnd(seed, 7) - 0.5)),
+    noise: 0.008,
+    seed,
+  };
+};
+
+/** Thickest outline direction: away from the light, pulled toward the ground (64 deg measured for upper-left light). */
+export const thickAngle = (light: number) => Math.atan2(-Math.sin(light) + 0.8, -Math.cos(light));
+/** Outline thickness profile: w0 (1 + K cos(theta - thick)), thick/thin = (1 + K) / (1 - K) = 2.6. */
+export const INK_K = 0.45;
+
+/** Contour points above `y` (the crown), left to right, pushed out from (cx, cy) by `push`. */
+export const crownPts = (pts: P2[], y: number, cx: number, cy: number, push = 1.03): P2[] => {
+  const n = pts.length, out: P2[] = [];
+  for (let i = n / 2; i <= n; i++) {
+    const [x, yy] = pts[i % n];
+    if (yy < y) out.push([cx + (x - cx) * push, cy + (yy - cy) * push]);
+  }
+  return out;
+};
+
+// ---------------------------------------------------------------- pen
+
+/**
+ * Canvas2D pen in design units. `light` = canvas angle the key light comes FROM (e.g. -125 deg = upper left);
+ * outlines are thickest on the opposite side and toward the ground.
+ */
 export class Pen {
-  /** Shade mode: filled shapes clear the band unless occlude is off (face features keep the shade under them). */
-  occlude = true;
-  /** -1 = shadow on the left of the card, +1 = right: outlines get ~35 % thicker there. */
-  shadowSide: number;
-  constructor(
-    public c: CanvasRenderingContext2D,
-    /** Unit vector toward the key light in canvas space (x right, y down). */
-    public light: [number, number] = [-0.6, -0.8],
-    public w = LINE,
-    public mode: PenMode = "color",
-  ) {
-    c.lineJoin = "round";
-    c.lineCap = "round";
-    this.shadowSide = light[0] > 0 ? -1 : 1;
+  g: CanvasRenderingContext2D;
+  light: number;
+  constructor(g: CanvasRenderingContext2D, light = rad(-125)) {
+    this.g = g;
+    this.light = light;
+    g.lineJoin = "round";
+    g.lineCap = "round";
+  }
+  get thick() {
+    return thickAngle(this.light);
   }
 
-  private paint(path: Path, how: "erase" | "ink", rule: CanvasFillRule = "nonzero") {
-    if (how === "erase" && this.mode === "shade" && !this.occlude) return;
-    const c = this.c;
-    c.save();
-    c.globalCompositeOperation = how === "erase" ? "destination-out" : "source-over";
-    c.beginPath();
-    path(c);
-    c.fillStyle = "#fff";
-    c.fill(rule);
-    c.restore();
+  path(pts: P2[], close = true) {
+    const g = this.g;
+    g.beginPath();
+    pts.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y)));
+    if (close) g.closePath();
   }
 
-  private stroke(path: Path, w: number, color: string) {
-    const c = this.c;
-    c.strokeStyle = color;
-    c.lineWidth = w;
-    c.save();
-    c.translate(this.shadowSide * w * 0.35, w * 0.12);
-    c.beginPath();
-    path(c);
-    c.stroke();
-    c.restore();
-    c.beginPath();
-    path(c);
-    c.stroke();
-  }
-
-  /** Filled shape with a near-black outline (~35 % thicker on the shadow side). */
-  shape(path: Path, fill: string | null, w = this.w) {
-    const c = this.c;
-    if (this.mode === "shade") return fill ? this.paint(path, "erase") : undefined;
-    if (this.mode === "ink") {
-      if (fill) this.paint(path, fill === CARD_INK ? "ink" : "erase");
-      return this.stroke(path, w, "#fff");
-    }
+  /** Filled polygon with a uniform outline (props, hats, details). */
+  poly(pts: P2[], fill: string | null, w = 0, col = INK) {
+    const g = this.g;
+    this.path(pts);
     if (fill) {
-      c.beginPath();
-      path(c);
-      c.fillStyle = fill;
-      c.fill();
+      g.fillStyle = fill;
+      g.fill();
     }
-    this.stroke(path, w, CARD_INK);
+    if (w > 0) {
+      g.strokeStyle = col;
+      g.lineWidth = w;
+      g.stroke();
+    }
   }
 
-  /** Thin warm band just inside the outline (dark skin / dark clothes), then the outline again on top. */
-  warmRim(path: Path) {
-    if (this.mode !== "color") return;
-    const c = this.c;
-    this.clip(path, () => {
-      c.strokeStyle = WARM_RIM;
-      c.lineWidth = this.w * 1.9;
-      c.beginPath();
-      path(c);
-      c.stroke();
-    });
-    this.stroke(path, this.w, CARD_INK);
+  /** Open stroke: 2 points = line, 3 = one smooth curve through the middle point, more = polyline. */
+  stroke(pts: P2[], w: number, col = INK, dash?: number[]) {
+    const g = this.g;
+    g.save();
+    g.strokeStyle = col;
+    g.lineWidth = w;
+    if (dash) g.setLineDash(dash);
+    g.beginPath();
+    g.moveTo(...pts[0]);
+    if (pts.length === 3) {
+      const [a, m, b] = pts;
+      g.quadraticCurveTo(2 * m[0] - (a[0] + b[0]) / 2, 2 * m[1] - (a[1] + b[1]) / 2, b[0], b[1]);
+    } else pts.slice(1).forEach((p) => g.lineTo(...p));
+    g.stroke();
+    g.restore();
   }
 
-  fill(path: Path, fill: string, rule: CanvasFillRule = "nonzero") {
-    if (this.mode !== "color") return this.paint(path, this.mode === "ink" && fill === CARD_INK ? "ink" : "erase", rule);
-    this.c.beginPath();
-    path(this.c);
-    this.c.fillStyle = fill;
-    this.c.fill(rule);
+  dot(x: number, y: number, r: number, col = INK) {
+    const g = this.g;
+    g.beginPath();
+    g.arc(x, y, r, 0, Math.PI * 2);
+    g.fillStyle = col;
+    g.fill();
   }
 
-  /** Ink stroke: 3 points = one smooth curve, otherwise a polyline (joints stay visible, e.g. knees and elbows). */
-  line(pts: [number, number][], w = this.w, color = CARD_INK, dash?: number[]) {
-    if (this.mode === "shade") return;
-    const c = this.c;
-    const ink = this.mode === "ink";
-    c.save();
-    if (ink && color !== CARD_INK) c.globalCompositeOperation = "destination-out";
-    c.strokeStyle = ink ? "#fff" : color;
-    c.lineWidth = w;
-    if (dash) c.setLineDash(dash);
-    c.beginPath();
-    c.moveTo(...pts[0]);
-    if (pts.length === 3) c.quadraticCurveTo(...pts[1], ...pts[2]);
-    else pts.slice(1).forEach((p) => c.lineTo(...p));
-    c.stroke();
-    c.restore();
+  /** Ellipse (or a chord-closed part a0..a1 deg) with optional fill and outline; rot in degrees. */
+  ell(x: number, y: number, rx: number, ry: number, fill: string | null, w = 0, a0 = 0, a1 = 360, rot = 0, col = INK) {
+    const g = this.g;
+    g.beginPath();
+    g.ellipse(x, y, rx, ry, rad(rot), rad(a0), rad(a1));
+    if (a1 - a0 < 360) g.closePath();
+    if (fill) {
+      g.fillStyle = fill;
+      g.fill();
+    }
+    if (w > 0) {
+      g.strokeStyle = col;
+      g.lineWidth = w;
+      g.stroke();
+    }
   }
 
-  poly(pts: [number, number][], w = this.w, color = CARD_INK) {
-    this.line(pts.length === 3 ? [pts[0], pts[1], pts[1], pts[2]] : pts, w, color);
+  /** Open elliptic arc stroke (degrees). */
+  arc(x: number, y: number, rx: number, ry: number, a0: number, a1: number, w: number, col = INK) {
+    const g = this.g;
+    g.beginPath();
+    g.ellipse(x, y, rx, ry, 0, rad(a0), rad(a1));
+    g.strokeStyle = col;
+    g.lineWidth = w;
+    g.stroke();
   }
 
-  dot(x: number, y: number, r: number, color = CARD_INK) {
-    const path: Path = (c) => c.arc(x, y, r, 0, Math.PI * 2);
-    if (this.mode !== "color") return this.mode === "ink" ? this.paint(path, color === CARD_INK ? "ink" : "erase") : undefined;
-    this.c.beginPath();
-    path(this.c);
-    this.c.fillStyle = color;
-    this.c.fill();
-  }
-
-  /** Run `fn` clipped to `path`. */
-  clip(path: Path, fn: () => void) {
-    this.c.save();
-    this.c.beginPath();
-    path(this.c);
-    this.c.clip();
+  /** Draw with a closed shape as clip. */
+  clip(pts: P2[], fn: () => void) {
+    const g = this.g;
+    g.save();
+    this.path(pts);
+    g.clip();
     fn();
-    this.c.restore();
+    g.restore();
   }
 
   /**
-   * Form shadow inside a clipped shape (shade mode only): a soft band ~25 % of the shape's width on the side away
-   * from the key (bbox minus the shape's ellipse shifted toward the light).
+   * Soft crescent shading over whatever is already drawn inside the shape: everything except a copy shifted toward
+   * the light by shift x R is multiplied by `m`, through a blur of soft x R (measured: flat to ~0.6R, falling to
+   * x0.88 at the far edge on heads; torsos broader, shift .55 / soft .18).
    */
-  crescent(cx: number, cy: number, rx: number, ry: number) {
-    if (this.mode !== "shade") return;
-    const c = this.c, [lx, ly] = this.light;
-    c.save();
-    c.filter = `blur(${Math.max(3, rx * 0.06)}px)`;
-    c.beginPath();
-    c.rect(cx - rx * 3, cy - ry * 3, rx * 6, ry * 6);
-    c.ellipse(cx + lx * rx * 0.5, cy + ly * ry * 0.5, rx, ry, 0, 0, Math.PI * 2);
-    c.fillStyle = "#fff";
-    c.fill("evenodd");
-    c.restore();
+  shade(pts: P2[], m: C3, R: number, shift = 0.3, soft = 0.09) {
+    const g = this.g, t = g.getTransform(), k = Math.hypot(t.a, t.b);
+    const dx = Math.cos(this.light) * shift * R, dy = Math.sin(this.light) * shift * R;
+    this.clip(pts, () => {
+      g.globalCompositeOperation = "multiply";
+      g.filter = `blur(${(soft * R * k).toFixed(1)}px)`;
+      g.beginPath();
+      g.rect(-2000, -2000, 5000, 5000);
+      pts.forEach(([x, y], i) => (i ? g.lineTo(x + dx, y + dy) : g.moveTo(x + dx, y + dy)));
+      g.closePath();
+      g.fillStyle = `rgb(${m.map((v) => Math.round(v * 255)).join(",")})`;
+      g.fill("evenodd");
+      g.filter = "none";
+      g.globalCompositeOperation = "source-over";
+    });
+  }
+
+  /** Flat fill + soft crescent on the side away from the light. */
+  shadedFill(pts: P2[], base: string, m: C3, R: number, shift = 0.3, soft = 0.09) {
+    this.poly(pts, base);
+    this.shade(pts, m, R, shift, soft);
+  }
+
+  /** Thick-thin ink ring: w(theta) = w0 (1 + K cos(theta - thick)), theta from the contour centroid. */
+  inkRing(pts: P2[], w0: number, thick = this.thick, k = INK_K, col = INK) {
+    const n = pts.length;
+    let cx = 0, cy = 0;
+    for (const [x, y] of pts) {
+      cx += x / n;
+      cy += y / n;
+    }
+    const out: P2[] = [], inn: P2[] = [];
+    pts.forEach((q, i) => {
+      const a = pts[(i + n - 1) % n], b = pts[(i + 1) % n];
+      let nx = b[1] - a[1], ny = a[0] - b[0];
+      const l = Math.hypot(nx, ny) || 1;
+      nx /= l;
+      ny /= l;
+      const h = 0.5 * w0 * (1 + k * Math.cos(Math.atan2(q[1] - cy, q[0] - cx) - thick));
+      out.push([q[0] + nx * h, q[1] + ny * h]);
+      inn.push([q[0] - nx * h, q[1] - ny * h]);
+    });
+    const g = this.g;
+    g.beginPath();
+    for (const r of [out, inn.reverse()]) {
+      r.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y)));
+      g.closePath();
+    }
+    g.fillStyle = col;
+    g.fill("evenodd");
+  }
+
+  /** Flat strap with a thin ink rim (belts, sashes, straps). */
+  band(pts: P2[], fill: string, w: number, rim: number) {
+    const g = this.g;
+    g.save();
+    g.lineCap = "butt";
+    this.path(pts, false);
+    g.strokeStyle = INK;
+    g.lineWidth = w + 2 * rim;
+    g.stroke();
+    this.path(pts, false);
+    g.strokeStyle = fill;
+    g.lineWidth = w;
+    g.stroke();
+    g.restore();
+  }
+
+  /** Thin light rim just inside the shadow-side edge (seen on about half the reference torsos). */
+  rimLight(pts: P2[], col: string, w: number, alpha = 0.55) {
+    const g = this.g, dx = Math.cos(this.light) * w, dy = Math.sin(this.light) * w;
+    this.clip(pts, () => {
+      g.beginPath();
+      g.rect(-2000, -2000, 5000, 5000);
+      pts.forEach(([x, y], i) => (i ? g.lineTo(x + dx, y + dy) : g.moveTo(x + dx, y + dy)));
+      g.closePath();
+      g.globalAlpha = alpha;
+      g.fillStyle = col;
+      g.fill("evenodd");
+      g.globalAlpha = 1;
+    });
+  }
+
+  /** Tapered stroke, thick end at a (brows, moustache halves). */
+  taper(a: P2, b: P2, wa: number, wb: number, col = INK) {
+    const dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1, nx = -dy / l, ny = dx / l;
+    this.poly([[a[0] + (nx * wa) / 2, a[1] + (ny * wa) / 2], [b[0] + (nx * wb) / 2, b[1] + (ny * wb) / 2],
+      [b[0] - (nx * wb) / 2, b[1] - (ny * wb) / 2], [a[0] - (nx * wa) / 2, a[1] - (ny * wa) / 2]], col);
+    this.dot(a[0], a[1], wa / 2, col);
+    this.dot(b[0], b[1], wb / 2, col);
   }
 }
 
-/** Body proportions. Fractions are of the total height `h` (sole to top of head, design px). */
-export type Build = {
-  h: number;
-  head: number;
-  /** Head height / width. */
-  aspect: number;
-  torso: number;
-  /** Torso half-width at the shoulders and at the hips, as fractions of head width (pear: hip > shoulder). */
-  shoulder: number;
-  hip: number;
-  /** 0..1: head pushed down and forward, knees bent (old age). */
-  stoop?: number;
-};
-
-export const BUILD_YOU: Build = { h: 840, head: 0.4, aspect: 0.98, torso: 0.3, shoulder: 0.2, hip: 0.31 };
-
-/** Body landmarks (design px, before pose) for a build. */
-export const rig = (b: Build) => {
-  const HH = b.h * b.head, HW = HH / b.aspect, top = DESIGN.SOLE - b.h;
-  const tTop = top + HH * 0.93, tBot = tTop + b.h * b.torso, th = tBot - tTop;
-  const sy = tTop + th * 0.2;
-  return {
-    HH,
-    HW,
-    head: { x: DESIGN.W / 2, y: top + HH / 2, k: HW / HEAD.W, ry: (HEAD.W / 2) * b.aspect },
-    torso: { top: tTop, bottom: tBot, rt: b.shoulder * HW, rb: b.hip * HW },
-    shoulder: { y: sy, dx: b.shoulder * HW * 0.9 },
-    hip: { y: tBot - th * 0.1, dx: Math.max(14, b.hip * HW * 0.36) },
-    ankle: { y: DESIGN.SOLE - 18, dx: Math.max(18, b.hip * HW * 0.42) },
-    /** Upper arm = forearm length. */
-    arm: ((tBot - sy) * 1.25) / 2,
-    hand: Math.max(18, HW * 0.085),
-  };
-};
-export type Rig = ReturnType<typeof rig>;
-
-/** Pear torso: narrow rounded shoulders, widest just above the hem. */
-export const pearPath = (cx: number, t: number, b: number, rt: number, rb: number): Path => (c) => {
-  const h = b - t;
-  c.moveTo(cx, t);
-  c.bezierCurveTo(cx + rt * 0.75, t, cx + rt, t + 0.06 * h, cx + rt * 1.04, t + 0.24 * h);
-  c.bezierCurveTo(cx + rt * 1.1, t + 0.42 * h, cx + rb, t + 0.5 * h, cx + rb, t + 0.76 * h);
-  c.bezierCurveTo(cx + rb, b - 0.02 * h, cx + rb * 0.55, b, cx, b);
-  c.bezierCurveTo(cx - rb * 0.55, b, cx - rb, b - 0.02 * h, cx - rb, t + 0.76 * h);
-  c.bezierCurveTo(cx - rb, t + 0.5 * h, cx - rt * 1.1, t + 0.42 * h, cx - rt * 1.04, t + 0.24 * h);
-  c.bezierCurveTo(cx - rt, t + 0.06 * h, cx - rt * 0.75, t, cx, t);
-};
+// ---------------------------------------------------------------- builds
 
 /**
- * A card: colour canvas at RES x the design size (1200x2000), a soft shade band at 1x and an ink mask at RES x, each
- * a mipmapped, anisotropic texture. `draw(mode, fn)` paints in design units.
+ * Body builds (characters.md 2.1): head half-width `a` (design px), chin -> torso bottom and legs in head heights,
+ * torso width in head widths. Adults 3.5 HH, stout 3.47, kids 2.85. `egg` widens the torso bottom (pear),
+ * `stoop` pushes the head forward and down (old age).
  */
+export type Build = { a: number; torso: number; legs: number; tw: number; egg?: number; stoop?: number };
+export const BUILD = {
+  adult: { a: 128, torso: 1.1, legs: 1.4, tw: 0.8 },
+  stout: { a: 128, torso: 1.15, legs: 1.32, tw: 0.92 },
+  kid: { a: 116, torso: 0.85, legs: 1.0, tw: 0.72 },
+} satisfies Record<string, Build>;
+
+/** One canvas per card at RES x the design size, mipmapped. `draw(fn)` paints in design units. */
 export const makeCanvas = () => {
-  const make = (res: number) => {
-    const canvas = document.createElement("canvas");
-    canvas.width = DESIGN.W * res;
-    canvas.height = DESIGN.H * res;
-    const ctx = canvas.getContext("2d")!;
-    const texture = new CanvasTexture(canvas);
-    texture.minFilter = LinearMipmapLinearFilter;
-    texture.magFilter = LinearFilter;
-    texture.anisotropy = 8;
-    return { canvas, ctx, texture, res };
-  };
-  const layers = { color: make(DESIGN.RES), shade: make(1), ink: make(DESIGN.RES) };
-  layers.color.texture.colorSpace = SRGBColorSpace;
-  const draw = (mode: PenMode, fn: (c: CanvasRenderingContext2D) => void) => {
-    const { ctx, canvas, texture, res } = layers[mode];
+  const canvas = document.createElement("canvas");
+  canvas.width = DESIGN.W * DESIGN.RES;
+  canvas.height = DESIGN.H * DESIGN.RES;
+  const ctx = canvas.getContext("2d")!;
+  const texture = new CanvasTexture(canvas);
+  texture.minFilter = LinearMipmapLinearFilter;
+  texture.magFilter = LinearFilter;
+  texture.anisotropy = 8;
+  texture.colorSpace = SRGBColorSpace;
+  const draw = (fn: (c: CanvasRenderingContext2D) => void) => {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.setTransform(res, 0, 0, res, 0, 0);
+    ctx.setTransform(DESIGN.RES, 0, 0, DESIGN.RES, 0, 0);
     fn(ctx);
     texture.needsUpdate = true;
   };
-  return { texture: layers.color.texture, shade: layers.shade.texture, ink: layers.ink.texture, draw };
+  return { texture, draw };
 };

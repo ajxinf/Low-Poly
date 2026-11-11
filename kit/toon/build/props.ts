@@ -237,7 +237,7 @@ export const trashBin = () => {
 /** Checkout counter; its lane light only glows when the power is on. */
 export const checkout = (lit = true) => {
   const k = new Kit();
-  k.box(MAT.color("#e8e4e0"), 2.2, 0.9, 0.8, 0, 0.45, 0);
+  k.box(MAT.color("#e4d8c4"), 2.2, 0.9, 0.8, 0, 0.45, 0);
   k.box(MAT.color("#3a3438"), 1.6, 0.04, 0.5, -0.2, 0.92, 0);
   k.box(MAT.color("#3a3438"), 0.4, 0.35, 0.3, 0.8, 1.1, 0);
   k.box(lit ? MAT.glow("#ffd24a", 2) : MAT.color("#8a7a4a"), 0.2, 0.2, 0.2, 0.9, 1.9, 0);
@@ -248,7 +248,7 @@ export const checkout = (lit = true) => {
 /** Hanging aisle sign. */
 export const aisleSign = (text: string) => {
   const k = new Kit();
-  k.add(M(`aisle${text}`, () => toonMaterial({ map: signTex(text, "#2a5a9a", "#ffffff") })), new BoxGeometry(1.6, 0.4, 0.05), 0, 0, 0);
+  k.add(M(`aisle${text}`, () => toonMaterial({ map: signTex(text, "#1f6f6a", "#fff6e8") })), new BoxGeometry(1.6, 0.4, 0.05), 0, 0, 0);
   for (const x of [-0.6, 0.6]) k.box(MAT.metal(), 0.02, 0.8, 0.02, x, 0.6, 0);
   return k.build();
 };

@@ -1,189 +1,200 @@
-import { Effects, Expr, drawFace } from "./face";
-import { Arm, Grip, Pose } from "./poses";
-import { Build, DESIGN, HEAD, Pen, Rig, isDark, pearPath, rig } from "./toon";
+import { drawFace, drawFill } from "./face";
+import type { Effects, Expr, Head } from "./face";
+import { REST } from "./poses";
+import type { Arm, Pose } from "./poses";
+import { CREAM, DESIGN, INK, INK_K, Pen, SH_CLOTH, SH_PALE, blobPts, clamp, headBlob, mix, rad } from "./toon";
+import type { Blob, Build, P2 } from "./toon";
 
-/** What a character looks like: build, colours and hooks for the parts that vary per character. */
+/**
+ * Body v2 (LOOK_SPEC section 1, characters.md 2.6 / 3 `bodyFrontV2`): bean torso widest low with a round bottom, its
+ * top hidden under the head (no neck); legs, arms and feet are single strokes in a darkened cloth colour; hands are
+ * ink dots; arms come out from behind the bean and hang outside it. Our pose library (poses.ts) drives the hands
+ * (2-bone IK, elbows bend outward), lifts, bob, sway, tilt, lean, shrug and squash.
+ */
+export type Torso = { pts: P2[]; cx: number; cy: number; a: number; b: number; top: number; bot: number; chin: number; u: number; HH: number; facing: number };
+
+/** What a character looks like. Heads are always cream (identity); variety comes from build, clothes, hair, hats. */
 export type Look = {
   build: Build;
-  skin: string;
-  boots: string;
-  /** Trouser hem band at the ankle (e.g. rolled jeans), optional. */
-  cuff?: [string, string];
-  /** Torso contents, called clipped to the torso (rig gives the torso box). */
-  outfit: (pen: Pen, r: Rig) => void;
-  /** Hair / hat in the head frame (head centre 0,0, HEAD.W wide, `ry` half-height), drawn before the face. */
-  hair: (pen: Pen, ry: number, look: number) => void;
-  /** Behind the head (buns, long hair). */
-  hairBack?: (pen: Pen, ry: number, look: number) => void;
+  /** Per-character seed: head shape, tilt, noise. */
+  seed: number;
+  jacket: string;
+  pants: string;
+  shoes: string;
+  /** Torso contents, drawn clipped to the bean before its shading. */
+  outfit?: (p: Pen, t: Torso) => void;
+  /** Hair or hat, after the head and before the face. */
+  hair?: (p: Pen, h: Head) => void;
+  /** Behind the head (buns). */
+  hairBack?: (p: Pen, h: Head) => void;
   /** Over the face (glasses, moustache). */
-  face?: (pen: Pen, ry: number, look: number) => void;
-  eyeScale?: number;
-  /** Dark clothes: thin warm rim inside the torso outline (dark skin gets one on the head automatically). */
-  darkClothes?: boolean;
-  /** Eye variety for extras: sleepy adds heavy upper lids to dot eyes. Glasses go in `face`. */
-  eyes?: "dot" | "sleepy";
+  face?: (p: Pen, h: Head) => void;
+  /** Brimmed hat: brows sit lower. */
+  brim?: boolean;
+  /** Light rim on the torso's shadow edge. */
+  rim?: boolean;
 };
 
 export type PropName = "phone" | "flashlight" | "box" | "can";
 export type CharState = { pose: Pose; expr: Expr; blink: boolean; fx: Effects; prop?: PropName };
 
-type Pt = [number, number];
-type Solved = { S: Pt; E: Pt; H: Pt; side: number; a: Arm };
+const { SOLE } = DESIGN;
+const CX = DESIGN.W / 2;
 
-/** 2-bone arm: shoulder S to hand target, elbow pushed outward-and-down (bend +1) or inward-and-up (-1). */
-const solveArm = (r: Rig, cx: number, sy: number, side: number, a: Arm): Solved => {
-  const L = r.arm;
-  const S: Pt = [cx + side * r.shoulder.dx, sy];
-  let H: Pt = [S[0] + side * a.at[0] * 2 * L, S[1] + a.at[1] * 2 * L];
-  let dx = H[0] - S[0], dy = H[1] - S[1];
-  let d = Math.hypot(dx, dy);
-  if (d > 2 * L * 0.995) {
-    const k = (2 * L * 0.995) / d;
+/** Landmarks for a look in a pose (design px). Total height = (1 + torso + legs) head heights. */
+export const layout = (look: Look, pose: Pose = REST) => {
+  const B = look.build, facing = clamp(pose.look, -1, 1), stoop = B.stoop ?? 0;
+  const H = headBlob(look.seed, B.a, facing), W = 2 * H.a, HH = 2 * H.b, u = W / 100;
+  const torsoBot = SOLE - B.legs * HH - pose.bob;
+  const chin = torsoBot - B.torso * HH;
+  const fwd = facing < 0 ? -1 : 1;
+  const hx = CX + stoop * 0.1 * W * fwd;
+  const hc = chin - H.b + stoop * 0.1 * HH + (pose.lean ?? 0) * 0.08 * HH - (pose.shrug ?? 0) * 0.3;
+  return { H, W, HH, u, torsoBot, chin, hx, hc, facing, fwd, stoop };
+};
+
+/** Head centre above the soles (m), standing at rest. */
+export const headHeight = (look: Look) => (SOLE - layout(look).hc) / DESIGN.PX_PER_M;
+
+/** Acceptance numbers (LOOK_SPEC section 4) from the same geometry that is drawn. */
+export const measureLook = (look: Look) => {
+  const L = layout(look);
+  const pts = blobPts(0, 0, { ...L.H, rot: 0 });
+  const xs = pts.map((q) => q[0]), ys = pts.map((q) => q[1]);
+  const hh = Math.max(...ys) - Math.min(...ys), hw = Math.max(...xs) - Math.min(...xs);
+  return { heads: (SOLE - (L.hc + Math.min(...ys))) / hh, hw: hh / hw, thickThin: (1 + INK_K) / (1 - INK_K), meters: (SOLE - L.hc + hh / 2) / DESIGN.PX_PER_M };
+};
+
+type Solved = { S: P2; E: P2; H: P2; side: number; a: Arm; front: boolean };
+
+/** 2-bone arm from shoulder S: hand target in arm lengths (x outward, y down), elbow out-and-down (bend +1). */
+const solveArm = (S: P2, side: number, a: Arm, half: number): Omit<Solved, "front"> => {
+  let H: P2 = [S[0] + side * a.at[0] * 2 * half, S[1] + a.at[1] * 2 * half];
+  let dx = H[0] - S[0], dy = H[1] - S[1], d = Math.hypot(dx, dy);
+  const max = 2 * half * 0.995;
+  if (d > max) {
+    const k = max / d;
     H = [S[0] + dx * k, S[1] + dy * k];
     dx *= k;
     dy *= k;
-    d = 2 * L * 0.995;
+    d = max;
   }
-  const ux = dx / d, uy = dy / d, h = Math.sqrt(Math.max(L * L - (d / 2) ** 2, 0));
-  const mid: Pt = [S[0] + dx / 2, S[1] + dy / 2];
-  let E: Pt = [mid[0] - uy * h, mid[1] + ux * h];
-  const out = [side * 0.5, 1], b = a.bend ?? 1; // elbows hang down and a little out
-  if (((E[0] - mid[0]) * out[0] + (E[1] - mid[1]) * out[1]) * b < 0) E = [mid[0] + uy * h, mid[1] - ux * h];
+  const ux = dx / d, uy = dy / d, h = Math.sqrt(Math.max(half * half - (d / 2) ** 2, 0));
+  const mid: P2 = [S[0] + dx / 2, S[1] + dy / 2];
+  let E: P2 = [mid[0] - uy * h, mid[1] + ux * h];
+  if (((E[0] - mid[0]) * side * 0.5 + (E[1] - mid[1])) * (a.bend ?? 1) < 0) E = [mid[0] + uy * h, mid[1] - ux * h];
   return { S, E, H, side, a };
 };
 
-/** Mitten with a thumb, rotated along the forearm. */
-const mitten = (pen: Pen, r: Rig, cx: number, s: Solved, skin: string) => {
-  const c = pen.c, R = r.hand, grip: Grip = s.a.grip ?? "mitt";
-  const th = Math.atan2(s.H[1] - s.E[1], s.H[0] - s.E[0]);
-  // Thumb on the side facing the body centre (or up).
-  const px = -Math.sin(th), py = Math.cos(th);
-  const ts = px * Math.sign(cx - s.H[0] || 1) - py * 0.5 > 0 ? 1 : -1;
-  c.save();
-  c.translate(...s.H);
-  c.rotate(th);
-  const el = (x: number, y: number, rx: number, ry: number, rot = 0) => (q: CanvasRenderingContext2D) => q.ellipse(x, y, rx, ry, rot, 0, Math.PI * 2);
+/** Ink-dot hand; pointing adds one finger stroke along the forearm. */
+const hand = (p: Pen, s: Solved, u: number) => {
+  const grip = s.a.grip ?? "mitt";
+  p.dot(s.H[0], s.H[1], (grip === "open" ? 6.5 : 5.5) * u);
   if (grip === "point") {
-    pen.shape((q) => q.roundRect(R * 0.2, -R * 0.3, R * 2.1, R * 0.6, R * 0.3), skin);
-    pen.shape(el(R * 0.1, 0, R * 0.95, R * 0.85), skin);
-    pen.shape(el(R * 0.3, ts * R * 0.7, R * 0.45, R * 0.3, ts * 0.5), skin);
-  } else {
-    const spread = grip === "open" ? 1 : grip === "fist" ? 0 : 0.5;
-    const open = grip === "open" ? 1.25 : 1;
-    pen.shape(el(R * 0.45 * open, 0, R * (grip === "fist" ? 0.95 : 1.15) * open, R * 0.88 * open), skin);
-    if (grip === "open") for (const y of [-0.3, 0.12]) pen.line([[R * 1.15, y * R], [R * 1.75, y * R * 1.2]], pen.w * 0.55);
-    // Thumb on top, so it reads at phone size.
-    pen.shape(el(R * (0.15 + spread * 0.25), ts * R * (0.72 + spread * 0.35) * open, R * 0.48, R * 0.3, ts * (0.4 + spread * 0.7)), skin);
+    const l = Math.hypot(s.H[0] - s.E[0], s.H[1] - s.E[1]) || 1;
+    p.stroke([s.H, [s.H[0] + ((s.H[0] - s.E[0]) / l) * 10 * u, s.H[1] + ((s.H[1] - s.E[1]) / l) * 10 * u]], 3 * u);
   }
-  c.restore();
 };
 
-const PROP_COLORS = { box: "#c8975a", tape: "#e6cf98", can: "#c0c4c8", label: "#c8423a" };
-
-const drawProp = (pen: Pen, name: PropName | undefined, arms: Solved[]) => {
+const drawProp = (p: Pen, name: CharState["prop"], arms: Solved[], u: number) => {
   if (!name) return;
-  const [l, rr] = [arms[0].H, arms[1].H];
-  const mx = (l[0] + rr[0]) / 2, my = (l[1] + rr[1]) / 2;
+  const [l, r] = [arms[0].H, arms[1].H], mx = (l[0] + r[0]) / 2, my = (l[1] + r[1]) / 2, w = 3 * u;
+  const rect = (x: number, y: number, rw: number, rh: number): P2[] => [[x, y], [x + rw, y], [x + rw, y + rh], [x, y + rh]];
   if (name === "box") {
-    const w = Math.max(Math.abs(rr[0] - l[0]) - 10, 120);
-    pen.shape((c) => c.rect(mx - w / 2, my - 70, w, 100), PROP_COLORS.box);
-    pen.fill((c) => c.rect(mx - 10, my - 70, 20, 100), PROP_COLORS.tape);
-    pen.line([[mx - w / 2, my - 46], [mx + w / 2, my - 46]], pen.w * 0.4);
+    const bw = Math.max(Math.abs(r[0] - l[0]) - 4 * u, 44 * u);
+    p.poly(rect(mx - bw / 2, my - 26 * u, bw, 36 * u), "#d8a868", w);
+    p.poly(rect(mx - 4 * u, my - 26 * u, 8 * u, 36 * u), "#f0dca8");
+    p.stroke([[mx - bw / 2, my - 17 * u], [mx + bw / 2, my - 17 * u]], 1.6 * u);
   } else if (name === "can") {
-    pen.shape((c) => c.roundRect(mx - 32, my - 56, 64, 84, 8), PROP_COLORS.can);
-    pen.fill((c) => c.rect(mx - 32, my - 38, 64, 46), PROP_COLORS.label);
-    pen.line([[mx - 32, my - 38], [mx + 32, my - 38]], pen.w * 0.4);
-    pen.line([[mx - 32, my + 8], [mx + 32, my + 8]], pen.w * 0.4);
+    p.poly(rect(mx - 11 * u, my - 22 * u, 22 * u, 30 * u), "#c9ced4", w);
+    p.poly(rect(mx - 11 * u, my - 15 * u, 22 * u, 16 * u), "#3a8ad8");
+    p.dot(mx + 2 * u, my - 7 * u, 4 * u, "#f2c84a");
+    p.poly(rect(mx - 11 * u, my - 22 * u, 22 * u, 30 * u), null, w);
+  } else if (name === "phone") {
+    const [hx, hy] = r;
+    p.poly(rect(hx - 8 * u, hy - 24 * u, 16 * u, 27 * u), "#3a3048", w);
+    p.poly(rect(hx - 5.5 * u, hy - 21 * u, 11 * u, 19 * u), "#9fd8ff");
   } else {
-    const [hx, hy] = rr;
-    if (name === "phone") {
-      pen.shape((c) => c.roundRect(hx - 22, hy - 62, 44, 74, 9), "#25242a");
-      pen.fill((c) => c.roundRect(hx - 15, hy - 55, 30, 52, 4), "#9fd8ff");
-    } else {
-      pen.shape((c) => c.roundRect(hx - 14, hy - 78, 28, 88, 8), "#3a3438");
-      pen.shape((c) => c.roundRect(hx - 20, hy - 92, 40, 22, 6), "#ffe7a0");
-    }
+    const [hx, hy] = r;
+    p.poly(rect(hx - 5 * u, hy - 30 * u, 10 * u, 34 * u), "#4a4058", w);
+    p.poly(rect(hx - 7.5 * u, hy - 36 * u, 15 * u, 8 * u), "#ffe7a0", w);
   }
 };
 
-/** Draws a whole character: legs, torso and outfit, arms with elbows and mittens, head, hair and face. */
-export const drawPerson = (pen: Pen, look: Look, s: CharState) => {
-  const c = pen.c, r = rig(look.build), p = s.pose, cx = DESIGN.W / 2;
-  const stoop = look.build.stoop ?? 0;
-  const sq = (p.squash ?? 0) * 0.08;
-  c.save();
-  c.translate(cx, DESIGN.SOLE);
-  c.scale(1 + sq, 1 - sq);
-  c.translate(-cx, -DESIGN.SOLE);
+/** Draws a whole character (front view): legs, back arms, torso + clothing, props, front arms, head, face. */
+export const drawPerson = (p: Pen, look: Look, s: CharState) => {
+  const g = p.g, pose = s.pose, L = layout(look, pose), B = look.build;
+  const { H, W, HH, u, torsoBot, chin, facing, fwd, stoop } = L;
+  const ow = 5 * u;
+  const sq = (pose.squash ?? 0) * 0.08;
+  g.save();
+  g.translate(CX, SOLE);
+  g.scale(1 + sq, 1 - sq);
+  g.translate(-CX, -SOLE);
 
-  // Legs: short sticks with a slight outward knee bend; small shoes.
-  const hipY = r.hip.y - p.bob + stoop * 10;
-  [-1, 1].forEach((side, i) => {
-    const lift = p.lift[i];
-    const hx = cx + side * r.hip.dx, ax = cx + side * (r.ankle.dx - lift * 0.2), ay = r.ankle.y - lift;
-    const kx = (hx + ax) / 2 + side * (5 + (p.knee ?? 0) + stoop * 8 + lift * 0.35), ky = (hipY + ay) / 2 - lift * 0.15;
-    pen.poly([[hx, hipY], [kx, ky], [ax, ay]]);
-    if (look.cuff) {
-      const cuff = (q: CanvasRenderingContext2D) => q.roundRect(ax - 16, ay - 26, 32, 18, 5);
-      pen.shape(cuff, look.cuff[0]);
-      pen.line([[ax - 14, ay - 18], [ax + 14, ay - 18]], pen.w * 0.3, look.cuff[1]);
-    }
-    pen.shape((q) => q.roundRect(ax - (side < 0 ? 30 : 12), ay - 6, 42, 22, [11, 13, 6, 6]), look.boots);
+  // Legs: single thin strokes from the hips, slight bow, A-stance; feet = short outward strokes.
+  const legCol = mix(look.pants, INK, 0.55), footCol = mix(look.shoes, INK, 0.3);
+  ([-1, 1] as const).forEach((side, i) => {
+    const lift = pose.lift[i];
+    const hx = CX + side * 15 * u, hy = torsoBot - 0.12 * HH;
+    const fx = CX + side * (22 * u - lift * 0.15), fy = SOLE - 4 * u - lift;
+    const bow = side * (1.5 * u + (pose.knee ?? 0) * 0.35 + lift * 0.25 + stoop * 3 * u);
+    p.stroke([[hx, hy], [(hx + fx) / 2 + bow, (hy + fy) / 2], [fx, fy]], 5.8 * u, legCol);
+    const drop = lift > 2 ? 0.35 : 0; // the toe drops while the foot is off the ground
+    p.stroke([[fx, fy], [fx + side * 16 * u * Math.cos(drop), fy + 0.5 * u + 16 * u * Math.sin(drop)]], 7.5 * u, footCol);
   });
 
   // Upper body pivots around the hips.
-  c.save();
-  c.translate(cx, hipY);
-  c.rotate((p.sway * Math.PI) / 180);
-  c.translate(-cx, r.hip.y * -1);
-  const sy = r.shoulder.y - (p.shrug ?? 0);
-  const arms = p.arms.map((a, i) => solveArm(r, cx, sy, i === 0 ? -1 : 1, a));
-  const drawArms = (layer: Arm["layer"]) =>
-    arms
-      .filter((a) => a.a.layer === layer)
-      .forEach((a) => {
-        pen.poly([a.S, a.E, a.H]);
-        mitten(pen, r, cx, a, look.skin);
-      });
-
-  drawArms("back");
-  const { top, bottom, rt, rb } = r.torso;
-  const torso = pearPath(cx, top, bottom, rt, rb);
-  pen.shape(torso, "#000");
-  pen.clip(torso, () => {
-    look.outfit(pen, r);
-    pen.crescent(cx, (top + bottom) / 2, rb, (bottom - top) / 2);
+  g.save();
+  g.translate(CX, torsoBot);
+  g.rotate(rad(pose.sway + stoop * 4 * fwd));
+  g.translate(-CX, -torsoBot);
+  const T: Blob = { a: ((B.tw / 2) * W) / 1.06, b: 0.5 * (torsoBot - (chin - 0.25 * HH)), nTop: 2.2, nBot: 2.6, egg: 0.12 + (B.egg ?? 0), asym: 0.04 * facing, rot: 0, noise: 0.006, seed: look.seed + 7 };
+  const tcx = CX + 3 * u * facing, tcy = torsoBot - T.b, tp = blobPts(tcx, tcy, T);
+  const sy = chin + 0.12 * HH - (pose.shrug ?? 0);
+  const arms: Solved[] = pose.arms.map((a, i) => {
+    const side = i === 0 ? -1 : 1;
+    const r = solveArm([tcx + side * 0.85 * T.a, sy], side, a, 0.475 * HH);
+    // A hand inside the bean's outline is in front of the body (crossed arms, holding a prop).
+    const front = !!s.prop || Math.abs(r.H[0] - tcx) < T.a * 0.9;
+    return { ...r, front };
   });
-  if (look.darkClothes) pen.warmRim(torso);
-  else pen.shape(torso, null);
-  drawProp(pen, s.prop, arms);
-  drawArms(undefined);
+  const armCol = mix(look.jacket, INK, 0.5);
+  const drawArm = (a: Solved) => {
+    p.stroke([a.S, a.E, a.H], 5.2 * u, armCol);
+    hand(p, a, u);
+  };
+  arms.filter((a) => !a.front && a.a.layer !== "front").forEach(drawArm);
 
-  // Head frame: centre (0,0), HEAD.W wide; ink width kept constant on the card.
-  const lean = p.lean ?? 0;
-  const k = r.head.k * (1 + lean * 0.07);
-  const ry = r.head.ry;
-  c.save();
-  c.translate(r.head.x, r.head.y + lean * 22 + stoop * 26 - (p.shrug ?? 0) * 0.4);
-  c.rotate((((p.tilt ?? 0) + stoop * 5) * Math.PI) / 180);
-  c.scale(k, k);
-  const w0 = pen.w;
-  pen.w = w0 / k;
-  look.hairBack?.(pen, ry, p.look);
-  const head = (q: CanvasRenderingContext2D) => q.ellipse(0, 0, HEAD.W / 2, ry, 0, 0, Math.PI * 2);
-  pen.shape(head, look.skin);
-  pen.clip(head, () => pen.crescent(0, 0, HEAD.W / 2, ry));
-  if (isDark(look.skin)) pen.warmRim(head);
-  else pen.shape(head, null);
-  look.hair(pen, ry, p.look);
-  pen.occlude = false;
-  drawFace(pen, s.expr, { look: p.look, blink: s.blink, fx: s.fx, skin: look.skin, eyeScale: look.eyeScale, sleepy: look.eyes === "sleepy", ry });
-  look.face?.(pen, ry, p.look);
-  pen.occlude = true;
-  pen.w = w0;
-  c.restore();
+  p.poly(tp, look.jacket);
+  const torso: Torso = { pts: tp, cx: tcx, cy: tcy, a: T.a, b: T.b, top: chin - 0.25 * HH, bot: torsoBot, chin, u, HH, facing };
+  if (look.outfit) p.clip(tp, () => look.outfit!(p, torso));
+  p.shade(tp, SH_CLOTH, T.a, 0.55, 0.18);
+  if (look.rim) p.rimLight(tp, mix(look.jacket, "#ffffff", 0.45), 2 * u);
+  p.inkRing(tp, ow);
+  drawProp(p, s.prop, arms, u);
+  arms.filter((a) => a.front && a.a.layer !== "front").forEach(drawArm);
 
-  drawArms("front");
-  c.restore();
-  c.restore();
+  // Head: tilts around the chin with its own random rot; hair, face and hats are drawn in the rotated frame.
+  const k = 1 + (pose.lean ?? 0) * 0.07;
+  g.save();
+  g.translate(L.hx, chin);
+  g.rotate(rad((pose.tilt ?? 0) + stoop * 5 * fwd) + H.rot);
+  g.scale(k, k);
+  g.translate(-L.hx, -chin);
+  const hp = blobPts(L.hx, L.hc, { ...H, rot: 0 });
+  const head: Head = { cx: L.hx, cy: L.hc, a: H.a, b: H.b, W, u, pts: hp, facing, look: pose.look };
+  look.hairBack?.(p, head);
+  p.poly(hp, CREAM);
+  drawFill(p, head, s.fx);
+  p.shade(hp, SH_PALE, H.a);
+  p.inkRing(hp, ow);
+  look.hair?.(p, head);
+  drawFace(p, head, s.expr, { blink: s.blink, fx: s.fx, brim: look.brim });
+  look.face?.(p, head);
+  g.restore();
+
+  arms.filter((a) => a.a.layer === "front").forEach(drawArm);
+  g.restore();
+  g.restore();
 };

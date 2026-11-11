@@ -1,118 +1,108 @@
-import { CharState, Look, drawPerson } from "./figure";
-import { BUILD_YOU, Pen } from "./toon";
+import { drawPerson } from "./figure";
+import type { CharState, Look, Torso } from "./figure";
+import type { Head } from "./face";
+import { BUILD, INK, Pen, SH_HAIR, clamp, mul } from "./toon";
+import type { P2 } from "./toon";
 
 export { EXPRESSIONS } from "./face";
 export type { Effects, Expr } from "./face";
 export type { PropName } from "./figure";
 
-/** The protagonist ("you"): same card in every video. Costumes are overlays that keep the quiff and a rust accent. */
+/**
+ * The protagonist ("you", LOOK_SPEC section 2): the same character in every video. Rust-orange jacket #c8582c (the
+ * channel's signature accent) open over a striped charcoal tee, jeans, brown shoes; a tall forward quiff with one
+ * cowlick that reads in pure silhouette. Darks stay at L* >= 19 (hair and tee are coloured darks, not black).
+ */
 export const YOU = {
-  skin: "#f4ece0",
-  hair: "#211915",
-  hairLight: "#4a3830",
-  jacket: "#a8502c",
-  jacketDark: "#7e3a20",
-  jacketLight: "#bd6238",
-  stitch: "#5a2410",
-  tee: "#2e2f30",
-  teeStripe: "#4a4c50",
+  hair: "#43302a",
+  hairLight: "#6e4c3c",
+  jacket: "#c8582c",
+  jacketLight: "#dc7448",
+  stitch: "#7a2e14",
+  tee: "#3c3e46",
+  teeStripe: "#585c66",
   jeans: "#33456b",
-  jeansLight: "#5a76a6",
-  thread: "#c8904e",
-  boots: "#5a3a26",
+  shoes: "#5a3a26",
 };
 
-const outfit: Look["outfit"] = (pen, r) => {
-  const { top: t, bottom: b, rb } = r.torso, cx = 300, h = b - t, W = rb + 24, w = pen.w;
-  const hem = t + h * 0.74;
-  // Striped charcoal tee.
-  pen.fill((c) => c.rect(cx - W, t - 10, 2 * W, h + 20), YOU.tee);
-  for (let y = t + 8; y < hem; y += 24) pen.fill((c) => c.rect(cx - W, y, 2 * W, 10), YOU.teeStripe);
-  // Jeans below the jacket: fly seam and thread-coloured pocket stitching.
-  pen.fill((c) => c.rect(cx - W, hem, 2 * W, b - hem + 20), YOU.jeans);
-  pen.line([[cx + 6, hem + 4], [cx + 6, b - 14], [cx - 8, b - 4]], w * 0.35, "rgba(20,20,40,0.7)");
-  for (const s of [-1, 1]) pen.line([[cx + s * rb * 0.9, hem + 8], [cx + s * rb * 0.55, hem + 22], [cx + s * rb * 0.35, hem + 6]], w * 0.3, YOU.thread, [5, 5]);
-  // Jacket: two panels zipped from the hem up to a V at the chest.
-  const vY = t + h * 0.4;
-  for (const s of [-1, 1]) {
-    const panel = (c: CanvasRenderingContext2D) => {
-      c.moveTo(cx + s * 3, vY);
-      c.lineTo(cx + s * 30, t - 10);
-      c.lineTo(cx + s * W, t - 10);
-      c.lineTo(cx + s * W, hem);
-      c.lineTo(cx + s * 3, hem);
-    };
-    pen.fill(panel, YOU.jacket);
-    pen.line([[cx + s * 3, vY], [cx + s * 30, t - 10]], w * 0.5);
-    // Stitching inset along the front edge and the shoulder seam.
-    pen.line([[cx + s * 13, hem - 26], [cx + s * 13, vY + 6], [cx + s * 36, t + 6]], w * 0.28, YOU.stitch, [6, 6]);
-    pen.line([[cx + s * 48, t + 2], [cx + s * (r.torso.rt + 6), t + h * 0.2]], w * 0.3, YOU.stitch, [6, 6]);
-    // Patch pocket with a flap.
-    const px = cx + s * rb * 0.5, py = hem - h * 0.26;
-    const pocket = (c: CanvasRenderingContext2D) => c.roundRect(px - 24, py, 48, h * 0.2, [3, 3, 8, 8]);
-    pen.shape(pocket, YOU.jacket, w * 0.45);
-    pen.line([[px - 18, py + 6], [px - 18, py + h * 0.2 - 6], [px + 18, py + h * 0.2 - 6], [px + 18, py + 6]], w * 0.25, YOU.stitch, [4, 4]);
-    pen.shape((c) => c.roundRect(px - 26, py - 4, 52, 16, [4, 4, 8, 8]), YOU.jacketDark, w * 0.45);
-  }
-  // Ribbed waistband.
-  pen.shape((c) => c.rect(cx - W, hem - 20, 2 * W, 20), YOU.jacketDark, w * 0.5);
-  for (let x = cx - W + 8; x < cx + W; x += 12) pen.line([[x, hem - 16], [x, hem - 4]], w * 0.2, YOU.stitch);
-  // Zip line with teeth and a pull at the V.
-  pen.line([[cx, vY], [cx, hem]], w * 0.45);
-  for (let y = vY + 10; y < hem - 22; y += 9) pen.line([[cx - 4, y], [cx + 4, y]], w * 0.18, "#d8c8a8");
-  pen.shape((c) => c.roundRect(cx - 7, vY - 2, 14, 24, 4), "#d8c8a8", w * 0.35);
-  // Collar: two pointed flaps standing over the shoulders.
-  for (const s of [-1, 1])
-    pen.shape((c) => {
-      c.moveTo(cx + s * 22, t - 8);
-      c.quadraticCurveTo(cx + s * 60, t - 4, cx + s * (r.torso.rt + 14), t + 12);
-      c.lineTo(cx + s * 52, t + h * 0.3);
-      c.quadraticCurveTo(cx + s * 34, t + h * 0.12, cx + s * 22, t - 8);
-    }, YOU.jacketLight, w * 0.5);
-};
+const rect = (x: number, y: number, w: number, h: number): P2[] => [[x, y], [x + w, y], [x + w, y + h], [x, y + h]];
 
-/** Tall swept quiff with one cowlick up and forward; short sideburns. Drawn in the head frame. */
-const HAIR = (c: CanvasRenderingContext2D) => {
-  c.moveTo(-168, -62);
-  c.bezierCurveTo(-188, -142, -152, -202, -92, -206);
-  c.bezierCurveTo(-72, -262, -12, -300, 48, -290);
-  c.quadraticCurveTo(84, -318, 132, -352); // cowlick tip, up and forward
-  c.quadraticCurveTo(108, -304, 94, -278);
-  c.bezierCurveTo(134, -260, 172, -200, 174, -122);
-  c.quadraticCurveTo(178, -82, 168, -58);
-  c.quadraticCurveTo(150, -70, 140, -104);
-  c.quadraticCurveTo(110, -128, 70, -124);
-  c.quadraticCurveTo(40, -150, 8, -130);
-  c.quadraticCurveTo(-30, -148, -66, -128);
-  c.quadraticCurveTo(-110, -140, -138, -108);
-  c.quadraticCurveTo(-152, -82, -168, -62);
-};
-
-const hair: Look["hair"] = (pen, _ry, look) => {
-  const c = pen.c;
-  c.save();
-  c.translate(look * 6, 0);
-  pen.shape(HAIR, YOU.hair);
-  pen.clip(HAIR, () => {
-    pen.crescent(0, -150, 200, 160);
-    for (const [a, m, e] of [
-      [[-140, -160], [-80, -240], [30, -276]],
-      [[-70, -146], [10, -226], [92, -262]],
-      [[20, -140], [100, -190], [150, -170]],
-    ] as [number, number][][])
-      pen.line([a, m, e], pen.w * 0.5, YOU.hairLight);
+/** Open jacket over a striped tee, jeans below the hem. Clipped to the torso bean by the caller. */
+const outfit = (p: Pen, t: Torso) => {
+  const { cx, top, bot, chin, u, a } = t, h = bot - top, hem = top + h * 0.84, line = 1.8 * u;
+  const band: P2[] = [[cx - 17 * u, top], [cx + 17 * u, top], [cx + 9 * u, hem], [cx - 9 * u, hem]];
+  p.poly(band, YOU.tee);
+  p.clip(band, () => {
+    for (let y = chin + 3 * u; y < hem; y += 7 * u) p.poly(rect(cx - 20 * u, y, 40 * u, 3 * u), YOU.teeStripe);
   });
-  c.restore();
+  p.poly(rect(cx - 2 * a, hem, 4 * a, bot - hem + 10 * u), YOU.jeans);
+  p.stroke([[cx - 2 * a, hem], [cx + 2 * a, hem]], line);
+  for (const s of [-1, 1]) {
+    p.stroke([[cx + s * 17 * u, top], [cx + s * 9 * u, hem]], line);
+    // Stitching inset along the front edge.
+    p.stroke([[cx + s * 22 * u, chin + 14 * u], [cx + s * 14 * u, hem - 3 * u]], 0.8 * u, YOU.stitch, [2.2 * u, 2 * u]);
+    // Patch pocket with a flap.
+    const px = cx + s * 0.55 * a, py = hem - 0.3 * h;
+    p.poly(rect(px - 9 * u, py, 18 * u, 15 * u), YOU.jacket, 1.4 * u);
+    p.stroke([[px - 6.5 * u, py + 3 * u], [px - 6.5 * u, py + 12.5 * u], [px + 6.5 * u, py + 12.5 * u], [px + 6.5 * u, py + 3 * u]], 0.8 * u, YOU.stitch, [2 * u, 1.8 * u]);
+    p.poly(rect(px - 10 * u, py - 2 * u, 20 * u, 6 * u), mul(YOU.jacket, [0.8, 0.8, 0.8]), 1.4 * u);
+    // Collar flaps standing over the shoulders.
+    p.poly([[cx + s * 12 * u, chin - 4 * u], [cx + s * 36 * u, chin + 2 * u], [cx + s * 21 * u, chin + 17 * u]], YOU.jacketLight, line);
+  }
+  // Zip on the left edge: teeth and a pull.
+  for (let y = chin + 22 * u; y < hem - 4 * u; y += 3.4 * u) {
+    const x = cx - 17 * u + ((y - top) / (hem - top)) * 8 * u;
+    p.stroke([[x - 1.2 * u, y], [x + 1.2 * u, y]], 0.7 * u, "#e8d8b8");
+  }
+  p.poly(rect(cx - 12.5 * u, chin + 16 * u, 4 * u, 7 * u), "#e8d8b8", 0.9 * u);
+};
+
+/**
+ * Hair: a cap down to just above the brows with short sideburns, lifted into a tall quiff that sweeps forward
+ * (toward the facing side; slightly right when facing the lens), plus one cowlick curling up and forward.
+ */
+const hair = (p: Pen, h: Head) => {
+  const { cx, cy, a, b, u, pts } = h;
+  const d = clamp(h.facing * 3 + 0.8, -1, 1);
+  const lim = (x: number) => cy - 0.62 * b + 0.42 * b * Math.abs((x - cx) / a) ** 3;
+  const n = pts.length, cap: P2[] = [];
+  for (let i = n / 2; i <= n; i++) {
+    const [x, y] = pts[i % n];
+    if (y >= lim(x)) continue;
+    // Lift profile: steep in front, long slope behind, so the crown sweeps up into a forward peak.
+    const dx = (x - cx) / a - 0.42 * d, w = dx * d > 0 ? 0.26 : 0.95;
+    const k = Math.exp(-((dx / w) ** 2)) * clamp((cy - 0.3 * b - y) / (0.45 * b), 0, 1);
+    cap.push([cx + (x - cx) * 1.04 + 0.42 * a * d * k, cy + (y - cy) * 1.04 - 0.6 * b * k]);
+  }
+  const xr = cap[cap.length - 1][0], xl = cap[0][0];
+  for (let i = 1; i < 8; i++) {
+    const x = xr + ((xl - xr) * i) / 8;
+    cap.push([x, lim(x) + (i % 2 ? 2.4 * u : 0)]);
+  }
+  // Cowlick from the peak, curling up and forward; drawn first so the cap's outline crosses its root.
+  const peak = cap.reduce((m, q) => (q[1] < m[1] ? q : m));
+  const root: P2 = [peak[0] - 0.06 * a * d, peak[1] + 0.12 * b];
+  const mid: P2 = [peak[0] + 0.1 * a * d, peak[1] - 0.26 * b], tip: P2 = [peak[0] + 0.38 * a * d, peak[1] - 0.3 * b];
+  p.stroke([root, mid, tip], 7.5 * u, INK);
+  p.stroke([root, mid, tip], 3.6 * u, YOU.hair);
+  p.shadedFill(cap, YOU.hair, SH_HAIR, a);
+  p.clip(cap, () => {
+    for (const s of [-0.75, -0.4, -0.05])
+      p.stroke([[cx + s * a, cy - 0.62 * b], [cx + (s + 0.45 * d) * a, cy - 1.1 * b], [peak[0] - 0.12 * a * d, peak[1] + 0.12 * b]], 1.6 * u, YOU.hairLight);
+  });
+  p.inkRing(cap, 0.85 * 5 * u);
 };
 
 export const youLook: Look = {
-  build: BUILD_YOU,
-  skin: YOU.skin,
-  boots: YOU.boots,
-  cuff: [YOU.jeansLight, YOU.jeans],
+  build: BUILD.adult,
+  seed: 1,
+  jacket: YOU.jacket,
+  pants: YOU.jeans,
+  shoes: YOU.shoes,
   outfit,
   hair,
+  rim: true,
 };
 
 /** Full protagonist card drawing. */
-export const drawYou = (pen: Pen, s: CharState) => drawPerson(pen, youLook, s);
+export const drawYou = (p: Pen, s: CharState) => drawPerson(p, youLook, s);

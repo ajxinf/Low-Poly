@@ -193,8 +193,9 @@ export const windowLook = (kind: WindowLook, frame = "#e8dcc4", curtain = "#c260
   });
 
 /**
- * Grimy interior wall, whole wall height in one texture (use repeat [0.5, 1 / height]): warm off-white, a darker
- * kick band at the floor, trolley scuffs, a coloured stripe at 1.2 m, drips under the ceiling.
+ * Grimy interior wall, whole wall height in one texture (use repeat [0.5, 1 / height]): warm off-white over a
+ * painted wainscot in `stripe` up to 1.2 m (a darker painted rail on top, never ink), a darker kick band at the
+ * floor, trolley scuffs, drips under the ceiling.
  */
 export const grimeWall = (base: string, stripe: string, heightM: number) =>
   painted(`grimeWall${base}${stripe}${heightM}`, 512, 1024, (ctx, r) => {
@@ -202,13 +203,20 @@ export const grimeWall = (base: string, stripe: string, heightM: number) =>
     ctx.fillStyle = base;
     ctx.fillRect(0, 0, W, H);
     strokes(ctx, r, W, H, 60, [shade(base, -0.1), shade(base, 0.06)], 160, 60, 0.25);
-    const g = ctx.createLinearGradient(0, H - 0.6 * py, 0, H);
-    g.addColorStop(0, "rgba(70,55,40,0)");
-    g.addColorStop(1, "rgba(70,55,40,0.45)");
+    ctx.fillStyle = stripe;
+    ctx.fillRect(0, H - 1.2 * py, W, 1.2 * py);
+    ctx.save();
+    ctx.translate(0, H - 1.2 * py);
+    strokes(ctx, r, W, 1.2 * py, 40, [shade(stripe, -0.08), shade(stripe, 0.06)], 140, 40, 0.3);
+    ctx.restore();
+    ctx.fillStyle = shade(stripe, -0.25);
+    ctx.fillRect(0, H - 1.24 * py, W, 0.05 * py);
+    // Kick band: the wainscot's own darker tone toward the floor (coloured, never brown-grey).
+    const g = ctx.createLinearGradient(0, H - 0.6 * py, 0, H), kick = shade(stripe, -0.45).slice(4, -1);
+    g.addColorStop(0, `rgba(${kick},0)`);
+    g.addColorStop(1, `rgba(${kick},0.5)`);
     ctx.fillStyle = g;
     ctx.fillRect(0, H - 0.6 * py, W, 0.6 * py);
-    ctx.fillStyle = stripe;
-    ctx.fillRect(0, H - 1.25 * py, W, 0.12 * py);
     ctx.lineCap = "round";
     for (let i = 0; i < 22; i++) {
       const y = H - (0.25 + r() * 0.8) * py, x = r() * W, len = 30 + r() * 90;
