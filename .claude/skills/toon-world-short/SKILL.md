@@ -10,8 +10,12 @@ Two pillars, both narrated in **second person ("you")**:
 - **Scenario**: "What if you were trapped in a supermarket for 30 days during a zombie apocalypse?"
 - **Strange true history**: "You're one of 74 soldiers about to knock down an iron bridge just by walking across it."
 
-Everything (story, characters, world, music) is our own. The look targets come from a frame-by-frame study of four
-reference shorts: numbers in `docs/style/REFERENCE_NOTES.md`, the videos themselves in `references/` on the laptop
+**Look authority: `docs/style/LOOK_SPEC.md`** (craft numbers we adopt + the Stickrified identity layer + the
+current gap list). It merges the MIT-licensed 20-video study in `vendor/cartoon-3d-short/reports/` (with code
+recipes for ink, lens blur, two-tone shading, card shading, grade and faces) and our own 4-video study. When this
+file and LOOK_SPEC disagree, LOOK_SPEC wins.
+
+Everything (story, characters, world, music) is our own. Our own frame-by-frame study of four reference shorts: numbers in `docs/style/REFERENCE_NOTES.md`, the videos themselves in `references/` on the laptop
 (git-ignored). Those videos are **private study material**: never upload, publish or send them, never copy their
 stories, characters, jokes or shots, never name their channels. Once our pilot is approved, our own frames in
 `docs/style/frames/` become the main reference and `docs/STYLE.md` holds our final values.
@@ -20,7 +24,8 @@ stories, characters, jokes or shots, never name their channels. Once our pilot i
 - English only. Narration in second person. One narrator voice (ElevenLabs Eleven v4, same voice ID every video),
   steady delivery; audio tags only on beats (`[deadpan]`, `[whispers]`, `[nervous]`), at most one per two lines.
 - Surprising lines and jokes are researched real facts (history) or real-world logic (scenarios).
-- Captions (measured): 1-2 words at a time from `words.json`, white `#ffffff` bold rounded sans (e.g. Nunito Black or
+- Captions (measured + identity): the one key word per sentence (number, twist, punchline) is rust-orange
+  `#ff8a3d` and scales up 8 % for 4 frames; mark it with `*word*` in `script.json`. Otherwise: 1-2 words at a time from `words.json`, white `#ffffff` bold rounded sans (e.g. Nunito Black or
   Poppins ExtraBold, bundled locally), dark outline `#141014` ~0.006 W plus a soft drop shadow (offset 0.003 W, blur
   0.006 W, 60 % black), centred horizontally at y = 0.70 H, font size 0.055 W (~60 px at 1080 wide), punctuation kept,
   no pop or bounce: each group appears instantly on its first word and holds until the next (median 10 f). Never over
@@ -73,16 +78,14 @@ Build in this order, commit after each, and get a verifier pass on stills before
    `docs/style/frames/` and write `docs/STYLE.md` with the final values and measured render speed.
 
 ## The protagonist ("you")
-The same card in every video; he is the viewer. Costumes are overlays (hat, coat, uniform) that always keep the hair
-and a rust-orange accent.
-- Round head h/w .98 (the references' heads are near-circles), skin `#deaa80`, ink `#1a1416`.
-- Hair: dark brown-black `#241b17`, 3-4 chunky locks swept to one side, short fringe.
-- Face: dot eyes, heavy brows angled slightly down toward the centre (stern-tired default), small nose mark, flat mouth
-  line. No blush, no eye highlights.
-- Default outfit: rust-orange jacket `#a8502c` (shadow `#7e3a20`) open over a charcoal tee `#2e2f30`, jeans `#33456b`,
-  boots `#5a3a26`.
-- Expressions: neutral, tired, worried, scared, shocked (ring eyes), smug, determined, sad, angry, sneaky, relieved,
-  confused, deadpan, laughing. Extras: sweat drop, steam puffs, colour fill over the face, "!" pop.
+The same character in every video; he is the viewer and the channel's face (LOOK_SPEC section 2). Costumes are
+overlays (hat, coat, uniform) that always keep the quiff and a rust-orange `#c8582c` accent.
+- Adult build 3.5 head-heights; bean head (H/W .94, pointed crown, fuller jaw) in pale cream `#f4ece0`.
+- Signature silhouette: tall forward quiff with one cowlick, near-black brown `#241b17`, readable in pure silhouette.
+- Rust-orange jacket (collar, two pockets, zip) open over a striped charcoal tee; jeans; dark shoes as short strokes.
+- Faces from the face library in LOOK_SPEC: lidded deadpan default, no blush, no catchlights.
+- Expressions: neutral (lidded), tired, worried, scared, shocked (white circles almost touching), smug, determined,
+  sad, angry, sneaky, relieved, confused, deadpan, laughing. Extras: sweat drop, steam puffs, colour fill, "!" pop.
 
 ## Pipeline per video (hands-on target <= 2 h; renders run unattended)
 1. **Topic and facts.** Pick from `videos/BACKLOG.md`. It must be visual: a physical cause and effect, plus one
@@ -101,6 +104,10 @@ and a rust-orange accent.
      "like climbing a mountain" -> a staircase up a mountain). Mark each one in `script.json` as `gag`.
    - **Two-part option**: a story too big for 90 s becomes Part 1 / Part 2. Part 1 stops mid-sentence on the
      cliffhanger; Part 2 opens by replaying Part 1's last line over its last shot.
+   - Hook = a paradox stated as fact in sentence 1, no setup (~10-16 words). One mystery beat ("Wait...?") and a
+     "You see," pivot into the real mechanism, usually through an everyday analogy (vendor STYLE_BIBLE.md).
+   - Scenario pillar: show time jumps with the "DAY 3" stamp card (upper third, thump SFX).
+   - At least one POV / over-the-shoulder "you" shot per video.
    - Narration pace ~3.5-4 words/s (captions change 2.2-3 times per second); end on the last word, no outro.
 3. **Voice.** `npx tsx scripts/tts.ts videos/<slug>` -> `voice/voice.wav` + `voice/words.json` (character
    alignment converted to word times). Hand-check the word times; everything is timed to `words.json`.
@@ -154,18 +161,15 @@ R3/R4) with the **saturated daylight colour** of R2. No near-realistic PBR world
 - **Lens** (`dofAt`): background clearly soft in close-ups (cInf 10-14 px at 1080) and mediums (5-8 px), wides and
   establishing shots sharp (0). Focus on the speaking or reacting character's eyes.
 - **Post**: ink -> lens -> bloom -> NEUTRAL tone map -> grade -> vignette; MSAA 4; film grain off.
-- **Characters** (`toon.ts`/`cast.ts`/`cardshade.ts`):
-  - round heads h/w .95-1.0, about 3.2 head-heights tall; torso a soft rounded shape with clothing detail (buttons,
-    pockets, chains, stripes); stick limbs ~.045 of head width in ink colour; small mitten/dot hands.
-  - outline near-black, 0.045 of head width (min 3 px at 1080), slightly thicker on the shadow side.
-  - expressions swap instantly on the word; emotion FX (sweat drop, steam puffs, colour fill rising over ~8 f, ring
-    eyes) land 0-3 f before the word.
-  - idle: bob 2-4 %, lean 1-5 deg, blinks every 0.5-2.3 s lasting 4 f; walks with planted feet.
-  - cards take the scene light: key-light tint, light shafts and practical glow cross them; night tints them blue;
-    contact shadow under the feet.
+- **Characters** (`toon.ts`/`cast.ts`/`cardshade.ts`): follow LOOK_SPEC section 1 "Characters" exactly
+  (3.5 HH adults, bean heads and torsos, stroke limbs, ink-dot hands, thick-thin warm ink, lidded default eyes,
+  bright tinted heads with a soft crescent, blob ground shadows, blinks and swaps on the word). Port the drawing
+  code from `vendor/cartoon-3d-short/reports/characters.md` section 3, with our colours and identity.
 - **Camera** (`story.ts`, measured):
   - never still: still frames <= 5 %, never a static hold >= 12 f. Every hold drifts, pushes or arcs.
   - drift speed at 1080 wide: typical 3 px/f, normal moves 10-25 px/f, fast follows up to ~60 px/f.
+  - every move is a symmetric ease-in-out glide (~10 f in, ~10 f out, ~23 f total, peak 21-24 px/f at 1080);
+    never a 3-frame snap. Whips (< 1 per minute) always carry strong directional motion blur.
   - push-in on ~65 % of screen time (0.2-0.6 %/f; up to 2.5 %/f on punch words), pull-out ~25 %.
   - arcs/orbits around characters with slow banking (roll 0.2-1 deg/f, max 5 deg).
   - fast moves are continuous follows (tilt down with a falling object, tilt up to reveal sky), smootherstep eased,
