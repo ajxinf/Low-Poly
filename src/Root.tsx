@@ -1,5 +1,7 @@
 import { Composition } from "remotion";
 import { TestCube } from "./TestCube";
+import { CharacterTest } from "./CharacterTest";
+import { ExpressionSheet } from "./ExpressionSheet";
 import { ToonTest } from "./ToonTest";
 
 export const RemotionRoot: React.FC = () => (
@@ -13,5 +15,7 @@ export const RemotionRoot: React.FC = () => (
       height={1920}
     />
     <Composition id="ToonTest" component={ToonTest} fps={30} durationInFrames={150} width={1080} height={1920} />
+    <Composition id="CharacterTest" component={CharacterTest} fps={30} durationInFrames={240} width={1080} height={1920} />
+    <Composition id="ExpressionSheet" component={ExpressionSheet} fps={30} durationInFrames={1} width={1080} height={1920} />
   </>
 );

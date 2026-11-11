@@ -20,7 +20,7 @@ const right = (s: number) => {
   return new Vector3(-t.z, 0, t.x);
 };
 /** Point at arc position s, sideways offset x (m, + = right), height y. */
-const at = (s: number, x: number, y = 0) => spine(s).addScaledVector(right(s), x).setY(y);
+export const at = (s: number, x: number, y = 0) => spine(s).addScaledVector(right(s), x).setY(y);
 /** Y rotation that turns local +z toward `dir`. */
 const yaw = (dir: Vector3) => Math.atan2(dir.x, dir.z);
 
@@ -52,7 +52,8 @@ type Placed = { obj: Object3D; pos: Vector3; ry: number };
 
 const place = (obj: Object3D, pos: Vector3, ry: number): Placed => ({ obj, pos, ry });
 
-const LAYOUT = (() => {
+// Built per <Street> (an Object3D can only live in one scene; dissolves mount two canvases at once).
+const buildLayout = (bollards = true) => {
   const out: Placed[] = [];
   const lamps: Vector3[] = [];
   const r = rng(11);
@@ -113,12 +114,13 @@ const LAYOUT = (() => {
   out.push(place(bench(), at(27, -FRONT + 0.6), yaw(right(27))));
   out.push(place(barrel(), at(18, -FRONT + 0.7), 0), place(barrel(), at(18.9, -FRONT + 0.6), 0), place(crate(0.7), at(19.7, -FRONT + 0.6), 0.3));
   out.push(place(crate(0.8), at(33, FRONT - 0.7), 0.1), place(crate(0.6), at(33.1, FRONT - 0.7, 0.8), 0.6));
-  for (let s = 8; s < 44; s += 3.5) out.push(place(bollard(), at(s, ROAD + 0.2), 0));
+  if (bollards) for (let s = 8; s < 44; s += 3.5) out.push(place(bollard(), at(s, ROAD + 0.2), 0));
   return { out, lamps: lamps.slice(0, 12) };
-})();
+};
 
-const Street: React.FC = () => {
+export const Street: React.FC<{ bollards?: boolean }> = ({ bollards = true }) => {
   const world = useMemo(() => {
+    const LAYOUT = buildLayout(bollards);
     const g = new Group();
     for (const p of LAYOUT.out) {
       p.obj.position.copy(p.pos);
@@ -134,7 +136,7 @@ const Street: React.FC = () => {
     g.add(road, walkL, walkR, square);
     setLamps(LAYOUT.lamps, 6.5);
     return g;
-  }, []);
+  }, [bollards]);
   return <primitive object={world} />;
 };
 
@@ -142,9 +144,9 @@ const Street: React.FC = () => {
 const CAM_S = [0, 0.9];
 const camAt = (s: number) => at(s, -3.9, 1.2);
 const LOOK = at(52, 1.5, 9);
-const SUN = sunDirection(LIGHTS.dusk, camAt(0), LOOK);
-const SHADOW = { center: at(26, 0), size: 42 };
-const DUST = { center: at(9, -0.5, 2.4), size: new Vector3(9, 4.5, 18) };
+export const SUN = sunDirection(LIGHTS.dusk, camAt(0), LOOK);
+export const SHADOW = { center: at(26, 0), size: 42 };
+export const DUST = { center: at(9, -0.5, 2.4), size: new Vector3(9, 4.5, 18) };
 
 const Camera: React.FC = () => {
   const frame = useCurrentFrame();

@@ -4,7 +4,7 @@ import { LightPreset, linear } from "./lights";
 export const MAX_LAMPS = 12;
 
 // Shared by every toon material, so one applyLight() relights the whole world.
-const shared = {
+export const shared = {
   uSunDir: { value: new Vector3(0, 1, 0) },
   uLit: { value: new Vector3(1, 1, 1) },
   uShade: { value: new Vector3(0.3, 0.3, 0.3) },

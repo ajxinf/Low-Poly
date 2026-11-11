@@ -52,3 +52,22 @@ side, fov 60. Foreground props 3.5-6 m from the lens, cut by the frame edge (fra
 
 ## Render speed (this laptop)
 ToonTest, 150 frames at 1080x1920, `--concurrency=2`: ~30 s.
+
+## Characters (`kit/toon/toon.ts`, `protagonist.ts`, `cast.ts`, `cardshade.ts`)
+Approved: `frames/char_closeup_dusk.png` (CharacterTest frame 170), `frames/expressions.png` (all 14 + effects).
+- Design canvas 600x1000 (drawn at 2x), soles at y 975, 500 px = 1 m. Head 250 x 255 px (h/w .98), figure 3.5 heads.
+- Egg torso 232 px wide (about head width, as in the references), legs 1.4 heads, stick limbs in ink.
+- Ink `#1d1416`, outline and limbs .04 of head width (references measure ~.035-.04; spec asked .045), ~35 % thicker
+  on the side away from the sun. Painted form crescent on head and torso.
+- Card light (`CARD_LOOK`): picks up the scene light at .6 (key tint where the sun reaches it via the real shadow map,
+  shade/ambient where not, lamp pools on the side facing each lamp). No world saturation boost on cards.
+- Grounding: contact shadow .95 x .45 m at .75, sun cast shadow (projected silhouette, skipped on already-shaded
+  ground) at .7, lamp cast shadow from the nearest lamp at .55 fading over the lamp radius.
+- Walk: 0.8 m steps, bob 30 px (~3.5 % of figure), sway +-2.5 deg, arms swing against legs. Idle bob 6 px / 3 s.
+  Blinks every .5-2.3 s for 4 frames.
+- Framing: put the camera on the wall side of the character so the street (not a facade) is behind them.
+  Close-up = head and shoulders at ~2.2 m, fov 36 (frame width ~ .37 x distance).
+
+## CharacterTest numbers (`out/char/charactertest.mp4`)
+luma .471, p5 .170, C* p90 67.0, sat .620 (above .58: sunlit orange cobbles fill much of the frame). 240 frames at
+1080x1920, `--concurrency=2`: ~57 s.

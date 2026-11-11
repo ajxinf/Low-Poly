@@ -21,6 +21,7 @@ import {
   Vector2,
   WebGLRenderTarget,
 } from "three";
+import { CARD_PASS } from "./cardshade";
 import { NOINK, inkMaterial } from "./ink";
 
 /** Post look values. Pixel sizes are at 1080x1920 and scale with output height / 1920. */
@@ -128,7 +129,9 @@ void main() {
  * Takes over rendering: shadows -> colour (HDR, MSAA 4) -> normal+depth -> ink -> lens blur -> bloom ->
  * NEUTRAL tone map -> grade. Mount once inside <ThreeCanvas>.
  */
-export const Composer: React.FC = () => {
+export type Dof = { maxPx: number; near: number; far: number };
+
+export const Composer: React.FC<{ dof?: Dof }> = ({ dof = POST.dof }) => {
   const { gl, scene, camera } = useThree();
 
   const p = useMemo(() => {
@@ -179,12 +182,8 @@ export const Composer: React.FC = () => {
     const quad = new Mesh(new PlaneGeometry(2, 2), ink);
     quad.frustumCulled = false;
     const post = new Scene().add(quad);
-    const noinkMat = new ShaderMaterial({
-      vertexShader: "void main(){ gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
-      fragmentShader: "void main(){ gl_FragColor = vec4(0.0); }",
-    });
     const targets = [colorRT, normalRT, inkRT, dofRT, ...down, ...up];
-    return { targets, colorRT, normalRT, inkRT, dofRT, down, up, ink, dof, downM, upM, fin, quad, post, normalMat: new MeshNormalMaterial(), noinkMat, ortho: new OrthographicCamera() };
+    return { targets, colorRT, normalRT, inkRT, dofRT, down, up, ink, dof, downM, upM, fin, quad, post, normalMat: new MeshNormalMaterial(), ortho: new OrthographicCamera() };
   }, [gl]);
 
   useEffect(() => () => p.targets.forEach((t) => t.dispose()), [p]);
@@ -199,6 +198,9 @@ export const Composer: React.FC = () => {
     const u = p.ink.uniforms;
     u.uProjInv.value.copy(cam.projectionMatrixInverse);
     p.dof.uniforms.uProjInv.value.copy(cam.projectionMatrixInverse);
+    p.dof.uniforms.uMax.value = dof.maxPx * (p.dofRT.height / 1920);
+    p.dof.uniforms.uNear.value = dof.near;
+    p.dof.uniforms.uFar.value = dof.far;
     if (scene.fog instanceof Fog) {
       u.uFog.value.copy(scene.fog.color);
       u.uFogNear.value = scene.fog.near;
@@ -225,9 +227,12 @@ export const Composer: React.FC = () => {
     cam.layers.set(0);
     gl.render(scene, cam);
     gl.autoClear = false;
-    scene.overrideMaterial = p.noinkMat;
+    // Cards render their own alpha-tested mask (depth + alpha 0), so ink and lens blur follow the silhouette.
+    scene.overrideMaterial = null;
+    CARD_PASS.value = 1;
     cam.layers.set(NOINK);
     gl.render(scene, cam);
+    CARD_PASS.value = 0;
     gl.autoClear = true;
     scene.overrideMaterial = null;
     cam.layers.mask = mask;
