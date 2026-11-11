@@ -208,7 +208,7 @@ export const buildSupermarket = (p: EraPreset, light: LightPreset, o: { seed?: n
     k.box(wallMat, w, H, d, 0, H / 2, 0);
     const wg = k.build();
     wg.traverse((m) => ((m as Mesh).castShadow = cast || !power));
-    add(wg, pos, 0, name);
+    add(wg, pos, 0, name).userData.joins = "shell"; // walls meet at the corners on purpose (QA guard)
   };
   wall(0.3, LEN - FRONT_S, at((LEN + FRONT_S) / 2, -HW), "left wall");
   wall(0.3, LEN - FRONT_S, at((LEN + FRONT_S) / 2, HW), "right wall");
@@ -229,7 +229,7 @@ export const buildSupermarket = (p: EraPreset, light: LightPreset, o: { seed?: n
     const k = new Kit();
     const fw = wallMat;
     const z = 0;
-    k.box(fw, HW * 2, 0.9, 0.3, 0, 0.45, z);
+    for (const sx of [-1, 1]) k.box(fw, HW - 1.5, 0.9, 0.3, sx * (1.5 + (HW - 1.5) / 2), 0.45, z); // sill wall, open at the doors
     k.box(fw, HW * 2, H - 3.6, 0.3, 0, 3.6 + (H - 3.6) / 2, z);
     for (const x of [-HW + 0.3, -8.2, -4.6, -1.6, 1.6, 4.6, 8.2, HW - 0.3]) k.box(fw, 0.6, 2.7, 0.3, x, 0.9 + 1.35, z);
     k.box(fw, 3.2, 1.0, 0.3, 0, 3.1, z); // over the doors
@@ -240,17 +240,19 @@ export const buildSupermarket = (p: EraPreset, light: LightPreset, o: { seed?: n
     const fg = k.build();
     // Only the wall casts (panes let the moon through); by day nothing in the shell casts.
     fg.traverse((m) => ((m as Mesh).castShadow = !power && (m as Mesh).material !== glass));
-    add(fg, at(FRONT_S, 0), 0, "front wall");
+    add(fg, at(FRONT_S, 0), 0, "front wall").userData.joins = "shell";
     // Entrance doors (dark glass); barricaded with planks and crates when abandoned.
     const doors = new Kit();
-    for (const x of [-0.75, 0.75]) doors.box(glass, 1.45, 2.5, 0.06, x, 1.25, 0, false);
+    for (const x of [-0.65, 0.65]) doors.box(glass, 1.25, 2.5, 0.06, x, 1.25, 0, false); // fits the opening between the pillars at +-1.3
     if (abandoned)
       for (const [y, a] of [[0.8, 0.12], [1.5, -0.1], [2.1, 0.08], [1.1, -0.35]] as const)
-        doors.add(MAT.wood(), new BoxGeometry(3.4, 0.22, 0.06), 0, y, -0.12, { rz: a });
+        doors.add(MAT.wood(), new BoxGeometry(3.4, 0.22, 0.06), 0, y, -0.15, { rz: a }); // nailed on the inside face
     const dg = doors.build();
     dg.traverse((m) => ((m as Mesh).castShadow = false));
     add(dg, at(FRONT_S + 0.05, 0), 0, "entrance doors");
-    if (abandoned) for (let i = 0; i < 5; i++) add(crate(0.7), at(FRONT_S + 0.8 + (i % 2) * 0.75, -1.4 + i * 0.7, i > 2 ? 0.7 : 0), r() * 0.6, "barricade crate");
+    // Barricade: three 0.7 m crates in a row (0.85 m apart, barely turned so they never touch), two stacked on top.
+    if (abandoned)
+      for (const [x, y] of [[-0.85, 0], [0, 0], [0.85, 0], [-0.85, 0.7], [0, 0.7]]) add(crate(0.7), at(FRONT_S + 0.8, x, y), (r() - 0.5) * 0.12, "barricade crate");
   }
 
   // Exit sign over the entrance (battery-backed: glows green with the power off too).

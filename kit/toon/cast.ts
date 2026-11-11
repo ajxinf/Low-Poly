@@ -14,6 +14,9 @@ export type { CharState, Look } from "./figure";
 export { STRIDE, idlePose, posed, reactSquash, runPose, walkPose } from "./poses";
 
 /** Blinks every 0.5-2.3 s, 4 frames long (seeded so every render tab agrees). */
+/** Height of the contact blob above the soles (the QA guard checks it stays above the ground). */
+export const CONTACT_Y = 0.014;
+
 export const blinkAt = (frame: number, fps: number, seed = 1) => {
   const r = rng(seed);
   let t = Math.round(r() * fps);
@@ -51,9 +54,11 @@ export const Character: React.FC<{ position: Vector3; state: CharState; look?: L
     const contactGeo = new PlaneGeometry(0.55, 0.3);
     contactGeo.rotateX(-Math.PI / 2);
     const contact = new Mesh(contactGeo, contactMaterial());
-    contact.position.y = 0.014;
+    contact.position.y = CONTACT_Y;
+    contact.userData.contact = true;
     contact.layers.set(SKY);
     const group = new Group().add(card, caster, lampCast, contact);
+    group.userData.character = true;
     return { cv, card, caster, lampCast, contact, group, key: "", headUp: headHeight(look) };
   }, [look]);
 
@@ -64,7 +69,7 @@ export const Character: React.FC<{ position: Vector3; state: CharState; look?: L
     const sun = shared.uSunDir.value;
     // Contact blob slides a little away from the sun (lighting.md 4: blob offset away from the key).
     const sh = Math.hypot(sun.x, sun.z) || 1;
-    p.contact.position.set((-sun.x / sh) * 0.1, 0.014, (-sun.z / sh) * 0.1);
+    p.contact.position.set((-sun.x / sh) * 0.1, CONTACT_Y, (-sun.z / sh) * 0.1);
     p.caster.rotation.y = Math.atan2(sun.x, sun.z); // full silhouette as seen from the sun
     // Nearest lamp throws a second shadow, fading out over the lamp radius.
     let lamp = practicals[0], best = Infinity;

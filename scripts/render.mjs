@@ -1,11 +1,10 @@
-// Final render with the camera guard: a quick guard pass first (one tiny still per shot start), then the video.
+// Final render after QA layer 1 (kit/toon/guard.tsx; writes out/<slug>/plan.json for layer 2), then the video.
 // The guard also runs inside the full render, so a shot that only mounts later still fails with its id and frame.
-// usage: node scripts/render.mjs <Composition> <out.mp4> [scale = 1] [--starts 0,190]
-import { renderMedia, renderStill } from "@remotion/renderer";
+// usage: node scripts/render.mjs <Composition> <out.mp4> [scale = 1] [--starts 0,190 (only without a QAPlan)]
+import { renderMedia } from "@remotion/renderer";
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
-import { CHROMIUM, bundleOnce, fail, pick } from "./remotion-api.mjs";
+import { CHROMIUM, bundleOnce, fail, guardPass, pick } from "./remotion-api.mjs";
 
 const args = process.argv.slice(2);
 const si = args.indexOf("--starts");
@@ -18,12 +17,7 @@ if (!id || !out) {
 fs.mkdirSync(path.dirname(out), { recursive: true });
 const serveUrl = await bundleOnce();
 const composition = await pick(serveUrl, id).catch((e) => fail(id, e));
-for (const frame of starts) {
-  await renderStill({ composition, serveUrl, frame, scale: 0.15, output: path.join(os.tmpdir(), `guard_${id}.png`), chromiumOptions: CHROMIUM }).catch((e) =>
-    fail(`${id} guard pass (frame ${frame})`, e),
-  );
-}
-console.log(`camera guard ok (${starts.length} shot start${starts.length > 1 ? "s" : ""})`);
+if (!(await guardPass(serveUrl, composition, starts))) fail(id, "QA layer 1: failures above");
 let last = -1;
 await renderMedia({
   composition,

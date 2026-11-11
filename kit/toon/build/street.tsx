@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useCurrentFrame } from "remotion";
-import { BufferAttribute, BufferGeometry, ConeGeometry, CylinderGeometry, Group, Mesh, Object3D, SphereGeometry, Vector3 } from "three";
+import { Box3, BufferAttribute, BufferGeometry, ConeGeometry, CylinderGeometry, Group, Mesh, Object3D, SphereGeometry, Vector3 } from "three";
 import { LightPreset } from "../lights";
 import { rng } from "../paint";
 import { PracticalKind, practicalLights } from "../shade";
@@ -117,8 +117,11 @@ export const buildStreet = (p: EraPreset, light: LightPreset, o: StreetOpts = {}
   const sp = spine(o.curve ?? 0.0032);
   const { at, tangent, right } = sp;
   const ROAD = o.road ?? 3.4;
-  const WALK = ROAD + 2;
-  const FRONT = o.front ?? (p.layout === "detached" ? WALK + 3 : WALK);
+  // How far facades reach out (QA guard): porch roof 2.1 m, shop awning 1.3 m, door step 0.45 m. Terraces get a
+  // pavement wide enough for lamps and props past that; detached houses sit that much further back.
+  const REACH = p.porch > 0 ? 2.1 : p.shops.chance > 0 && p.shops.awnings.length ? 1.3 : 0.45;
+  const WALK = ROAD + (p.layout === "detached" ? 2 : Math.max(2, REACH + 1.4));
+  const FRONT = o.front ?? (p.layout === "detached" ? WALK + 3 + REACH : WALK);
   const g = new Group();
   const lights: Light[] = [], smoke: Vector3[] = [], perches: Vector3[] = [];
   /** Add an object; `collider` names it for the camera guard (omit for things lenses may pass under). */
@@ -158,6 +161,7 @@ export const buildStreet = (p: EraPreset, light: LightPreset, o: StreetOpts = {}
   // Buildings: varied (>= 3 differing parameters between any two), terraced or detached.
   const facts: ReturnType<typeof specFacts>[] = [];
   let bi = 0;
+  const terraced = p.gap[1] === 0;
   for (const side of [-1, 1]) {
     let s = -8;
     while (s < L) {
@@ -165,13 +169,18 @@ export const buildStreet = (p: EraPreset, light: LightPreset, o: StreetOpts = {}
       const spec = pickVaried((a) => presetSpec(p, w, seed * 100 + bi, a), specFacts, facts);
       facts.push(specFacts(spec));
       bi++;
-      const sc = s + w / 2;
       const b = building(spec);
+      // Detached rows: room for the roof overhang (0.3 m) plus the lean's sideways shift at the ridge on each side.
+      const m = terraced ? 0 : 0.3 + Math.tan((Math.abs(spec.lean) * Math.PI) / 180) * (b.height + 3);
+      if (s + 2 * m + w > L + 9.5 - REACH) break; // the closing row's fronts (and porches) start at L + 10
+      s += m;
+      const sc = s + w / 2;
       place(b.group, at(sc, side * (FRONT + spec.d / 2)), yaw(right(sc).multiplyScalar(-side)), `building at s ${sc.toFixed(1)} ${side < 0 ? "left" : "right"}${spec.shop ? ` (${spec.shop.sign})` : ""}`);
+      if (terraced) b.group.userData.joins = `terrace ${side < 0 ? "left" : "right"}`; // flush neighbours meet on purpose (QA guard)
       for (const c of b.chimneys) smoke.push(b.group.localToWorld(c.clone()));
       for (const l of b.lights) lights.push({ pos: b.group.localToWorld(l.pos.clone()), kind: l.kind });
       for (const q of b.perches) perches.push(b.group.localToWorld(q.clone()));
-      s += w + p.gap[0] + r() * (p.gap[1] - p.gap[0]);
+      s += w + m + p.gap[0] + r() * (p.gap[1] - p.gap[0]);
     }
   }
 
@@ -186,30 +195,47 @@ export const buildStreet = (p: EraPreset, light: LightPreset, o: StreetOpts = {}
       const spec = pickVaried((a) => presetSpec(p, 8, seed * 100 + bi, a), specFacts, facts);
       facts.push(specFacts(spec));
       bi++;
-      place(building({ ...spec, floors: o.landmark ? Math.max(spec.floors, 3) : p.floors[1] }).group, at(L + 14, x), yaw(tangent(L + 14).negate()), `closing building x ${x}`);
+      const cb = place(building({ ...spec, floors: o.landmark ? Math.max(spec.floors, 3) : p.floors[1] }).group, at(L + 14, x), yaw(tangent(L + 14).negate()), `closing building x ${x}`);
+      cb.userData.joins = "closing row";
     }
   }
 
   // Lamps.
   const lampSpots = o.lamps ?? Array.from({ length: Math.ceil(L / 7) }, (_, i) => [3 + i * 7, i % 2 ? -1 : 1] as [number, number]);
   for (const [s, side] of lampSpots) {
-    const x = p.layout === "detached" ? side * (ROAD + 0.6) : side * (WALK - 0.5);
+    // Past the facades' reach, plus the base's own 0.19 m half-width.
+    const x = p.layout === "detached" ? side * (ROAD + 0.6) : side * (FRONT - REACH - 0.35);
     const ry = yaw(right(s).multiplyScalar(-side)) - Math.PI / 2; // arm reaches over the street
     const lp = place(lampPost(), at(s, x), ry, `lamp post at s ${s}`);
     lights.push({ pos: lp.localToWorld(LAMP_HEAD.clone()), kind: "lamp" });
   }
 
   // Props along the walks (or yards), keeping clear of lamps.
+  // 0.6 m past the facades' reach: a 1.8 m bench turned by up to 0.25 rad still clears it. Props keep 2.2 m apart
+  // along each side so they never stand in each other.
   const nProps = Math.round(L / 4.5);
+  const taken: Record<number, number[]> = { [-1]: [], [1]: [] };
+  // The caller's own props (foreground framing) are placed first, so random props keep 1 m away from them.
+  const extras = o.extra?.(sp) ?? [];
+  const extraBoxes = extras.map((obj) => (obj.updateMatrixWorld(true), new Box3().setFromObject(obj)));
   for (let i = 0; i < nProps; i++) {
     const kind = pickN(r, p.props), side = i % 2 ? 1 : -1, s = 2 + r() * (L - 4);
-    if (lampSpots.some(([ls]) => Math.abs(ls - s) < 1.6)) continue;
-    let x = side * (WALK - 0.6), ry = yaw(right(s).multiplyScalar(-side)) + (r() - 0.5) * 0.5;
+    if (lampSpots.some(([ls]) => Math.abs(ls - s) < 1.6) || taken[side].some((t) => Math.abs(t - s) < 2.2)) continue;
+    taken[side].push(s);
+    let x = side * (p.layout === "detached" ? WALK - 0.85 : FRONT - REACH - 0.6), ry = yaw(right(s).multiplyScalar(-side)) + (r() - 0.5) * 0.5;
     if (kind === "car") [x, ry] = [side * (ROAD - 1.1), yaw(tangent(s)) - Math.PI / 2];
+    if (kind === "cart") x = side * (Math.abs(x) - 0.5); // 1.3 m deep with its shafts
+    if (extraBoxes.some((b) => b.distanceToPoint(at(s, x)) < 1)) continue;
     if (kind === "hedge" || kind === "fence") [x, ry] = [side * (WALK + 0.3), yaw(tangent(s)) + Math.PI / 2];
     if (kind === "mailbox") x = side * (WALK + 0.2);
     if (kind === "pine" || kind === "campfire") x = side * (WALK + 1.5 + r() * 2.5);
     const obj = place(PROP[kind](r), at(s, x), ry, `${kind} at s ${s.toFixed(1)}`);
+    if (kind === "pine" || kind === "campfire") {
+      // Keep the whole crown in the yard, short of the houses' porches.
+      const b = new Box3().setFromObject(obj), half = Math.max(b.max.x - b.min.x, b.max.z - b.min.z) / 2;
+      obj.position.copy(at(s, side * Math.min(Math.abs(x), FRONT - REACH - half - 0.2)));
+      obj.updateMatrixWorld(true);
+    }
     if (kind === "campfire") lights.push({ pos: obj.localToWorld(FIRE_HEAD.clone()), kind: "fire" });
   }
 
@@ -245,7 +271,7 @@ export const buildStreet = (p: EraPreset, light: LightPreset, o: StreetOpts = {}
   if (p.scraps.length) g.add(...scraps(40, edge, p.scraps, seed + 6));
 
   if (p.backdrop) g.add(backdrop(p.backdrop, at(L + 14, 0), tangent(L + 14), seed));
-  o.extra?.(sp).forEach((obj) => {
+  extras.forEach((obj) => {
     obj.userData.collider ??= "foreground prop";
     g.add(obj);
   });

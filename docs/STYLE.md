@@ -63,12 +63,16 @@ ink -> lens blur -> bloom -> NEUTRAL tone map -> grade.
 - Grade: sat 1.28, contrast 1.06, lift .02, black point .07 (p5 .165 wide / .168 move; the 1.6x lit cap is
   untouched), warm split .02, vignette .85. Content still moves p5: orange-heavy mediums sit near .14.
 
-## Camera guard (`kit/toon/guard.tsx`)
-Every shot uses `<ShotCamera id pose frames from>`: on mount it checks the whole camera path, every frame, against
-the oriented boxes of all objects tagged `userData.collider` (buildings, tower, lamps, props, shelves, walls,
-checkouts, foreground props) and needs >= 0.3 m clearance. A hit throws `Camera guard: shot "<id>" frame <f>: ...`,
-which fails `scripts/stills.mjs` and `scripts/render.mjs` (the render script also runs a guard pass on each shot's
-first frame, `--starts 0,180`, before the video). It caught two CharacterTest collisions in the rebuilt street.
+## QA layer 1 guard (`kit/toon/guard.tsx`, video-qa skill)
+Each video describes its shots as data (`Shot`: id, from, frames, pose, cast, subject, scene, light, sun, whips/kicks,
+allow) and draws from the same functions. `<QAPlan plan>` at the composition root checks the camera curve, subject in
+frame, caption vs face, reaction timing and light continuity for every frame of every shot and publishes the plan;
+`<ShotCamera {...shot}>` (one per shot, inside its own Sequence) checks camera clearance (0.3 m from every collider
+part and card), feet, card penetration, props through props and shadows against the built scene. Colliders are tagged
+`userData.collider`; Kit meshes keep each part's box (`userData.parts`) so awnings don't fill the pavement; parts of
+one structure that meet on purpose carry the same `userData.joins` (terraced rows, a building's walls). A failure
+throws, so `scripts/stills.mjs` and `scripts/render.mjs` stop; both run `guardPass` first (tiny stills at frame 0 and
+each shot start, inputProps `qa: "collect"`), which writes `out/<slug>/layer1.md` and `out/<slug>/plan.json`.
 
 ## Supermarket (`kit/toon/build/supermarket.ts`, presets `supermarket_interior` / `supermarket_abandoned`)
 - Lit: fluorescent strips slightly green-white (`#e6fff0`) with real lights; walls and floor warm off-white

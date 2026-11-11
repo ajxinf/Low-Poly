@@ -129,6 +129,14 @@ def motion(path):
     for s_ in still:
         run = run + 1 if s_ else 0
         best = max(best, run)
+    runs, start = [], None  # frame ranges of still runs (frame i = motion from frame i to i + 1)
+    for i, s_ in enumerate(list(still) + [False]):
+        if s_ and start is None:
+            start = i
+        elif not s_ and start is not None:
+            runs.append((start, i - 1))
+            start = None
+    print("  still frames " + (", ".join(f"{a}-{b}" if b > a else str(a) for a, b in runs) or "none"))
     return {"drift p50": float(np.median(per)), "drift p95": float(np.percentile(per, 95)), "still %": float(still.mean() * 100), "still run": best}
 
 

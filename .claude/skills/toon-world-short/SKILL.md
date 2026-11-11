@@ -137,13 +137,13 @@ overlays (hat, coat, uniform) that always keep the quiff and a rust-orange `#c85
 7. **Captions** on, from `words.json`.
 8. **Sound** (`scripts/audio/`): lock picture timing first. Event table -> synthesized SFX + original score ducked
    under the voice -> `mix.wav` (48 kHz, exact length), stems, `cues.md`. Any later timing change means re-running sound.
-9. **Look checks**: `node scripts/stills.mjs <Comp> out/<slug>/x_ 100,400 0.5` (camera guard included: any lens
-   closer than 0.3 m to a building/prop fails with the shot id and frame); side-by-sides against
+9. **Look checks**: `node scripts/stills.mjs <Comp> out/<slug>/x_ 100,400 0.5` (QA layer 1 first: every check of the
+   video-qa skill on every frame of every shot; a failure stops with the shot id, frame and object); side-by-sides against
    `docs/style/frames/` (and, until the pilot is approved, frames grabbed from `references/`) with
    `python scripts/sbs_sheet.py out.jpg --ours ... --ref ...`; a verifier gives a <=200-word
    verdict, scores (colour, lighting, ink, textures, characters, depth, composition) and a numbered fix list.
 10. **Final render**:
-    `node scripts/render.mjs <Comp> out/<slug>/video.mp4 1.3333 --starts <first frame of each shot>` (camera guard pass, then h264 crf 16, angle, concurrency 2),
+    `node scripts/render.mjs <Comp> out/<slug>/video.mp4 1.3333` (QA layer 1 + `out/<slug>/plan.json`, then h264 crf 16, angle, concurrency 2),
     mux with `npx remotion ffmpeg -i out/<slug>/video.mp4 -i videos/<slug>/audio/mix.wav -map 0:v:0 -map 1:a:0 -c:v copy -c:a aac -b:a 320k out/<slug>/final.mp4`.
     QA: run the **video-qa** skill (scene checks before rendering, `scripts/video_qa.py` + `short_qa.py` +
     `measure.py` on the final, then a fresh reviewer agent). Fix everything, then a final verifier audit.

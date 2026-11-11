@@ -39,6 +39,8 @@ export class Kit {
     for (const [mat, list] of this.parts) {
       const m = new Mesh(mergeGeometries(list.map((x) => (x.attributes.uv ? x : withUV(x)))), mat);
       m.castShadow = m.receiveShadow = true;
+      // Each part's own box, so the QA guard tests parts, not the merged hull (kit/toon/guard.tsx).
+      m.userData.parts = list.map((x) => (x.computeBoundingBox(), x.boundingBox!));
       g.add(m);
     }
     return g;

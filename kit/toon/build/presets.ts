@@ -153,7 +153,7 @@ export const PRESETS: Record<PresetName, EraPreset> = {
     },
     floors: [1, 2],
     width: [6, 9],
-    gap: [0.4, 2.5],
+    gap: [0.8, 2.5], // clears two roof overhangs (0.3 m each)
     windowStyles: [["sash"], ["sash", "boarded"], ["shutters"], ["sash", "broken"]],
     lit: 0.25,
     porch: 0.8,

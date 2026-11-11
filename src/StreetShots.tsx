@@ -2,7 +2,7 @@ import { ThreeCanvas } from "@remotion/three";
 import { useMemo } from "react";
 import { AbsoluteFill, useCurrentFrame, useVideoConfig } from "remotion";
 import { Character, blinkAt, posed } from "../kit/toon/cast";
-import { drift, pushIn, shot } from "../kit/toon/camera";
+import { arc, drift, pushIn, shot } from "../kit/toon/camera";
 import { ShotCamera } from "../kit/toon/guard";
 import { Composer, DOF } from "../kit/toon/Composer";
 import { PRESETS, PresetName } from "../kit/toon/build/presets";
@@ -15,12 +15,12 @@ import { StreetScene, at } from "./ToonTest";
 // era preset (each with its own seed and layout).
 
 /** Establishing wide: high in the middle of the street, sharp (no lens blur), a slow drift so it never freezes. */
-const WIDE = shot({ pos: at(-3, 0.4, 4.2), look: at(40, 0.6, 5), fov: 56 }, [drift(0.6, 0.2)], 90);
+const WIDE = shot({ pos: at(-3, 0.4, 4.2), look: at(40, 0.6, 5), fov: 56 }, [drift(1.6, 0.3)], 90);
 export const StreetWide: React.FC = () => <StreetScene id="StreetWide" pose={WIDE} frames={90} />;
 
 /** Medium: the protagonist under the s 22 lamp, 4 m from the lens, background lens blur. */
 const P = at(22.6, 3.4);
-const MED = shot({ pos: at(18.8, 2.2, 1.35), look: P.clone().setY(1.15), fov: 42 }, [pushIn(0.4)], 90);
+const MED = shot({ pos: at(18.8, 2.2, 1.35), look: P.clone().setY(1.15), fov: 42 }, [arc(-8), pushIn(0.4)], 90);
 export const StreetMedium: React.FC = () => {
   const f = useCurrentFrame();
   return (
@@ -39,7 +39,7 @@ export const PresetWide: React.FC<{ name: PresetName }> = ({ name }) => {
   const v = useMemo(() => {
     const inside = preset.layout === "interior";
     const base = inside ? { pos: pat(-1, 1.5, 1.7), look: pat(30, 1.5, 1.6), fov: 60 } : { pos: pat(-2, -2.8, 1.7), look: pat(40, 0.8, 5), fov: 58 };
-    return { pose: shot(base, [pushIn(1)], 90), sun: sunDirection(light, base.pos, base.look), opts: { seed: 23, length: 50, lightCenter: pat(12, 0, 2) } };
+    return { pose: shot(base, [pushIn(1), drift(1.4, 0.2)], 90), sun: sunDirection(light, base.pos, base.look), opts: { seed: 23, length: 50, lightCenter: pat(12, 0, 2) } };
   }, [preset, light, pat]);
   return (
     <AbsoluteFill>

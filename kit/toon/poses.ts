@@ -40,7 +40,8 @@ export const POSES = {
   facepalm: { ...REST, arms: [hang, { at: [-0.1, -0.85], grip: "open", layer: "front" }], tilt: 10, bob: -6 },
   panic: { ...REST, arms: both({ at: [0.72, -0.55], grip: "open" }), bob: 10 },
   lean: { ...REST, arms: both({ at: [-0.08, 0.72], layer: "back" }), lean: 1, knee: 12, bob: -14, tilt: -5 },
-  hold: { ...REST, arms: both({ at: [0.0, 0.44], grip: "mitt" }), tilt: 3 },
+  // Hands meet in front of the belly (inward from the shoulders) so a held prop sits between them.
+  hold: { ...REST, arms: both({ at: [-0.24, 0.5], grip: "mitt" }), tilt: 3 },
 } satisfies Record<string, Pose>;
 export type PoseName = keyof typeof POSES | "walk" | "run";
 export const POSE_NAMES: PoseName[] = [...(Object.keys(POSES) as (keyof typeof POSES)[]), "walk", "run"];

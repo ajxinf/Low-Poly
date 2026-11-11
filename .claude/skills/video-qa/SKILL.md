@@ -9,9 +9,14 @@ Run all three layers before every final render, and layer 2 again on the final m
 mark it as intended in the plan, then re-run. Report results to the user as a short table: layer, check, result.
 
 ## Layer 1: scene checks, before rendering (exact, no noise)
-Read the scene graph and the shot plan directly. Implement in `kit/toon/guard.tsx` (it already has the camera vs
-building check) and run it from `scripts/stills.mjs` and `scripts/render.mjs`, sampling every frame of every shot.
-A failure names the shot id, frame and object.
+Read the scene graph and the shot plan directly: `kit/toon/guard.tsx`, run by `scripts/stills.mjs` and
+`scripts/render.mjs` (`guardPass`), every frame of every shot. A failure names the shot id, frame and object.
+- Describe each shot as a `Shot` (id, from, frames, pose, cast with `at`/`state`, subject, scene, light, sun,
+  whips/kicks/flash) and draw the cast from the same functions. Mount `<QAPlan plan={{ slug, shots, words }} />` at the
+  composition root and `<ShotCamera {...shot} />` in each shot's canvas (one Sequence per shot).
+- Mark intended exceptions with `allow: { "<Check>": "why" }` on the shot, or `userData.joins` on scene objects
+  built to meet (terraced rows, a building's walls; up to 35 cm). Intended items are listed, not failed.
+- Results: `out/<slug>/layer1.md` (table + every failure) and `out/<slug>/plan.json`.
 
 | Check | Rule |
 |---|---|
@@ -19,7 +24,7 @@ A failure names the shot id, frame and object.
 | Feet on the ground | each standing character's sole within +-2 cm of the ground height under it (no floating, no sinking); sitting characters touch their seat |
 | Card penetration | a character card's footprint (width x 0.3 m) never overlaps walls, shelves or props; two cards never closer than 0.25 m in depth when they overlap on screen (z-fighting) |
 | Props through props | no two prop boxes intersect at setup (beyond 1 cm), nothing floats above its support by > 2 cm |
-| Camera curve | from the camera keys, per frame: screen speed of the look point <= 25 px/f at 1080 outside planned whips; acceleration <= 20 px/f per frame; zoom change <= 2.2 %/f per frame; no 3-frame snaps; every hold creeps (no still run >= 12 f) |
+| Camera curve | from the camera keys, per frame: screen speed of the look point <= 25 px/f at 1080 outside planned whips; acceleration <= 20 px/f per frame; zoom change <= 2.2 %/f per frame; no 3-frame snaps; every hold creeps (no run >= 12 f where the median motion of what rays through `measure.py`'s 7x4 block centres hit is < 0.5 px/f) |
 | Subject in frame | the speaking/reacting character's head fully inside the frame and inside the 0.08-0.92 horizontal safe area |
 | Caption vs face | while a caption is visible, no character head box overlaps the caption band (y 0.64-0.76 H) |
 | Reaction timing | expression swaps and gag effects land 0-3 frames before their word in `words.json` |
