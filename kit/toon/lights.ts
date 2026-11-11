@@ -11,6 +11,7 @@ export type LightPreset = {
   shade: RGB;
   lift: RGB;
   skyTop: string;
+  skyMid?: string;
   skyHorizon: string;
   fog: string;
   fogNear: number;
@@ -18,6 +19,12 @@ export type LightPreset = {
   sat: number;
   haze: { color: string; start: number; amount: number };
   sunDisc?: string;
+  /** Warm glow in the sky around the sun (colour, strength). */
+  sunGlow?: [string, number];
+  /** Painted clouds: lit underside and shaded top colours. */
+  clouds?: { lit: string; shade: string; cover: number };
+  /** Street lamps and lit windows: colour and HDR strength of their light pools. */
+  lamp?: [string, number];
 };
 
 export const LIGHTS = {
@@ -49,6 +56,25 @@ export const LIGHTS = {
     sat: 1.08,
     haze: { color: "#f0b48c", start: 50, amount: 0 },
     sunDisc: "#ffcf9e",
+  },
+  // Low warm key from ahead-left; shade is cool and ~45 % of the lit luma; low ambient; fog = horizon, past 40 m.
+  dusk: {
+    az: -28,
+    el: 30,
+    lit: [1.62, 1.12, 0.74],
+    shade: [0.5, 0.55, 0.8],
+    lift: [0.01, 0.01, 0.03],
+    skyTop: "#6468c0",
+    skyMid: "#c48ad2",
+    skyHorizon: "#ffb39a",
+    fog: "#ffb39a",
+    fogNear: 40,
+    fogFar: 260,
+    sat: 1.12,
+    haze: { color: "#ffb39a", start: 60, amount: 0 },
+    sunGlow: ["#ffb27a", 0.9],
+    clouds: { lit: "#ffa58f", shade: "#9070b8", cover: 0.68 },
+    lamp: ["#ffa245", 2.4],
   },
 } satisfies Record<string, LightPreset>;
 

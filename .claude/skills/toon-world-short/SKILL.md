@@ -120,17 +120,21 @@ and a rust-orange accent.
     top `#3e7fd2` -> horizon `#b8d0ec`, fog = horizon, 25->300 m, uSat 1.08, ~15 % blue haze past 60 m.
   - golden: az 6 / el 7 (backlit low sun), key toward `#FFB36B` x1.5, violet-blue shade (facade ~ `#444380`), sky
     `#ffc47c` -> `#8a6f8a`, peach fog only past 50 m, sun disc `#ffcf9e` + bloom, contact blobs + real card shadows.
+  - dusk (`LIGHTS.dusk`, ToonTest): az -28 / el 30 key, lit [1.62,1.12,.74], shade [.5,.55,.8] (~45 % of lit), lift
+    ~0, sky `#6468c0` -> `#c48ad2` -> horizon `#ffb39a` + painted clouds, fog = horizon past 40 m, shadow maps on,
+    lamps/lit windows as HDR emissives with warm light pools (`setLamps`), drifting dust (`Dust`).
   - night (add for scenarios): moon-blue key, warm practical lights (lamps, fires, shop signs) as HDR emissives.
 - **Albedos** (`paint.ts`/`build.ts`): muted, never neon. Buildings with plinth, cornice, sills, door step; warm grey/
   beige stone; wood with near-black seams; metal dark and desaturated. Never lemon, never lavender lit faces.
-- **Ink** (`ink.ts`): `#030303`, 5.1 px near (6 m) -> 3.3 px far (90 m) at 1080x1920; creases from 35 deg; depth
+- **Ink** (`ink.ts`): `#1c1210`, 4 px near (6 m) -> 2.5 px far (90 m) at 1080x1920; creases from 35 deg; depth
   jumps from 1 %; fog tint 0.3 only far. Silhouettes, depth jumps and creases only: no lines on wall/floor joins or the
   horizon. Character cards are on `NOINK` and carry their own plum ink.
-- **Colour**: day median luma ~.57, non-ink p5 ~.23 (no crushed blacks), lit chroma C* p90 ~55. Golden shadows
+- **Colour** (`python scripts/measure.py <png|mp4>`): dusk luma .39-.51, p5 .08-.17, C* p90 57-68, mean sat .50-.58.
+  Day median luma ~.57, non-ink p5 ~.23 (no crushed blacks), lit chroma C* p90 ~55. Golden shadows
   violet-blue, never brown.
 - **Lens** (`dofAt`): cInf px at 1080: hook CU 15-16, close-ups 12-14, mediums 10-12, wides/aerials 0. Focus on the
   eyes of the front character. DOF on about 1/3 of screen time.
-- **Post**: bloom threshold 1.0, intensity .5, 6 levels, radius .6 (HDR emissives only); NEUTRAL tone map; grade last.
+- **Post** (`Composer.tsx`, `POST`): background DOF 6.5 px past 45 m, grade sat 1.22, vignette .85; bloom threshold 1.0, intensity .5, 6 levels, radius .6 (HDR emissives only); NEUTRAL tone map; grade last.
   Film grain off.
 - **Characters**: about 3.5 head-heights tall, legs 1.4 HH; stick limbs ~0.055 of head width; ink-dot hands; plum ink
   thicker on the shadow side; walk bob 3-7 %, lean 1-7 deg, planted 0.8 m stride; blinks every 0.5-2.3 s lasting 4 f;

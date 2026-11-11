@@ -1,35 +1,16 @@
-import { useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useMemo } from "react";
-import {
-  Color,
-  DepthTexture,
-  Fog,
-  FloatType,
-  HalfFloatType,
-  Matrix4,
-  Mesh,
-  MeshNormalMaterial,
-  NeutralToneMapping,
-  OrthographicCamera,
-  PerspectiveCamera,
-  PlaneGeometry,
-  Scene,
-  ShaderMaterial,
-  Vector2,
-  WebGLRenderTarget,
-} from "three";
+import { Color, Matrix4, ShaderMaterial, Vector2 } from "three";
 
 /** Layer for character cards: drawn, but never inked by this pass (they carry their own plum ink). */
 export const NOINK = 1;
-/** Layer for the sky dome: colour pass only. */
+/** Layer for the sky dome and particles: colour pass only. */
 export const SKY = 2;
 
 /** Ink look values, in px at 1080x1920 (scaled by output height / 1920). */
 export const INK = {
-  color: "#030303",
-  nearPx: 5.1,
+  color: "#1c1210",
+  nearPx: 4,
   nearM: 6,
-  farPx: 3.3,
+  farPx: 2.5,
   farM: 90,
   creaseDeg: 35,
   depthJump: 0.01,
@@ -113,104 +94,33 @@ void main() {
   cover *= 1.0 - smoothstep(0.8, 1.0, fogF); // lines vanish with the surface they outline
   vec3 ink = mix(uInk, uFog, uFogTint * fogF);
   gl_FragColor = vec4(mix(col, ink, cover), 1.0);
-  #include <tonemapping_fragment>
-  #include <colorspace_fragment>
 }`;
 
-/**
- * Takes over rendering: colour pass (HDR, MSAA 4) -> normal+depth pass -> ink lines -> NEUTRAL tone map.
- * Mount once inside <ThreeCanvas>. Later post (lens, bloom, grade) slots in after the ink.
- */
-export const InkRenderer: React.FC = () => {
-  const { gl, scene, camera } = useThree();
-
-  const p = useMemo(() => {
-    const size = gl.getDrawingBufferSize(new Vector2());
-    const colorRT = new WebGLRenderTarget(size.x, size.y, { type: HalfFloatType, samples: 4 });
-    const normalRT = new WebGLRenderTarget(size.x, size.y, { type: HalfFloatType });
-    normalRT.depthTexture = new DepthTexture(size.x, size.y, FloatType);
-    const normalMat = new MeshNormalMaterial();
-    const noinkMat = new ShaderMaterial({
-      vertexShader: "void main(){ gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
-      fragmentShader: "void main(){ gl_FragColor = vec4(0.0); }",
-    });
-    const inkMat = new ShaderMaterial({
-      vertexShader: vert,
-      fragmentShader: frag,
-      depthTest: false,
-      depthWrite: false,
-      uniforms: {
-        tColor: { value: colorRT.texture },
-        tNormal: { value: normalRT.texture },
-        tDepth: { value: normalRT.depthTexture },
-        uProjInv: { value: new Matrix4() },
-        uTexel: { value: new Vector2(1 / size.x, 1 / size.y) },
-        uPx: { value: size.y / 1920 },
-        uNearPx: { value: INK.nearPx },
-        uNearM: { value: INK.nearM },
-        uFarPx: { value: INK.farPx },
-        uFarM: { value: INK.farM },
-        uCrease: { value: Math.cos((INK.creaseDeg * Math.PI) / 180) },
-        uJump: { value: INK.depthJump },
-        uFogTint: { value: INK.fogTint },
-        uSkyMax: { value: INK.skyMaxM },
-        uFogNear: { value: 1e9 },
-        uFogFar: { value: 2e9 },
-        uInk: { value: new Color(INK.color) },
-        uFog: { value: new Color() },
-      },
-    });
-    gl.toneMapping = NeutralToneMapping; // set here: ThreeCanvas advances before child effects run
-    const quad = new Mesh(new PlaneGeometry(2, 2), inkMat);
-    quad.frustumCulled = false;
-    const post = new Scene().add(quad);
-    return { colorRT, normalRT, normalMat, noinkMat, inkMat, post, ortho: new OrthographicCamera() };
-  }, [gl]);
-
-  useEffect(() => {
-    return () => {
-      p.colorRT.dispose();
-      p.normalRT.dispose();
-    };
-  }, [gl, p]);
-
-  useFrame(() => {
-    const cam = camera as PerspectiveCamera;
-    const u = p.inkMat.uniforms;
-    u.uProjInv.value.copy(cam.projectionMatrixInverse);
-    if (scene.fog instanceof Fog) {
-      u.uFog.value.copy(scene.fog.color);
-      u.uFogNear.value = scene.fog.near;
-      u.uFogFar.value = scene.fog.far;
-    }
-    const mask = cam.layers.mask;
-    const clear = gl.getClearColor(new Color());
-    const clearA = gl.getClearAlpha();
-
-    cam.layers.enableAll();
-    gl.setRenderTarget(p.colorRT);
-    gl.clear();
-    gl.render(scene, cam);
-
-    // World normals + depth; NOINK cards write depth with alpha 0 so nothing gets inked around them.
-    gl.setRenderTarget(p.normalRT);
-    gl.setClearColor(0x8080ff, 1);
-    gl.clear();
-    scene.overrideMaterial = p.normalMat;
-    cam.layers.set(0);
-    gl.render(scene, cam);
-    gl.autoClear = false;
-    scene.overrideMaterial = p.noinkMat;
-    cam.layers.set(NOINK);
-    gl.render(scene, cam);
-    gl.autoClear = true;
-    scene.overrideMaterial = null;
-    cam.layers.mask = mask;
-    gl.setClearColor(clear, clearA);
-
-    gl.setRenderTarget(null);
-    gl.render(p.post, p.ortho);
-  }, 1);
-
-  return null;
-};
+/** The ink pass: reads the HDR colour + normal/depth targets, writes HDR colour with lines (no tone map). */
+export const inkMaterial = (size: Vector2) =>
+  new ShaderMaterial({
+    vertexShader: vert,
+    fragmentShader: frag,
+    depthTest: false,
+    depthWrite: false,
+    uniforms: {
+      tColor: { value: null },
+      tNormal: { value: null },
+      tDepth: { value: null },
+      uProjInv: { value: new Matrix4() },
+      uTexel: { value: new Vector2(1 / size.x, 1 / size.y) },
+      uPx: { value: size.y / 1920 },
+      uNearPx: { value: INK.nearPx },
+      uNearM: { value: INK.nearM },
+      uFarPx: { value: INK.farPx },
+      uFarM: { value: INK.farM },
+      uCrease: { value: Math.cos((INK.creaseDeg * Math.PI) / 180) },
+      uJump: { value: INK.depthJump },
+      uFogTint: { value: INK.fogTint },
+      uSkyMax: { value: INK.skyMaxM },
+      uFogNear: { value: 1e9 },
+      uFogFar: { value: 2e9 },
+      uInk: { value: new Color(INK.color) },
+      uFog: { value: new Color() },
+    },
+  });
