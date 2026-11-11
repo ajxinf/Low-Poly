@@ -17,6 +17,8 @@ export type GroundOpts = { kind: GroundKind; base: string; contrast?: number; ac
 type R = () => number;
 type Ctx = CanvasRenderingContext2D;
 const W = 512;
+/** Asphalt tile size (m): wider than any road, so lane wear never repeats sideways. */
+const ASPHALT_TILE = 8;
 const size = (r: R) => 0.7 + 0.6 * r();
 /** Colour jitter scaled by contrast. */
 const jit = (base: string, r: R, k: number, c: number) => shade(base, (r() - 0.5) * k * c * 2);
@@ -158,19 +160,59 @@ const PAINT: Record<GroundKind, (ctx: Ctx, r: R, base: string, c: number, accent
       }
     strokes(ctx, r, W, W, 200, [shade(base, 0.2), "#ffffff"], 30, 3, 0.08, 0.8);
   },
+  // Asphalt is painted on an 8 m tile (wider than the road, see ASPHALT_TILE), centred on the road axis: two darker
+  // polished wheel tracks per lane, a lighter worn crown, repair patches, branching cracks and a faded centre line.
   asphalt: (ctx, r, base, c) => {
+    const m = W / ASPHALT_TILE, cx = W / 2;
     ctx.fillStyle = base;
     ctx.fillRect(0, 0, W, W);
-    strokes(ctx, r, W, W, 900, [shade(base, -0.15 * c), shade(base, 0.15 * c)], 6, 3, 0.4);
-    ctx.strokeStyle = shade(base, -0.3 * c);
-    ctx.lineWidth = 2;
-    for (let k = 0; k < 4; k++) {
-      let x = r() * W, y = r() * W;
+    strokes(ctx, r, W, W, 500, [shade(base, -0.12 * c), shade(base, 0.12 * c)], 8, 3, 0.35);
+    const band = (x: number, w: number, col: string, a: number) => {
+      const g = ctx.createLinearGradient(x - w / 2, 0, x + w / 2, 0);
+      g.addColorStop(0, `rgba(${col},0)`);
+      g.addColorStop(0.5, `rgba(${col},${a})`);
+      g.addColorStop(1, `rgba(${col},0)`);
+      ctx.fillStyle = g;
+      ctx.fillRect(x - w / 2, 0, w, W);
+    };
+    const dark = shade(base, -0.35).slice(4, -1), light = shade(base, 0.3).slice(4, -1);
+    for (const lane of [-1, 1]) {
+      band(cx + lane * 1.75 * m, 1.1 * m, light, 0.35); // worn crown of the lane
+      for (const t of [-0.75, 0.75]) band(cx + (lane * 1.75 + t) * m, 0.45 * m, dark, 0.45); // wheel tracks
+    }
+    // Repair patches: rounded rectangles a shade off the base, with a darker seal rim.
+    for (let i = 0; i < 6; i++) {
+      const w = (0.6 + r() * 1.6) * m, h = (0.5 + r() * 2.2) * m, x = r() * (W - w), y = r() * (W - h);
+      ctx.fillStyle = shade(base, (r() < 0.5 ? -1 : 1) * (0.08 + r() * 0.08));
+      ctx.strokeStyle = shade(base, -0.4);
+      ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(x, y);
-      for (let q = 0; q < 6; q++) ctx.lineTo((x += (r() - 0.5) * 40), (y += (r() - 0.5) * 40));
+      ctx.roundRect(x, y, w, h, 6);
+      ctx.fill();
       ctx.stroke();
     }
+    // Branching cracks.
+    ctx.strokeStyle = shade(base, -0.45 * c - 0.1);
+    ctx.lineCap = "round";
+    for (let k = 0; k < 10; k++) {
+      let x = r() * W, y = r() * W, a = r() * Math.PI * 2;
+      ctx.lineWidth = 1.2 + r() * 1.3;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      for (let q = 0; q < 9; q++) {
+        a += (r() - 0.5) * 1.2;
+        ctx.lineTo((x += Math.cos(a) * 14), (y += Math.sin(a) * 14));
+        if (r() < 0.25) {
+          const bx = x, by = y, ba = a + (r() < 0.5 ? 1 : -1) * 0.9;
+          ctx.moveTo(bx + Math.cos(ba) * 18, by + Math.sin(ba) * 18);
+          ctx.lineTo(bx, by);
+        }
+      }
+      ctx.stroke();
+    }
+    // Faded centre line, dashed along the road.
+    ctx.fillStyle = "rgba(236,226,190,0.55)";
+    for (let y = 0; y < W; y += 3 * m) ctx.fillRect(cx - 0.06 * m, y, 0.12 * m, 1.5 * m);
   },
   grass: (ctx, r, base, c) => {
     ctx.fillStyle = base;
@@ -204,8 +246,11 @@ export const groundTex = ({ kind, base, contrast = 0.5, accent, grime = 0 }: Gro
   });
 
 /** Ground material; `wear` = a smoother worn path down the middle (lateral uv in metres). */
-export const groundMaterial = (o: GroundOpts, wear?: { center: number; width: number }) =>
-  toonMaterial({ map: groundTex(o), repeat: [0.5, 0.5], wear: wear ? { ...wear, amount: 0.75 } : undefined });
+export const groundMaterial = (o: GroundOpts, wear?: { center: number; width: number }) => {
+  const k = o.kind === "asphalt" ? 1 / ASPHALT_TILE : 0.5;
+  // Asphalt paints its own lane wear (offset half a tile so the painted centre sits on the road axis).
+  return toonMaterial({ map: groundTex(o), repeat: [k, k], offset: o.kind === "asphalt" ? 0.5 : 0, wear: wear && o.kind !== "asphalt" ? { ...wear, amount: 0.75 } : undefined });
+};
 
 // ------------------------------------------------------------- puddles
 

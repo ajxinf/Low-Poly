@@ -4,8 +4,8 @@
  * 2. saturation around luma per zone (shadows / mids / highlights);
  * 3. three-way tint (RGB offsets per zone, /255);
  * 4. vignette x (1 - k smoothstep(r0, 1, r)), r = 1 at the corners.
- * DAY and GOLDEN are the report's fits to the 20-video reference; NIGHT and INTERIOR are authored from the same
- * study's cluster stats (night: violet darks, corners ~.6; interior: rose darks, corners ~.75).
+ * The report's fitted curves lifted the mids for its darker source frames and made ours milky; we keep its
+ * structure (curve, zone saturation, three-way tint, vignette) with our own values, tuned with measure.py.
  */
 export type Grade = {
   y: number[];
@@ -17,42 +17,22 @@ export type Grade = {
   vig: [number, number];
   /** 0 = off, 1 = full. */
   amount: number;
+  /** Linear exposure after bloom, before the tone map (backlit dusk frames are mostly shade). */
+  exposure?: number;
 };
 export type GradeName = "day" | "golden" | "night" | "interior";
 
+/**
+ * One house S-curve for every preset: black point at sRGB ~(20,12,14) (curve 0.045 + a small warm shadow tint, no
+ * global lift), gentle toe and shoulder for contrast, saturation up. Presets differ only in the tints and vignette
+ * (corners ~.85 of centre; darker at night).
+ */
+const S_CURVE = { y: [0.045, 0.095, 0.19, 0.47, 0.83, 0.96, 1], m: [0.45, 0.55, 1.1, 1.65, 1.0, 0.5, 0.3] };
 export const GRADE: Record<GradeName, Grade> = {
-  day: {
-    y: [0.0345, 0.1828, 0.3812, 0.6605, 0.8814, 0.9631, 1],
-    m: [1.483, 1.404, 1.22, 0.987, 0.661, 0.435, 0.369],
-    sat: [0.983, 1.273, 1.457],
-    tint: { s: [16.5, -3.5, -13.8], m: [-4.2, -0.6, 17.8], h: [-1.9, -0.1, 6.8] },
-    vig: [0.1, 0.45],
-    amount: 0.8,
-  },
-  golden: {
-    y: [0.0311, 0.1877, 0.4017, 0.6754, 0.875, 0.9582, 1],
-    m: [1.567, 1.498, 1.253, 0.924, 0.645, 0.472, 0.418],
-    sat: [0.832, 0.88, 1.706],
-    tint: { s: [0.2, -2.6, 25], m: [-0.1, -2.7, 27.6], h: [0, 0, 0] },
-    vig: [0.16, 0.4],
-    amount: 0.8,
-  },
-  night: {
-    y: [0.035, 0.13, 0.28, 0.54, 0.78, 0.92, 1],
-    m: [1.0, 1.0, 1.04, 1.0, 0.86, 0.68, 0.5],
-    sat: [1.2, 1.35, 1.2],
-    tint: { s: [7, -3, 18], m: [3, -2, 8], h: [0, 0, 0] },
-    vig: [0.4, 0.3],
-    amount: 1,
-  },
-  interior: {
-    y: [0.03, 0.12, 0.27, 0.52, 0.77, 0.92, 1],
-    m: [1.0, 1.0, 1.05, 1.0, 0.9, 0.7, 0.5],
-    sat: [1.15, 1.45, 1.35],
-    tint: { s: [12, -4, -2], m: [-4, 0, 10], h: [-2, 0, 5] },
-    vig: [0.25, 0.4],
-    amount: 0.9,
-  },
+  day: { ...S_CURVE, exposure: 1.15, sat: [1.3, 1.5, 1.3], tint: { s: [8, 0, 2], m: [0, 0, 4], h: [0, 0, 2] }, vig: [0.06, 0.45], amount: 1 },
+  golden: { ...S_CURVE, exposure: 1.95, sat: [1.35, 1.6, 1.4], tint: { s: [8, -1, 6], m: [2, 0, 2], h: [3, 0, -4] }, vig: [0.28, 0.4], amount: 1 },
+  night: { ...S_CURVE, sat: [1.3, 1.45, 1.3], tint: { s: [6, -1, 10], m: [2, -1, 6], h: [0, 0, 0] }, vig: [0.35, 0.3], amount: 1 },
+  interior: { ...S_CURVE, sat: [1.25, 1.5, 1.35], tint: { s: [8, 0, 2], m: [-2, 0, 6], h: [-2, 0, 4] }, vig: [0.18, 0.4], amount: 1 },
 };
 
 /** The grade the Composer applies; set by applyLight() from the shot's light preset. */
@@ -98,4 +78,5 @@ export const setGradeUniforms = (u: Record<string, { value: unknown }>, g: Grade
   u.uTintH.value = g.tint.h.map((v) => v / 255);
   u.uVig.value = g.vig;
   u.uGAmount.value = g.amount;
+  u.uExposure.value = g.exposure ?? 1;
 };

@@ -62,9 +62,9 @@ export const MAT = {
   metal: () => M("metal", () => toonMaterial({ map: rough("#3a3438"), repeat: [1, 1] })),
   wood: () => M("wood", () => toonMaterial({ map: planks("#80583a"), repeat: [1, 1] })),
   darkWood: () => M("darkWood", () => toonMaterial({ map: planks("#4e3426"), repeat: [1, 1] })),
-  winLit: () => M("winLit", () => toonMaterial({ map: windowTex(true), emissive: ["#ffb76a", 2.6] })),
+  winLit: () => M("winLit", () => toonMaterial({ map: windowTex(true), emissive: ["#ffb76a", 3] })), // HDR x3: blooms past threshold 1
   winDark: () => M("winDark", () => toonMaterial({ map: windowTex(false) })),
-  lampGlass: () => M("lampGlass", () => toonMaterial({ color: "#ffd18a", emissive: ["#ffb35a", 6] })),
+  lampGlass: () => M("lampGlass", () => toonMaterial({ color: "#ffd18a", emissive: ["#ffb35a", 3] })),
   color: (c: string) => M(`col${c}`, () => toonMaterial({ map: rough(c), repeat: [1, 1] })),
   glow: (c: string, k: number) => M(`glow${c}${k}`, () => toonMaterial({ color: c, emissive: [c, k] })),
 };

@@ -173,7 +173,7 @@ export const PRESETS: Record<PresetName, EraPreset> = {
     name: "Modern suburb",
     light: "day",
     layout: "detached",
-    road: { kind: "asphalt", base: "#6a6670", contrast: 0.5 },
+    road: { kind: "asphalt", base: "#524860", contrast: 0.5 },
     walk: { kind: "slabs", base: "#c8c0b4", contrast: 0.4 },
     yard: { kind: "grass", base: "#6a9a4a", contrast: 0.5 },
     walls: [

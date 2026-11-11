@@ -99,7 +99,7 @@ void main() {
 // grey, lighting.md 3) -> sRGB -> fitted grade (grade.ts).
 const finalFrag = /* glsl */ `
 uniform sampler2D tColor, tBloom;
-uniform float uBloom;
+uniform float uBloom, uExposure;
 varying vec2 vUv;
 ${GRADE_GLSL}
 vec3 neutral(vec3 color) {
@@ -114,7 +114,7 @@ vec3 neutral(vec3 color) {
 }
 vec3 toSRGB(vec3 c) { return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(0.0031308, c)); }
 void main() {
-  vec3 c = texture2D(tColor, vUv).rgb + uBloom * texture2D(tBloom, vUv).rgb;
+  vec3 c = (texture2D(tColor, vUv).rgb + uBloom * texture2D(tBloom, vUv).rgb) * uExposure;
   c = neutral(max(c, 0.0));
   c = toSRGB(clamp(c, 0.0, 1.0));
   gl_FragColor = vec4(grade(c, vUv), 1.0);
@@ -180,6 +180,7 @@ export const Composer: React.FC<{ dof?: Dof }> = ({ dof = POST.dof }) => {
       uTintH: { value: [0, 0, 0] },
       uVig: { value: [0, 0.5] },
       uGAmount: { value: 1 },
+      uExposure: { value: 1 },
     });
     const quad = new Mesh(new PlaneGeometry(2, 2), ink);
     quad.frustumCulled = false;

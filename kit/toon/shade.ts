@@ -109,6 +109,7 @@ const vertex = /* glsl */ `
 #include <fog_pars_vertex>
 #include <shadowmap_pars_vertex>
 uniform vec2 uRepeat;
+uniform float uOffset;
 varying vec3 vN;
 varying vec3 vW;
 varying vec2 vUv;
@@ -116,7 +117,7 @@ varying float vDist;
 varying vec3 vView;
 varying vec3 vNV;
 void main() {
-  vUv = uv * uRepeat;
+  vUv = uv * uRepeat + vec2(uOffset, 0.0);
   #include <beginnormal_vertex>
   #include <defaultnormal_vertex>
   #include <begin_vertex>
@@ -191,12 +192,14 @@ export type ToonOpts = {
   floor?: number;
   /** HDR self-light: colour and strength (strength > 1 feeds the bloom). */
   emissive?: [string, number];
+  /** Lateral texture offset (in tiles), e.g. to centre a painted road on its axis. */
+  offset?: number;
   /** Worn smoother path along uv.y, centred at uv.x = center (m), `width` m wide (ground ribbons). */
   wear?: { center: number; width: number; amount: number };
 };
 
 /** Two-tone toon material. `mute` (0-1) pulls the map toward grey, then `color` tints it; `floor` lifts its darkest value. */
-export const toonMaterial = ({ color = "#ffffff", map = null, repeat = [1, 1], mute = 0, floor = 0, emissive, wear }: ToonOpts = {}) =>
+export const toonMaterial = ({ color = "#ffffff", map = null, repeat = [1, 1], offset = 0, mute = 0, floor = 0, emissive, wear }: ToonOpts = {}) =>
   new ShaderMaterial({
     vertexShader: vertex,
     fragmentShader: fragment,
@@ -210,6 +213,7 @@ export const toonMaterial = ({ color = "#ffffff", map = null, repeat = [1, 1], m
       uMap: { value: map },
       uHasMap: { value: map ? 1 : 0 },
       uRepeat: { value: new Vector2(...repeat) },
+      uOffset: { value: offset },
       uMute: { value: mute },
       uFloor: { value: floor },
       uEmissive: { value: emissive ? linear(emissive[0]).multiplyScalar(emissive[1]) : new Color(0, 0, 0) },

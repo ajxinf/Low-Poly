@@ -1,7 +1,7 @@
 import { drawPerson } from "./figure";
 import type { CharState, Look, Torso } from "./figure";
 import type { Head } from "./face";
-import { BUILD, INK, Pen, SH_HAIR, clamp, mul } from "./toon";
+import { BUILD, Pen, SH_HAIR, clamp, mul } from "./toon";
 import type { P2 } from "./toon";
 
 export { EXPRESSIONS } from "./face";
@@ -70,21 +70,28 @@ const hair = (p: Pen, h: Head) => {
     const [x, y] = pts[i % n];
     if (y >= lim(x)) continue;
     // Lift profile: steep in front, long slope behind, so the crown sweeps up into a forward peak.
-    const dx = (x - cx) / a - 0.42 * d, w = dx * d > 0 ? 0.26 : 0.95;
+    const dx = (x - cx) / a - 0.45 * d, w = dx * d > 0 ? 0.32 : 1.0;
     const k = Math.exp(-((dx / w) ** 2)) * clamp((cy - 0.3 * b - y) / (0.45 * b), 0, 1);
-    cap.push([cx + (x - cx) * 1.04 + 0.42 * a * d * k, cy + (y - cy) * 1.04 - 0.6 * b * k]);
+    cap.push([cx + (x - cx) * 1.05 + 0.55 * a * d * k, cy + (y - cy) * 1.05 - 0.82 * b * k]);
   }
   const xr = cap[cap.length - 1][0], xl = cap[0][0];
   for (let i = 1; i < 8; i++) {
     const x = xr + ((xl - xr) * i) / 8;
     cap.push([x, lim(x) + (i % 2 ? 2.4 * u : 0)]);
   }
-  // Cowlick from the peak, curling up and forward; drawn first so the cap's outline crosses its root.
+  // Cowlick: a full lock (filled wedge) curling up and forward off the peak, not a thin stem. Drawn first so the
+  // cap covers its root.
   const peak = cap.reduce((m, q) => (q[1] < m[1] ? q : m));
-  const root: P2 = [peak[0] - 0.06 * a * d, peak[1] + 0.12 * b];
-  const mid: P2 = [peak[0] + 0.1 * a * d, peak[1] - 0.26 * b], tip: P2 = [peak[0] + 0.38 * a * d, peak[1] - 0.3 * b];
-  p.stroke([root, mid, tip], 7.5 * u, INK);
-  p.stroke([root, mid, tip], 3.6 * u, YOU.hair);
+  const at = (x: number, y: number): P2 => [peak[0] + x * a * d, peak[1] + y * b];
+  const quad = (p0: P2, c: P2, p1: P2): P2[] =>
+    Array.from({ length: 12 }, (_, i) => {
+      const t = i / 11;
+      return [(1 - t) ** 2 * p0[0] + 2 * t * (1 - t) * c[0] + t * t * p1[0], (1 - t) ** 2 * p0[1] + 2 * t * (1 - t) * c[1] + t * t * p1[1]];
+    });
+  const tip = at(0.6, -0.26);
+  const lock = [...quad(at(-0.24, 0.2), at(0.02, -0.46), tip), ...quad(tip, at(0.34, -0.02), at(0.16, 0.24)).slice(1)];
+  p.shadedFill(lock, YOU.hair, SH_HAIR, 0.4 * a);
+  p.inkRing(d > 0 ? lock : [...lock].reverse(), 0.85 * 5 * u);
   p.shadedFill(cap, YOU.hair, SH_HAIR, a);
   p.clip(cap, () => {
     for (const s of [-0.75, -0.4, -0.05])

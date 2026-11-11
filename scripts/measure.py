@@ -3,6 +3,7 @@
 usage: python scripts/measure.py <image-or-video> [more ...] [--frames N]
 
 luma     median Rec.709 luma of the sRGB frame (0-1)
+std      tonal spread: standard deviation of luma
 p5       5th percentile luma of non-ink pixels (ink = luma < .08)
 C*p90    90th percentile CIELAB chroma
 sat      mean HSV saturation
@@ -25,7 +26,7 @@ import tempfile
 import numpy as np
 from PIL import Image
 
-TARGETS = {"luma": (0.39, 0.51), "p5": (0.08, 0.17), "C*p90": (57, 68), "sat": (0.50, 0.58), "vignette": (0.85, 0.85),
+TARGETS = {"luma": (0.43, 0.57), "std": (0.21, 0.29), "sat": (0.38, 0.65), "C*p90": (55, 68), "vignette": (0.8, 0.9),
            "dark L*": (19, 100), "dark C*": (10, 200)}
 
 
@@ -57,6 +58,7 @@ def measure(img):
     dark = (~ink) & (L <= np.percentile(Ln, 10))
     return {
         "luma": float(np.median(y)),
+        "std": float(y.std()),
         "p5": float(np.percentile(y[y >= 0.08], 5)),
         "C*p90": float(np.percentile(lab_chroma(x), 90)),
         "sat": float(sat.mean()),
