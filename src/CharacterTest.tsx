@@ -1,11 +1,11 @@
-import { useThree } from "@react-three/fiber";
 import { ThreeCanvas } from "@remotion/three";
-import { useLayoutEffect } from "react";
+import { useMemo } from "react";
 import { AbsoluteFill, Easing, Sequence, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
-import { PerspectiveCamera, Vector3 } from "three";
+import { Vector3 } from "three";
 import { CharState, Character, blinkAt, posed, reactSquash, walkPose } from "../kit/toon/cast";
 import { Composer, Dof, POST } from "../kit/toon/Composer";
 import { Dust } from "../kit/toon/dust";
+import { ShotCamera } from "../kit/toon/guard";
 import { LIGHTS } from "../kit/toon/lights";
 import { ToonWorld } from "../kit/toon/world";
 import { DUST, SHADOW, SUN, Street, at } from "./ToonTest";
@@ -66,37 +66,25 @@ const camAt = (f: number, wide: boolean): Cam => {
   if (f < 150) {
     // Arc toward the street and push in to a medium shot.
     const t = smooth((f - 90) / 59);
-    const r = lerp(5.1, 2.5, t), th = lerp(0, 0.45, t); // + swings toward the wall, the view opens onto the street
+    const r = lerp(5.1, 2.5, t), th = lerp(0, 0.2, t); // + swings toward the wall, the view opens onto the street
     const dir = v0.clone().normalize().applyAxisAngle(new Vector3(0, 1, 0), th);
     return { pos: P.clone().addScaledVector(dir, r).setY(lerp(0.9, 1.12, t)), look: P.clone().setY(lerp(1.0, 1.12, t)), fov: lerp(50, 42, t), dof: { maxPx: 10, near: r + 1.2, far: r + 10 } };
   }
   // Hard cut: close-up, creeping in.
   const t = (f - 150) / 40;
   const r = lerp(2.35, 2.15, t); // head and shoulders: frame width ~ .37 r at fov 36
-  const dir = v0.clone().normalize().applyAxisAngle(new Vector3(0, 1, 0), 0.35); // looks down the street, not at the wall
+  const dir = v0.clone().normalize().applyAxisAngle(new Vector3(0, 1, 0), 0.08); // looks along the street (the facade is only 1.65 m away: no room on the wall side)
   return { pos: P.clone().addScaledVector(dir, r).setY(1.3), look: P.clone().setY(1.36), fov: 36, dof: { maxPx: 13, near: r + 0.6, far: r + 4 } };
-};
-
-const CameraRig: React.FC<{ cam: Cam }> = ({ cam }) => {
-  const camera = useThree((s) => s.camera) as PerspectiveCamera;
-  useLayoutEffect(() => {
-    camera.position.copy(cam.pos);
-    camera.fov = cam.fov;
-    camera.near = 0.05;
-    camera.far = 1200;
-    camera.updateProjectionMatrix();
-    camera.lookAt(cam.look);
-  }, [camera, cam]);
-  return null;
 };
 
 const Shot: React.FC<{ from: number; wide: boolean }> = ({ from, wide }) => {
   const f = useCurrentFrame() + from;
   const { width, height } = useVideoConfig();
   const cam = camAt(f, wide);
+  const pose = useMemo(() => (lf: number) => ({ ...camAt(lf + from, wide), roll: 0 }), [from, wide]);
   return (
     <ThreeCanvas width={width} height={height}>
-      <CameraRig cam={cam} />
+      <ShotCamera id={wide ? "CharacterTest/wide" : "CharacterTest/walk+closeup"} pose={pose} frames={wide ? 60 : 190} from={from} />
       <ToonWorld preset={LIGHTS.dusk} sunDir={SUN} shadow={SHADOW} />
       <Street bollards={false} />
       <Dust center={DUST.center} size={DUST.size} />

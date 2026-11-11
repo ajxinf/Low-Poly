@@ -2,7 +2,7 @@ import { BoxGeometry, ConeGeometry, CylinderGeometry, PlaneGeometry, SphereGeome
 import { bricks, clockTex, doorTex, plaster, roofTiles, rng } from "../paint";
 import { toonMaterial } from "../shade";
 import { Kit, M, MAT, tiled } from "./kit";
-import { goodsTex, signTex } from "./textures";
+import { signTex } from "./textures";
 
 /** Street props. Each returns a Group with its origin on the ground; some also return a light or perch point. */
 
@@ -234,25 +234,13 @@ export const trashBin = () => {
 
 // ---- supermarket interior
 
-/** Shelf unit (length L along x, both faces stocked), 1.9 m tall. */
-export const shelf = (L: number, seed: number) => {
-  const k = new Kit();
-  k.box(MAT.color("#c8c4c0"), L, 1.9, 0.2, 0, 0.95, 0);
-  const goods = M(`goods${seed % 4}`, () => toonMaterial({ map: goodsTex(seed % 4), repeat: [1, 1] }));
-  for (const z of [-1, 1]) {
-    for (let x = -L / 2 + 0.6; x < L / 2; x += 1.2) k.add(goods, new BoxGeometry(1.18, 1.6, 0.02), x, 0.95, z * 0.36, { ry: z < 0 ? Math.PI : 0 });
-    for (let j = 0; j < 4; j++) k.box(MAT.color("#e8e4e0"), L, 0.04, 0.55, 0, 0.3 + j * 0.42, z * 0.18, false);
-  }
-  k.box(MAT.color("#d84a3a"), L, 0.18, 0.62, 0, 1.98, 0);
-  return k.build();
-};
-
-export const checkout = () => {
+/** Checkout counter; its lane light only glows when the power is on. */
+export const checkout = (lit = true) => {
   const k = new Kit();
   k.box(MAT.color("#e8e4e0"), 2.2, 0.9, 0.8, 0, 0.45, 0);
   k.box(MAT.color("#3a3438"), 1.6, 0.04, 0.5, -0.2, 0.92, 0);
   k.box(MAT.color("#3a3438"), 0.4, 0.35, 0.3, 0.8, 1.1, 0);
-  k.box(MAT.glow("#ffd24a", 2), 0.2, 0.2, 0.2, 0.9, 1.9, 0);
+  k.box(lit ? MAT.glow("#ffd24a", 2) : MAT.color("#8a7a4a"), 0.2, 0.2, 0.2, 0.9, 1.9, 0);
   k.box(MAT.metal(), 0.04, 0.8, 0.04, 0.9, 1.5, 0);
   return k.build();
 };

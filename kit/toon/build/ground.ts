@@ -11,7 +11,8 @@ import { toonMaterial } from "../shade";
  * - the worn path, puddles and edge debris are added by the street (toonMaterial `wear`, `puddle`, `debris`).
  */
 export type GroundKind = "cobbles" | "planks" | "dirt" | "snow" | "tiles" | "slabs" | "asphalt" | "grass";
-export type GroundOpts = { kind: GroundKind; base: string; contrast?: number; accent?: string };
+/** `grime` 0..1: scuff marks, dirty grout and blotches (worn interiors, back alleys). */
+export type GroundOpts = { kind: GroundKind; base: string; contrast?: number; accent?: string; grime?: number };
 
 type R = () => number;
 type Ctx = CanvasRenderingContext2D;
@@ -180,9 +181,25 @@ const PAINT: Record<GroundKind, (ctx: Ctx, r: R, base: string, c: number, accent
 };
 
 /** A ground texture (2 m tile). */
-export const groundTex = ({ kind, base, contrast = 0.5, accent }: GroundOpts) =>
-  painted(`ground${kind}${base}${contrast}${accent ?? ""}`, W, W, (ctx, r) => {
+export const groundTex = ({ kind, base, contrast = 0.5, accent, grime = 0 }: GroundOpts) =>
+  painted(`ground${kind}${base}${contrast}${accent ?? ""}${grime}`, W, W, (ctx, r) => {
     PAINT[kind](ctx, r, base, contrast, accent ?? (kind === "snow" ? "#9fb0d0" : base));
+    if (grime > 0) {
+      // Blotches, dirty joints and curved scuff marks (shoe and trolley wheels).
+      strokes(ctx, r, W, W, Math.round(40 * grime), [shade(base, -0.25), shade(base, -0.15)], 120, 40, 0.18 * grime);
+      ctx.lineCap = "round";
+      for (let i = 0; i < 26 * grime; i++) {
+        const x = r() * W, y = r() * W, len = 20 + r() * 60, a = r() * Math.PI;
+        ctx.strokeStyle = shade(base, -0.55);
+        ctx.globalAlpha = 0.25 + 0.3 * r();
+        ctx.lineWidth = 1.5 + r() * 2.5;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.quadraticCurveTo(x + Math.cos(a) * len * 0.5 + (r() - 0.5) * 20, y + Math.sin(a) * len * 0.5 + (r() - 0.5) * 20, x + Math.cos(a) * len, y + Math.sin(a) * len);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }
     grain(ctx, r, W, W, 8 * contrast * 2);
   });
 

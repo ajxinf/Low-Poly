@@ -1,11 +1,10 @@
-import { useThree } from "@react-three/fiber";
 import { ThreeCanvas } from "@remotion/three";
-import { useLayoutEffect } from "react";
 import { AbsoluteFill, useCurrentFrame, useVideoConfig } from "remotion";
-import { PerspectiveCamera, Vector3 } from "three";
+import { Vector3 } from "three";
 import { Character, blinkAt, posed } from "../kit/toon/cast";
 import { Composer, Dof } from "../kit/toon/Composer";
 import { Dust } from "../kit/toon/dust";
+import { ShotCamera } from "../kit/toon/guard";
 import { EXTRAS } from "../kit/toon/extras";
 import { Look } from "../kit/toon/figure";
 import { LIGHTS } from "../kit/toon/lights";
@@ -24,26 +23,13 @@ const CAST: { look: Look; x: number; ds: number; expr: Expr; pose: PoseName }[] 
   { look: EXTRAS[4].look, x: 0.75, ds: 0.3, expr: "worried", pose: "chin" },
 ];
 
-const Cam: React.FC<{ pos: Vector3; look: Vector3; fov: number }> = ({ pos, look, fov }) => {
-  const camera = useThree((s) => s.camera) as PerspectiveCamera;
-  useLayoutEffect(() => {
-    camera.position.copy(pos);
-    camera.fov = fov;
-    camera.near = 0.05;
-    camera.far = 1200;
-    camera.updateProjectionMatrix();
-    camera.lookAt(look);
-  }, [camera, pos, look, fov]);
-  return null;
-};
-
-const Scene: React.FC<{ cam: { pos: Vector3; look: Vector3; fov: number }; dof?: Dof; cast: typeof CAST }> = ({ cam, dof, cast }) => {
+const Scene: React.FC<{ id: string; cam: { pos: Vector3; look: Vector3; fov: number }; dof?: Dof; cast: typeof CAST }> = ({ id, cam, dof, cast }) => {
   const f = useCurrentFrame();
   const { width, height, fps } = useVideoConfig();
   return (
     <AbsoluteFill>
       <ThreeCanvas width={width} height={height}>
-        <Cam {...cam} />
+        <ShotCamera id={id} pose={() => ({ ...cam, roll: 0 })} frames={1} />
         <ToonWorld preset={LIGHTS.dusk} sunDir={SUN} shadow={SHADOW} />
         <Street bollards={false} />
         <Dust center={DUST.center} size={DUST.size} />
@@ -57,7 +43,7 @@ const Scene: React.FC<{ cam: { pos: Vector3; look: Vector3; fov: number }; dof?:
 };
 
 const WIDE = { pos: at(S - 5.3, -0.25, 1.1), look: at(S, -0.25, 1.15), fov: 44 };
-export const CastLineup: React.FC = () => <Scene cam={WIDE} cast={CAST} />;
+export const CastLineup: React.FC = () => <Scene id="CastLineup" cam={WIDE} cast={CAST} />;
 
 const CU = { pos: at(S - 2.2, 0.25, 1.32), look: at(S, 0.05, 1.36), fov: 36 };
-export const CloseUp: React.FC = () => <Scene cam={CU} cast={[CAST[2]]} dof={{ maxPx: 13, near: 2.8, far: 6.5 }} />;
+export const CloseUp: React.FC = () => <Scene id="CloseUp" cam={CU} cast={[CAST[2]]} dof={{ maxPx: 13, near: 2.8, far: 6.5 }} />;

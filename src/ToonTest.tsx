@@ -1,12 +1,11 @@
-import { useThree } from "@react-three/fiber";
 import { ThreeCanvas } from "@remotion/three";
-import { useLayoutEffect } from "react";
-import { AbsoluteFill, useCurrentFrame, useVideoConfig } from "remotion";
-import { PerspectiveCamera, Vector3 } from "three";
+import { AbsoluteFill, useVideoConfig } from "remotion";
+import { Vector3 } from "three";
 import { Street as LibStreet, StreetOpts, spine, yaw } from "../kit/toon/build/street";
 import { PRESETS } from "../kit/toon/build/presets";
 import { LAMP_HEAD, barrel, crate, fence, lampPost } from "../kit/toon/build/props";
-import { CamPose, applyCam, arc, drift, pushIn, shot } from "../kit/toon/camera";
+import { CamPose, arc, drift, pushIn, shot } from "../kit/toon/camera";
+import { ShotCamera } from "../kit/toon/guard";
 import { Composer } from "../kit/toon/Composer";
 import { Dust } from "../kit/toon/dust";
 import { LIGHTS, sunDirection } from "../kit/toon/lights";
@@ -68,19 +67,12 @@ export const DUST = { center: at(9, -0.5, 2.4), size: new Vector3(9, 4.5, 18) };
  */
 export const MOVE = shot({ pos: at(7, 0.6, 1.5), look: at(19, 0, 3.4), fov: 56 }, [arc(-18, 2), pushIn(2.5), drift(0, 0.6)], 150);
 
-const Cam: React.FC<{ pose: (f: number) => CamPose }> = ({ pose }) => {
-  const frame = useCurrentFrame();
-  const camera = useThree((s) => s.camera) as PerspectiveCamera;
-  useLayoutEffect(() => applyCam(camera, pose(frame)), [frame, camera, pose]);
-  return null;
-};
-
-export const StreetScene: React.FC<{ pose: (f: number) => CamPose; children?: React.ReactNode; dof?: Parameters<typeof Composer>[0]["dof"] }> = ({ pose, children, dof }) => {
+export const StreetScene: React.FC<{ id: string; pose: (f: number) => CamPose; frames: number; children?: React.ReactNode; dof?: Parameters<typeof Composer>[0]["dof"] }> = ({ id, pose, frames, children, dof }) => {
   const { width, height } = useVideoConfig();
   return (
     <AbsoluteFill>
       <ThreeCanvas width={width} height={height}>
-        <Cam pose={pose} />
+        <ShotCamera id={id} pose={pose} frames={frames} />
         <ToonWorld preset={LIGHTS.dusk} sunDir={SUN} shadow={SHADOW} />
         <Street />
         <Dust center={DUST.center} size={DUST.size} />
@@ -91,4 +83,4 @@ export const StreetScene: React.FC<{ pose: (f: number) => CamPose; children?: Re
   );
 };
 
-export const ToonTest: React.FC = () => <StreetScene pose={MOVE} />;
+export const ToonTest: React.FC = () => <StreetScene id="ToonTest/move" pose={MOVE} frames={150} />;

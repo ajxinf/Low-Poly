@@ -60,7 +60,25 @@ ink -> lens blur -> bloom -> NEUTRAL tone map -> grade.
 - Lens blur: none by default (wides and establishing shots stay sharp). Close-ups and mediums pass
   `DOF.closeup(d)` / `DOF.medium(d)` (focus distance d m).
 - Bloom: threshold 1.0, intensity .5, 6 levels, radius .6 (HDR emissives only).
-- Grade: sat 1.28, contrast 1.06, lift .02, warm split .02, vignette .85.
+- Grade: sat 1.28, contrast 1.06, lift .02, black point .07 (p5 .165 wide / .168 move; the 1.6x lit cap is
+  untouched), warm split .02, vignette .85. Content still moves p5: orange-heavy mediums sit near .14.
+
+## Camera guard (`kit/toon/guard.tsx`)
+Every shot uses `<ShotCamera id pose frames from>`: on mount it checks the whole camera path, every frame, against
+the oriented boxes of all objects tagged `userData.collider` (buildings, tower, lamps, props, shelves, walls,
+checkouts, foreground props) and needs >= 0.3 m clearance. A hit throws `Camera guard: shot "<id>" frame <f>: ...`,
+which fails `scripts/stills.mjs` and `scripts/render.mjs` (the render script also runs a guard pass on each shot's
+first frame, `--starts 0,180`, before the video). It caught two CharacterTest collisions in the rebuilt street.
+
+## Supermarket (`kit/toon/build/supermarket.ts`, presets `supermarket_interior` / `supermarket_abandoned`)
+- Lit: fluorescent strips slightly green-white (`#e6fff0`) with real lights; walls and floor warm off-white
+  `#e8dcc4` with grime (kick band, trolley scuffs, drips, scuffed tiles); analytic glossy reflections of the strips
+  in the floor plus darker corners (one colour-only overlay); 24 m aisles of instanced products (boxes, cans, bottles,
+  10 blocky label palettes), price tags, shelf-edge strips, hanging aisle signs, a few half-empty bays, fallen items;
+  checkouts, produce crates, department signs; exit sign glowing green over the entrance.
+- Abandoned night: power off (the shell casts shadows so moonlight only enters through the shop windows), moonlit
+  glass with the street outside, one flickering strip (deterministic `flicker(f)`), barricaded doors, half-empty
+  shelves, more fallen stock and litter. Light `moonInterior` (litMax 8: a dark store needs more than 1.6x).
 
 ## World library (`kit/toon/build/`)
 - `building(spec)`: floors, width, wall (brick, plaster, clapboard, stone, planks), roof (gable, gableFront, hip, flat,

@@ -105,11 +105,12 @@ and a rust-orange accent.
 7. **Captions** on, from `words.json`.
 8. **Sound** (`scripts/audio/`): lock picture timing first. Event table -> synthesized SFX + original score ducked
    under the voice -> `mix.wav` (48 kHz, exact length), stems, `cues.md`. Any later timing change means re-running sound.
-9. **Look checks**: `node scripts/stills.mjs out/<slug>/x_ 100,400 0.5`; side-by-sides against
+9. **Look checks**: `node scripts/stills.mjs <Comp> out/<slug>/x_ 100,400 0.5` (camera guard included: any lens
+   closer than 0.3 m to a building/prop fails with the shot id and frame); side-by-sides against
    `docs/style/frames/` with `python scripts/sbs_sheet.py out.jpg --ours ... --ref ...`; a verifier gives a <=200-word
    verdict, scores (colour, lighting, ink, textures, characters, depth, composition) and a numbered fix list.
 10. **Final render**:
-    `npx remotion render src/index.ts <Comp> out/<slug>/video.mp4 --codec h264 --crf 16 --scale 1.3333 --gl=angle --concurrency=2`,
+    `node scripts/render.mjs <Comp> out/<slug>/video.mp4 1.3333 --starts <first frame of each shot>` (camera guard pass, then h264 crf 16, angle, concurrency 2),
     mux with `npx remotion ffmpeg -i out/<slug>/video.mp4 -i videos/<slug>/audio/mix.wav -map 0:v:0 -map 1:a:0 -c:v copy -c:a aac -b:a 320k out/<slug>/final.mp4`.
     QA: `python scripts/short_qa.py out/<slug>/final.mp4 out/<slug>/qa shots.json` (black, white, frozen, pop frames,
     loudness). Fix, then a final verifier audit.

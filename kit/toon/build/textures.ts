@@ -192,25 +192,102 @@ export const windowLook = (kind: WindowLook, frame = "#e8dcc4", curtain = "#c260
     grain(ctx, r, W, H, 8);
   });
 
-/** Supermarket shelf goods: rows of boxes, cans and bottles in shop colours (whole texture = one shelf bay face). */
-export const goodsTex = (seed: number) =>
-  painted(`goods${seed}`, 256, 256, (ctx, r) => {
-    ctx.fillStyle = "#3a3438";
+/**
+ * Grimy interior wall, whole wall height in one texture (use repeat [0.5, 1 / height]): warm off-white, a darker
+ * kick band at the floor, trolley scuffs, a coloured stripe at 1.2 m, drips under the ceiling.
+ */
+export const grimeWall = (base: string, stripe: string, heightM: number) =>
+  painted(`grimeWall${base}${stripe}${heightM}`, 512, 1024, (ctx, r) => {
+    const W = 512, H = 1024, py = H / heightM; // px per metre (vertical)
+    ctx.fillStyle = base;
+    ctx.fillRect(0, 0, W, H);
+    strokes(ctx, r, W, H, 60, [shade(base, -0.1), shade(base, 0.06)], 160, 60, 0.25);
+    const g = ctx.createLinearGradient(0, H - 0.6 * py, 0, H);
+    g.addColorStop(0, "rgba(70,55,40,0)");
+    g.addColorStop(1, "rgba(70,55,40,0.45)");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, H - 0.6 * py, W, 0.6 * py);
+    ctx.fillStyle = stripe;
+    ctx.fillRect(0, H - 1.25 * py, W, 0.12 * py);
+    ctx.lineCap = "round";
+    for (let i = 0; i < 22; i++) {
+      const y = H - (0.25 + r() * 0.8) * py, x = r() * W, len = 30 + r() * 90;
+      ctx.strokeStyle = shade(base, -0.5);
+      ctx.globalAlpha = 0.2 + r() * 0.3;
+      ctx.lineWidth = 2 + r() * 4;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + len, y + (r() - 0.5) * 6);
+      ctx.stroke();
+    }
+    for (let i = 0; i < 10; i++) {
+      const x = r() * W, len = (0.2 + r() * 0.9) * py;
+      const d = ctx.createLinearGradient(0, 0, 0, len);
+      d.addColorStop(0, "rgba(90,75,55,0.35)");
+      d.addColorStop(1, "rgba(90,75,55,0)");
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = d;
+      ctx.fillRect(x, 0, 6 + r() * 10, len);
+    }
+    ctx.globalAlpha = 1;
+    grain(ctx, r, W, H, 9);
+  });
+
+/** Product label palettes: [background, band, block]. */
+export const LABELS: [string, string, string][] = [
+  ["#d84a3a", "#f2ece2", "#2a3a6a"], ["#f2c84a", "#3a2a1a", "#d84a3a"], ["#3a8ad8", "#f2ece2", "#f2c84a"],
+  ["#4ab06a", "#f2ece2", "#3a2a1a"], ["#f28a3a", "#3a2a6a", "#f2ece2"], ["#e8e0d0", "#d84a3a", "#3a8ad8"],
+  ["#a04ac8", "#f2c84a", "#f2ece2"], ["#2a3a4a", "#f28a3a", "#e8e0d0"], ["#c8423a", "#f2c84a", "#3a2a1a"],
+  ["#5ac8c0", "#2a3a6a", "#f2ece2"],
+];
+
+/** Blocky painted product label (boxes, cans, bottles): coloured body, a band, a logo block and text bars. */
+export const labelTex = (i: number) =>
+  painted(`label${i}`, 128, 128, (ctx, r) => {
+    const [bg, band, block] = LABELS[i % LABELS.length];
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, 128, 128);
+    ctx.fillStyle = band;
+    ctx.fillRect(0, 44, 128, 40);
+    ctx.fillStyle = block;
+    ctx.fillRect(18 + r() * 40, 50, 34, 28);
+    ctx.fillRect(0, 0, 128, 10);
+    ctx.fillStyle = shade(band.length === 7 ? band : "#888888", -0.5);
+    for (let y = 94; y < 120; y += 9) ctx.fillRect(14, y, 60 + r() * 40, 4);
+    grain(ctx, r, 128, 128, 6);
+  });
+
+/** Shop-front glass seen from inside: daylight haze, or a moonlit night sky with a faint street silhouette. */
+export const storeGlass = (night: boolean) =>
+  painted(`storeGlass${night}`, 256, 256, (ctx, r) => {
+    const g = ctx.createLinearGradient(0, 0, 0, 256);
+    if (night) {
+      g.addColorStop(0, "#1e2a5a");
+      g.addColorStop(0.65, "#4a5a9a");
+      g.addColorStop(1, "#8090c8");
+    } else {
+      g.addColorStop(0, "#c8daf0");
+      g.addColorStop(1, "#f2f0e6");
+    }
+    ctx.fillStyle = g;
     ctx.fillRect(0, 0, 256, 256);
-    const cols = ["#d84a3a", "#f2c84a", "#3a8ad8", "#4ab06a", "#f28a3a", "#e8e0d0", "#a04ac8"];
-    for (let row = 0; row < 4; row++) {
-      const y0 = row * 64;
-      let x = 4;
-      while (x < 250) {
-        const w = 14 + r() * 22, h = 30 + r() * 26, c = cols[Math.floor(r() * cols.length)];
-        ctx.fillStyle = c;
-        ctx.fillRect(x, y0 + 60 - h, w, h);
-        ctx.fillStyle = shade(c.length === 7 ? c : "#888888", 0.4);
-        ctx.fillRect(x + 2, y0 + 60 - h + 6, w - 4, 6);
-        x += w + 2;
-      }
-      ctx.fillStyle = "#c8c4c0";
-      ctx.fillRect(0, y0 + 60, 256, 4);
+    // Buildings across the street, a little darker than the sky.
+    ctx.fillStyle = night ? "rgba(14,18,40,0.75)" : "rgba(120,130,150,0.35)";
+    let x = 0;
+    while (x < 256) {
+      const w = 40 + r() * 60, h = 60 + r() * 80;
+      ctx.fillRect(x, 256 - h, w - 4, h);
+      x += w;
+    }
+    // Reflection streaks on the glass.
+    ctx.strokeStyle = night ? "rgba(200,215,255,0.25)" : "rgba(255,255,255,0.45)";
+    ctx.lineWidth = 10;
+    for (let i = 0; i < 3; i++) {
+      const x0 = r() * 256;
+      ctx.beginPath();
+      ctx.moveTo(x0, 256);
+      ctx.lineTo(x0 + 120, 0);
+      ctx.stroke();
     }
     grain(ctx, r, 256, 256, 6);
   });

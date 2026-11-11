@@ -1,10 +1,9 @@
-import { useThree } from "@react-three/fiber";
 import { ThreeCanvas } from "@remotion/three";
-import { useLayoutEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { AbsoluteFill, useCurrentFrame, useVideoConfig } from "remotion";
-import { PerspectiveCamera } from "three";
 import { Character, blinkAt, posed } from "../kit/toon/cast";
-import { CamPose, applyCam, drift, pushIn, shot } from "../kit/toon/camera";
+import { drift, pushIn, shot } from "../kit/toon/camera";
+import { ShotCamera } from "../kit/toon/guard";
 import { Composer, DOF } from "../kit/toon/Composer";
 import { PRESETS, PresetName } from "../kit/toon/build/presets";
 import { Street, spine } from "../kit/toon/build/street";
@@ -17,7 +16,7 @@ import { StreetScene, at } from "./ToonTest";
 
 /** Establishing wide: high in the middle of the street, sharp (no lens blur), a slow drift so it never freezes. */
 const WIDE = shot({ pos: at(-3, 0.4, 4.2), look: at(40, 0.6, 5), fov: 56 }, [drift(0.6, 0.2)], 90);
-export const StreetWide: React.FC = () => <StreetScene pose={WIDE} />;
+export const StreetWide: React.FC = () => <StreetScene id="StreetWide" pose={WIDE} frames={90} />;
 
 /** Medium: the protagonist under the s 22 lamp, 4 m from the lens, background lens blur. */
 const P = at(22.6, 3.4);
@@ -25,17 +24,10 @@ const MED = shot({ pos: at(18.8, 2.2, 1.35), look: P.clone().setY(1.15), fov: 42
 export const StreetMedium: React.FC = () => {
   const f = useCurrentFrame();
   return (
-    <StreetScene pose={MED} dof={DOF.medium(4)}>
+    <StreetScene id="StreetMedium" pose={MED} frames={90} dof={DOF.medium(4)}>
       <Character position={P} state={{ pose: posed("hips", f / 30), expr: "determined", blink: blinkAt(f, 30, 2), fx: {} }} />
     </StreetScene>
   );
-};
-
-const Cam: React.FC<{ pose: (f: number) => CamPose }> = ({ pose }) => {
-  const frame = useCurrentFrame();
-  const camera = useThree((s) => s.camera) as PerspectiveCamera;
-  useLayoutEffect(() => applyCam(camera, pose(frame)), [frame, camera, pose]);
-  return null;
 };
 
 /** One wide per preset: lens on the left walk looking down the street (interiors: down the main aisle). */
@@ -52,7 +44,7 @@ export const PresetWide: React.FC<{ name: PresetName }> = ({ name }) => {
   return (
     <AbsoluteFill>
       <ThreeCanvas width={width} height={height}>
-        <Cam pose={v.pose} />
+        <ShotCamera id={`Preset-${name}`} pose={v.pose} frames={90} />
         <ToonWorld preset={light} sunDir={v.sun} shadow={{ center: pat(22, 0), size: 40 }} />
         <Street preset={preset} light={light} opts={v.opts} />
         <Composer />

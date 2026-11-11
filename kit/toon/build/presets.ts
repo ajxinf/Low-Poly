@@ -45,11 +45,46 @@ export type EraPreset = {
   flags: [string, string][];
   washing: boolean;
   smoke: string;
+  /** Interiors: power on (strip lights) or off, and abandoned (barricades, empty shelves, litter). */
+  interior?: { power: boolean; abandoned: boolean };
   /** Distant backdrop beyond the street end: hills (or mesas / snowy mountains) with optional tree dots. */
   backdrop?: { color: string; shape: "hills" | "mesas" | "mountains"; trees?: string };
 };
 
-export type PresetName = "victorian_town" | "wild_west" | "modern_suburb" | "supermarket_interior" | "snowy_village";
+export type PresetName = "victorian_town" | "wild_west" | "modern_suburb" | "supermarket_interior" | "supermarket_abandoned" | "snowy_village";
+
+/** Supermarket, lit and open; `supermarket_abandoned` is the same store at night with the power off. */
+const SUPERMARKET: EraPreset = {
+  name: "Supermarket interior",
+  light: "interior",
+  layout: "interior",
+  interior: { power: true, abandoned: false },
+  road: { kind: "tiles", base: "#e8dcc4", accent: "#d8cbb0", contrast: 0.5, grime: 0.6 },
+  walk: { kind: "tiles", base: "#e8dcc4", contrast: 0.5 },
+  walls: [{ kind: "plaster", colors: ["#e8dcc4"] }],
+  roofs: { types: ["flat"], colors: ["#e8e8ec"] },
+  trims: ["#d84a3a", "#2a5a9a"],
+  doors: ["#a0a8b0"],
+  shutters: [],
+  curtains: [],
+  shops: { chance: 0, frames: [], signs: ["FRUIT & VEG", "BAKERY", "CANNED GOODS", "DRINKS", "FROZEN", "SNACKS"], awnings: [] },
+  floors: [1, 1],
+  width: [24, 24],
+  gap: [0, 0],
+  windowStyles: [],
+  lit: 0,
+  porch: 0,
+  chimneys: [0, 0],
+  posters: 0,
+  props: ["crate"],
+  debris: [],
+  scraps: [],
+  puddles: 0,
+  birds: 0,
+  flags: [],
+  washing: false,
+  smoke: "",
+};
 
 export const PRESETS: Record<PresetName, EraPreset> = {
   victorian_town: {
@@ -168,35 +203,13 @@ export const PRESETS: Record<PresetName, EraPreset> = {
     smoke: "#e8e8ee",
     backdrop: { color: "#6a9a5a", shape: "hills", trees: "#3e6a3a" },
   },
-  supermarket_interior: {
-    name: "Supermarket interior",
-    light: "interior",
-    layout: "interior",
-    road: { kind: "tiles", base: "#e8e4dc", accent: "#c8d0d8", contrast: 0.5 },
-    walk: { kind: "tiles", base: "#e8e4dc", contrast: 0.5 },
-    walls: [{ kind: "plaster", colors: ["#e8e4dc", "#d8e4e8"] }],
-    roofs: { types: ["flat"], colors: ["#e8e8ec"] },
-    trims: ["#d84a3a", "#2a5a9a"],
-    doors: ["#a0a8b0"],
-    shutters: [],
-    curtains: [],
-    shops: { chance: 0, frames: [], signs: ["FRUIT & VEG", "BAKERY", "CANNED GOODS", "DRINKS", "FROZEN", "SNACKS"], awnings: [] },
-    floors: [1, 1],
-    width: [24, 24],
-    gap: [0, 0],
-    windowStyles: [],
-    lit: 0,
-    porch: 0,
-    chimneys: [0, 0],
-    posters: 0,
-    props: ["crate"],
-    debris: [],
-    scraps: ["#e8e0d0", "#d84a3a"],
-    puddles: 1,
-    birds: 0,
-    flags: [],
-    washing: false,
-    smoke: "",
+  supermarket_interior: SUPERMARKET,
+  supermarket_abandoned: {
+    ...SUPERMARKET,
+    name: "Supermarket (abandoned, night)",
+    light: "moonInterior",
+    interior: { power: false, abandoned: true },
+    road: { ...SUPERMARKET.road, grime: 1 },
   },
   snowy_village: {
     name: "Snowy village",
@@ -231,3 +244,4 @@ export const PRESETS: Record<PresetName, EraPreset> = {
     backdrop: { color: "#dfe6f4", shape: "mountains", trees: "#2a4a3e" },
   },
 };
+

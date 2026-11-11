@@ -59,12 +59,13 @@ const PRACTICAL = { lamp: [4.4, 1], window: [3.0, 0.45], shop: [3.6, 0.6], fire:
  * Real point lights for practicals (lamps, lit windows, shop fronts, fires). They light the world and the character
  * cards with a plateau-then-edge falloff (see the shaders). Off when the preset has no `lamp`.
  */
-export const practicalLights = (list: { pos: Vector3; kind: PracticalKind }[], p: LightPreset) => {
+export const practicalLights = (list: { pos: Vector3; kind: PracticalKind; color?: [string, number] }[], p: LightPreset) => {
   const g = new Group();
   practicals.length = 0;
-  for (const { pos, kind } of list) {
+  for (const { pos, kind, color } of list) {
     const [reach, k] = PRACTICAL[kind];
-    const l = new PointLight(p.lamp?.[0] ?? "#000000", (p.lamp?.[1] ?? 0) * k, reach, 0);
+    // `color` overrides the preset lamp (e.g. a green exit sign that stays on when the power is off).
+    const l = color ? new PointLight(color[0], color[1], reach, 0) : new PointLight(p.lamp?.[0] ?? "#000000", (p.lamp?.[1] ?? 0) * k, reach, 0);
     l.position.copy(pos);
     g.add(l);
     practicals.push({ pos: pos.clone(), reach });

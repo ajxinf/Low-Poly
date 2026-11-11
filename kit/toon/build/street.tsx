@@ -1,18 +1,19 @@
 import { useMemo } from "react";
-import { BoxGeometry, BufferAttribute, BufferGeometry, ConeGeometry, CylinderGeometry, Group, Mesh, Object3D, SphereGeometry, Vector3 } from "three";
+import { useCurrentFrame } from "remotion";
+import { BufferAttribute, BufferGeometry, ConeGeometry, CylinderGeometry, Group, Mesh, Object3D, SphereGeometry, Vector3 } from "three";
 import { LightPreset } from "../lights";
 import { rng } from "../paint";
-import { PracticalKind, practicalLights, toonMaterial } from "../shade";
+import { PracticalKind, practicalLights } from "../shade";
 import { BuildingSpec, building, specFacts } from "./building";
 import { debris, groundMaterial, puddle, scraps } from "./ground";
-import { Kit, M, MAT } from "./kit";
+import { Kit, MAT } from "./kit";
 import { EraPreset, PropKind } from "./presets";
 import {
-  FIRE_HEAD, LAMP_HEAD, aisleSign, barrel, bench, bird, bollard, campfire, car, cart, checkout, clockTower, crate, fence, flag,
-  hayBale, hedge, lampPost, mailbox, pine, shelf, signpost, trashBin, washingLine, waterTrough,
+  FIRE_HEAD, LAMP_HEAD, barrel, bench, bird, bollard, campfire, car, cart, clockTower, crate, fence, flag,
+  hayBale, hedge, lampPost, mailbox, pine, signpost, trashBin, washingLine, waterTrough,
 } from "./props";
 import { Smoke } from "./smoke";
-import { signTex } from "./textures";
+import { buildSupermarket } from "./supermarket";
 import { pickVaried } from "./variety";
 
 /** A street spine bending gently right: `at(s, x, y)` = point at arc length s, x m to the right, height y. */
@@ -111,7 +112,7 @@ const PROP: Record<PropKind, (r: () => number) => Object3D> = {
 
 /** Builds the whole street for a preset. Returns the scene group, smoke sources and the spine helpers. */
 export const buildStreet = (p: EraPreset, light: LightPreset, o: StreetOpts = {}) => {
-  if (p.layout === "interior") return buildInterior(p, light, o);
+  if (p.layout === "interior") return { ...buildSupermarket(p, light, o), sp: spine(0), ROAD: 12, WALK: 12, FRONT: 12 };
   const seed = o.seed ?? 11, L = o.length ?? 50, r = rng(seed);
   const sp = spine(o.curve ?? 0.0032);
   const { at, tangent, right } = sp;
@@ -120,9 +121,11 @@ export const buildStreet = (p: EraPreset, light: LightPreset, o: StreetOpts = {}
   const FRONT = o.front ?? (p.layout === "detached" ? WALK + 3 : WALK);
   const g = new Group();
   const lights: Light[] = [], smoke: Vector3[] = [], perches: Vector3[] = [];
-  const place = (obj: Object3D, pos: Vector3, ry: number) => {
+  /** Add an object; `collider` names it for the camera guard (omit for things lenses may pass under). */
+  const place = (obj: Object3D, pos: Vector3, ry: number, collider?: string) => {
     obj.position.copy(pos);
     obj.rotation.y = ry;
+    if (collider) obj.userData.collider = collider;
     g.add(obj);
     obj.updateMatrixWorld(true);
     return obj;
@@ -164,7 +167,7 @@ export const buildStreet = (p: EraPreset, light: LightPreset, o: StreetOpts = {}
       bi++;
       const sc = s + w / 2;
       const b = building(spec);
-      place(b.group, at(sc, side * (FRONT + spec.d / 2)), yaw(right(sc).multiplyScalar(-side)));
+      place(b.group, at(sc, side * (FRONT + spec.d / 2)), yaw(right(sc).multiplyScalar(-side)), `building at s ${sc.toFixed(1)} ${side < 0 ? "left" : "right"}${spec.shop ? ` (${spec.shop.sign})` : ""}`);
       for (const c of b.chimneys) smoke.push(b.group.localToWorld(c.clone()));
       for (const l of b.lights) lights.push({ pos: b.group.localToWorld(l.pos.clone()), kind: l.kind });
       for (const q of b.perches) perches.push(b.group.localToWorld(q.clone()));
@@ -178,12 +181,12 @@ export const buildStreet = (p: EraPreset, light: LightPreset, o: StreetOpts = {}
     sq.position.y = 0.025;
     sq.receiveShadow = true;
     g.add(sq);
-    if (o.landmark) place(clockTower(), at(L + 6, 1.5), yaw(tangent(L + 6).negate()));
+    if (o.landmark) place(clockTower(), at(L + 6, 1.5), yaw(tangent(L + 6).negate()), "clock tower");
     for (const x of [-8, 0, 8]) {
       const spec = pickVaried((a) => presetSpec(p, 8, seed * 100 + bi, a), specFacts, facts);
       facts.push(specFacts(spec));
       bi++;
-      place(building({ ...spec, floors: o.landmark ? Math.max(spec.floors, 3) : p.floors[1] }).group, at(L + 14, x), yaw(tangent(L + 14).negate()));
+      place(building({ ...spec, floors: o.landmark ? Math.max(spec.floors, 3) : p.floors[1] }).group, at(L + 14, x), yaw(tangent(L + 14).negate()), `closing building x ${x}`);
     }
   }
 
@@ -192,7 +195,7 @@ export const buildStreet = (p: EraPreset, light: LightPreset, o: StreetOpts = {}
   for (const [s, side] of lampSpots) {
     const x = p.layout === "detached" ? side * (ROAD + 0.6) : side * (WALK - 0.5);
     const ry = yaw(right(s).multiplyScalar(-side)) - Math.PI / 2; // arm reaches over the street
-    const lp = place(lampPost(), at(s, x), ry);
+    const lp = place(lampPost(), at(s, x), ry, `lamp post at s ${s}`);
     lights.push({ pos: lp.localToWorld(LAMP_HEAD.clone()), kind: "lamp" });
   }
 
@@ -206,7 +209,7 @@ export const buildStreet = (p: EraPreset, light: LightPreset, o: StreetOpts = {}
     if (kind === "hedge" || kind === "fence") [x, ry] = [side * (WALK + 0.3), yaw(tangent(s)) + Math.PI / 2];
     if (kind === "mailbox") x = side * (WALK + 0.2);
     if (kind === "pine" || kind === "campfire") x = side * (WALK + 1.5 + r() * 2.5);
-    const obj = place(PROP[kind](r), at(s, x), ry);
+    const obj = place(PROP[kind](r), at(s, x), ry, `${kind} at s ${s.toFixed(1)}`);
     if (kind === "campfire") lights.push({ pos: obj.localToWorld(FIRE_HEAD.clone()), kind: "fire" });
   }
 
@@ -242,10 +245,13 @@ export const buildStreet = (p: EraPreset, light: LightPreset, o: StreetOpts = {}
   if (p.scraps.length) g.add(...scraps(40, edge, p.scraps, seed + 6));
 
   if (p.backdrop) g.add(backdrop(p.backdrop, at(L + 14, 0), tangent(L + 14), seed));
-  o.extra?.(sp).forEach((obj) => g.add(obj));
+  o.extra?.(sp).forEach((obj) => {
+    obj.userData.collider ??= "foreground prop";
+    g.add(obj);
+  });
   lights.push(...(o.extraLights ?? []));
   g.add(pickLights(lights, light, o.lightCenter ?? at(L * 0.4, 0, 2), o.maxLights ?? 24));
-  return { group: g, smoke, sp, ROAD, WALK, FRONT };
+  return { group: g, smoke, sp, ROAD, WALK, FRONT, animate: undefined as ((f: number) => void) | undefined };
 };
 
 /** Distant hills / mesas / snowy mountains in a 120 deg fan 90-150 m past the street end (aerial perspective hazes them). */
@@ -286,77 +292,11 @@ const pickLights = (lights: Light[], light: LightPreset, center: Vector3, max: n
     light,
   );
 
-/** Supermarket interior: tiled floor, aisles of stocked shelves, checkouts, hanging signs, ceiling light panels. */
-const buildInterior = (p: EraPreset, light: LightPreset, o: StreetOpts) => {
-  const seed = o.seed ?? 11, r = rng(seed);
-  const sp = spine(0);
-  const { at } = sp;
-  const g = new Group();
-  const HW = 12, LEN = 44, H = 5.5;
-  const floor = new Mesh(ribbon(at, -4, LEN, -HW, HW), groundMaterial(p.road, { center: 0, width: 3 }));
-  floor.receiveShadow = true;
-  g.add(floor);
-  // Shell: walls and ceiling never cast shadows (the key stands in for the ceiling lights).
-  const shell = new Kit();
-  const wall = MAT.color(p.walls[0].colors[0]);
-  shell.box(wall, 0.3, H, LEN + 4, -HW, H / 2, -(LEN - 4) / 2);
-  shell.box(wall, 0.3, H, LEN + 4, HW, H / 2, -(LEN - 4) / 2);
-  shell.box(wall, HW * 2, H, 0.3, 0, H / 2, -LEN);
-  shell.box(MAT.color("#f2f2f4"), HW * 2, 0.3, LEN + 4, 0, H, -(LEN - 4) / 2);
-  shell.box(MAT.color(p.trims[0]), HW * 2, 0.5, 0.32, 0, 3.6, -LEN + 0.05);
-  const shellG = shell.build();
-  shellG.traverse((m) => ((m as Mesh).castShadow = false));
-  g.add(shellG);
-  // Department signs on the back wall.
-  p.shops.signs.slice(0, 4).forEach((t, i) => {
-    const s = new Mesh(new BoxGeometry(4, 0.8, 0.06), M(`dept${t}`, () => toonMaterial({ map: signTex(t, "#2a5a9a", "#ffffff") })));
-    s.position.copy(at(LEN - 0.2, -HW + 3.2 + i * 5.8, 4.4));
-    g.add(s);
-  });
-  // Aisles.
-  const lights: Light[] = [];
-  const aisleX = [-9, -5, -1, 3, 7];
-  aisleX.forEach((x, i) => {
-    const sh = shelf(12, seed + i);
-    sh.position.copy(at(26, x));
-    sh.rotation.y = Math.PI / 2;
-    g.add(sh);
-    const sign = aisleSign(`AISLE ${i + 1}`);
-    sign.position.copy(at(19, x + 2, 4.2));
-    g.add(sign);
-  });
-  // Checkouts near the entrance, produce crates on the left.
-  for (const x of [-6, -1, 4]) {
-    const c = checkout();
-    c.position.copy(at(6, x));
-    c.rotation.y = Math.PI / 2;
-    g.add(c);
-  }
-  for (let i = 0; i < 6; i++) {
-    const c = crate(0.7);
-    c.position.copy(at(10 + (i % 3) * 1.1, -10.5 + Math.floor(i / 3) * 1.1));
-    g.add(c);
-    for (let j = 0; j < 5; j++) {
-      const f = new Mesh(new SphereGeometry(0.12, 7, 5), MAT.color(["#d84a3a", "#f2c84a", "#4ab06a", "#f28a3a"][(i + j) % 4]));
-      f.position.copy(c.position).add(new Vector3((r() - 0.5) * 0.4, 0.75, (r() - 0.5) * 0.4));
-      g.add(f);
-    }
-  }
-  // Ceiling light panels: emissive strips with real lights under them.
-  for (let s = 2; s < LEN - 2; s += 7)
-    for (const x of [-7, 0, 7]) {
-      const panel = new Mesh(new BoxGeometry(3.2, 0.06, 0.6), MAT.glow("#fff4dc", 3));
-      panel.position.copy(at(s, x, H - 0.2));
-      g.add(panel);
-      lights.push({ pos: at(s, x, H - 0.6), kind: "lamp" });
-    }
-  g.add(pickLights(lights, light, o.lightCenter ?? at(12, 0, 2), o.maxLights ?? 24));
-  return { group: g, smoke: [] as Vector3[], sp, ROAD: HW, WALK: HW, FRONT: HW };
-};
-
 /** R3F wrapper: the built street plus chimney smoke. Build once per mount (dissolves mount two canvases). */
 export const Street: React.FC<{ preset: EraPreset; light: LightPreset; opts?: StreetOpts }> = ({ preset, light, opts }) => {
+  const frame = useCurrentFrame();
   const built = useMemo(() => buildStreet(preset, light, opts), [preset, light, opts]);
+  built.animate?.(frame); // frame-driven effects (flickering strip)
   return (
     <>
       <primitive object={built.group} />

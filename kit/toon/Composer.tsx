@@ -29,7 +29,9 @@ export const POST = {
   // Lens blur on close-ups and mediums only; wides and establishing shots stay sharp (the default).
   dof: { maxPx: 0, near: 14, far: 45 },
   bloom: { threshold: 1.0, intensity: 0.5, levels: 6, radius: 0.6 },
-  grade: { sat: 1.28, contrast: 1.06, lift: 0.02, vignette: 0.85, warm: 0.02 }, // sat/lift re-tuned after the 1.6x lit cap and aerial haze flattened the frame
+  // sat/lift re-tuned after the 1.6x lit cap and aerial haze flattened the frame; `black` lowers the black point
+  // (darkest tones, p5 ~.15-.17) without touching the lighting.
+  grade: { sat: 1.28, contrast: 1.06, lift: 0.02, black: 0.07, vignette: 0.85, warm: 0.02 },
 };
 
 const vert = /* glsl */ `
@@ -97,7 +99,7 @@ void main() {
 // Bloom add -> NEUTRAL tone map -> grade (saturation, contrast, warm split, vignette) -> sRGB.
 const finalFrag = /* glsl */ `
 uniform sampler2D tColor, tBloom;
-uniform float uBloom, uSat, uContrast, uLift, uVignette, uWarm, uAspect;
+uniform float uBloom, uSat, uContrast, uLift, uBlack, uVignette, uWarm, uAspect;
 varying vec2 vUv;
 vec3 neutral(vec3 color) {
   const float S = 0.76, D = 0.15;
@@ -120,6 +122,7 @@ void main() {
   float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
   c = mix(vec3(l), c, uSat);
   c = (c - 0.5) * uContrast + 0.5 + uLift;
+  c = max(c - uBlack, 0.0) / (1.0 - uBlack); // black point: darks drop, whites stay
   c += uWarm * vec3(1.0, 0.2, -0.6) * (l - 0.35); // warm highlights, cooler shadows
   vec2 q = (vUv - 0.5) * vec2(uAspect, 1.0) * 2.0;
   c *= mix(1.0, uVignette, smoothstep(0.35, 1.25, dot(q, q)));
@@ -182,6 +185,7 @@ export const Composer: React.FC<{ dof?: Dof }> = ({ dof = POST.dof }) => {
       uSat: { value: G.sat },
       uContrast: { value: G.contrast },
       uLift: { value: G.lift },
+      uBlack: { value: G.black },
       uVignette: { value: G.vignette },
       uWarm: { value: G.warm },
       uAspect: { value: size.x / size.y },

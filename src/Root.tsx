@@ -4,6 +4,7 @@ import { CharacterTest } from "./CharacterTest";
 import { ExpressionSheet } from "./ExpressionSheet";
 import { ToonTest } from "./ToonTest";
 import { PresetWide, StreetMedium, StreetWide } from "./StreetShots";
+import { SupermarketMedium, SupermarketNight, SupermarketWide } from "./Supermarket";
 import { PRESETS, PresetName } from "../kit/toon/build/presets";
 
 export const RemotionRoot: React.FC = () => (
@@ -17,6 +18,9 @@ export const RemotionRoot: React.FC = () => (
     {(Object.keys(PRESETS) as PresetName[]).map((n) => (
       <Composition key={n} id={`Preset-${n.replace(/_/g, "-")}`} component={PresetWide} defaultProps={{ name: n }} fps={30} durationInFrames={90} width={1080} height={1920} />
     ))}
+    <Composition id="SupermarketWide" component={SupermarketWide} fps={30} durationInFrames={90} width={1080} height={1920} />
+    <Composition id="SupermarketMedium" component={SupermarketMedium} fps={30} durationInFrames={90} width={1080} height={1920} />
+    <Composition id="SupermarketNight" component={SupermarketNight} fps={30} durationInFrames={90} width={1080} height={1920} />
     <Composition id="ExpressionSheet" component={ExpressionSheet} fps={30} durationInFrames={1} width={1080} height={1920} />
   </>
 );

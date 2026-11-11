@@ -116,8 +116,28 @@ export const LIGHTS = {
     fogFar: 160,
     sat: 1.04,
     haze: { color: "#e8e6e0", start: 30, amount: 0.25 },
-    litTint: "#fff6e8",
-    lamp: ["#fff2d8", 0.9],
+    litTint: "#f4fff4",
+    lamp: ["#e6fff0", 0.9], // fluorescent strips: slightly green-white
+  },
+  // Abandoned interior at night: power off, moonlight through the front windows (key from behind the lens), deep
+  // shade. litMax is raised here on purpose: a dark store lit only by window light needs more than 1.6x.
+  moonInterior: {
+    az: 180,
+    el: 24,
+    lit: [0.62, 0.74, 1.1],
+    shade: [0.05, 0.06, 0.11],
+    lift: [0.004, 0.006, 0.014],
+    litMax: 8,
+    litTint: "#a8c0ff",
+    skyTop: "#0d1838",
+    skyMid: "#1f3266",
+    skyHorizon: "#3a4a7a",
+    fog: "#121828",
+    fogNear: 20,
+    fogFar: 80,
+    sat: 1.0,
+    haze: { color: "#1a2236", start: 14, amount: 0.3 },
+    lamp: ["#e6fff0", 0.7],
   },
 } satisfies Record<string, LightPreset>;
 
