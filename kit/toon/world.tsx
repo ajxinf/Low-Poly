@@ -1,7 +1,7 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useLayoutEffect, useMemo, useRef } from "react";
 import { BackSide, DirectionalLight, Fog, Mesh, Object3D, ShaderMaterial, Vector3 } from "three";
-import { SKY } from "./ink";
+import { CASTER, SKY } from "./ink";
 import { LightPreset, linear } from "./lights";
 import { applyLight } from "./shade";
 
@@ -85,6 +85,7 @@ export const ToonWorld: React.FC<{ preset: LightPreset; sunDir: Vector3; shadow?
     l.shadow.mapSize.set(4096, 4096);
     Object.assign(l.shadow.camera, { left: -s, right: s, top: s, bottom: -s, near: 1, far: 400 });
     l.shadow.camera.updateProjectionMatrix();
+    l.shadow.camera.layers.enable(CASTER);
     l.shadow.bias = -0.0004;
     l.shadow.normalBias = 0.04;
     l.target = new Object3D();

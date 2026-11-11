@@ -2,7 +2,8 @@ import { CARD_INK, HEAD, Pen } from "./toon";
 
 /**
  * Faces, drawn in the head frame (head centre at 0,0, head HEAD.W = 350 wide). Eyes sit high and close
- * (centres .24 head widths apart, 45 % down the head); thick wedge brows do most of the acting; mouths are big.
+ * (centres .24 head widths apart, 45 % down the head): ink dots by default, white ring eyes only for shocked and
+ * scared. Thick wedge brows do most of the acting; mouths are big.
  */
 export const EXPRESSIONS = [
   "neutral", "tired", "worried", "scared", "shocked", "smug", "determined",
@@ -11,14 +12,14 @@ export const EXPRESSIONS = [
 export type Expr = (typeof EXPRESSIONS)[number];
 
 type Eye = {
-  kind?: "open" | "happy" | "content";
+  kind?: "dot" | "ring" | "happy" | "content";
   size?: number;
   pupil?: number;
   /** Upper / lower lid cover 0..1; tilt in degrees (+ = inner corner lower: angry, - = sad). */
   top?: number;
   bot?: number;
   tilt?: number;
-  /** Pupil offset in px (sideways glance). */
+  /** Pupil (or dot) offset in px (sideways glance). */
   px?: number;
 };
 /** [inner, outer, arch] in px: + = lower; arch + bows the brow up. */
@@ -29,17 +30,17 @@ type Face = { eyes: Eye | [Eye, Eye]; brows: Brow | [Brow, Brow]; mouth: Mouth; 
 const FACES: Record<Expr, Face> = {
   neutral: { eyes: {}, brows: [6, 0, 3], mouth: "flat" },
   tired: { eyes: { top: 0.55, tilt: -10 }, brows: [-6, 12, 2], mouth: "wobble" },
-  worried: { eyes: { size: 1.05 }, brows: [-30, 6, -4], mouth: "wobble" },
-  scared: { eyes: { size: 1.2, pupil: 0.6 }, brows: [-32, -8, 2], mouth: "shout" },
-  shocked: { eyes: { size: 1.32, pupil: 0.45 }, brows: [-36, -30, 10], mouth: "o" },
+  worried: { eyes: { size: 1.1 }, brows: [-30, 6, -4], mouth: "wobble" },
+  scared: { eyes: { kind: "ring", size: 1.2, pupil: 0.6 }, brows: [-32, -8, 2], mouth: "shout" },
+  shocked: { eyes: { kind: "ring", size: 1.32, pupil: 0.45 }, brows: [-36, -30, 10], mouth: "o" },
   smug: { eyes: [{ top: 0.5, tilt: 6 }, { top: 0.42, tilt: 4 }], brows: [[10, 4, 2], [-8, -26, 12]], mouth: "smirk" },
   determined: { eyes: { top: 0.32, tilt: 16 }, brows: [24, -8, -2], mouth: "tight", browW: 1.15 },
   sad: { eyes: { top: 0.22, tilt: -16 }, brows: [-26, 12, -6], mouth: "frown" },
-  angry: { eyes: { top: 0.38, bot: 0.12, tilt: 24, pupil: 0.8 }, brows: [34, -12, -6], mouth: "grit", browW: 1.25 },
+  angry: { eyes: { top: 0.28, tilt: 24, size: 1.1 }, brows: [34, -12, -6], mouth: "grit", browW: 1.25 },
   sneaky: { eyes: { top: 0.5, tilt: 8, px: 11 }, brows: [14, 4, 0], mouth: "smirk" },
   relieved: { eyes: { kind: "content" }, brows: [-14, 6, 6], mouth: "smile" },
-  confused: { eyes: [{ size: 0.82, top: 0.2 }, { size: 1.16 }], brows: [[18, 8, 0], [-22, -18, 10]], mouth: "wobble" },
-  deadpan: { eyes: { top: 0.56, bot: 0.08 }, brows: [2, 2, 0], mouth: "flat" },
+  confused: { eyes: [{ size: 0.8, top: 0.2 }, { size: 1.25 }], brows: [[18, 8, 0], [-22, -18, 10]], mouth: "wobble" },
+  deadpan: { eyes: { top: 0.48 }, brows: [2, 2, 0], mouth: "flat" },
   laughing: { eyes: { kind: "happy" }, brows: [-18, -2, 8], mouth: "grin" },
 };
 
@@ -56,7 +57,7 @@ export type Effects = {
   bang?: number;
 };
 
-const EYE = { y: -0.05 * HEAD.W, dx: 0.12 * HEAD.W, rx: 34, ry: 39 };
+const EYE = { y: -0.05 * HEAD.W, dx: 0.12 * HEAD.W, rx: 34, ry: 39, dotX: 15, dotY: 20 };
 const WHITE = "#fbf6ee", MOUTH = "#3a141c", TONGUE = "#c85a64";
 
 const ellipse = (x: number, y: number, rx: number, ry: number) => (c: CanvasRenderingContext2D) => c.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
@@ -66,29 +67,35 @@ const drawEye = (pen: Pen, x: number, y: number, s: number, e: Eye, blink: boole
   if (blink && e.kind !== "happy") return pen.line([[x - 26, y + 4], [x, y + 10], [x + 26, y + 4]], w * 0.85);
   if (e.kind === "happy") return pen.line([[x - 26, y + 10], [x, y - 22], [x + 26, y + 10]], w * 0.95);
   if (e.kind === "content") return pen.line([[x - 26, y - 4], [x, y + 18], [x + 26, y - 4]], w * 0.95);
-  const k = e.size ?? 1, rx = EYE.rx * k, ry = EYE.ry * k;
-  const white = ellipse(x, y, rx, ry);
-  pen.shape(white, WHITE, w * 0.85);
-  pen.dot(x + (e.px ?? 0) + look * 8, y + 3, 15 * (e.pupil ?? 1));
-  const t = Math.tan(((e.tilt ?? 0) * Math.PI) / 180) * rx; // inner corner is toward the face centre (x = -s side)
+  const k = e.size ?? 1, ring = e.kind === "ring";
+  const rx = (ring ? EYE.rx : EYE.dotX) * k, ry = (ring ? EYE.ry : EYE.dotY) * k;
+  const ex = x + (ring ? 0 : (e.px ?? 0) + look * 6);
+  const eye = ellipse(ex, y, rx, ry);
+  if (ring) {
+    pen.shape(eye, WHITE, w * 0.85);
+    pen.dot(x + (e.px ?? 0) + look * 8, y + 3, 15 * (e.pupil ?? 1));
+  } else pen.fill(eye, CARD_INK);
+  // Lids: skin over the eye from the top (or bottom), with an ink line wider than a dot so half-lids read.
+  const t = Math.tan(((e.tilt ?? 0) * Math.PI) / 180) * rx;
+  const span = ring ? 1.2 : 1.5;
   const lid = (cover: number, dir: 1 | -1) => {
     if (!cover) return;
     const ly = y + dir * (-ry + 2 * ry * cover);
     const yi = ly + (dir === 1 ? t : -t * 0.4), yo = ly - (dir === 1 ? t : -t * 0.4);
-    const xi = x - s * rx * 1.2, xo = x + s * rx * 1.2;
-    pen.clip(white, () => {
+    const xi = ex - s * rx * span, xo = ex + s * rx * span;
+    pen.clip(ellipse(ex, y, rx * 1.3, ry * 1.3), () =>
       pen.fill((c) => {
         c.moveTo(xi, yi);
         c.lineTo(xo, yo);
-        c.lineTo(xo, y - dir * ry * 1.5);
-        c.lineTo(xi, y - dir * ry * 1.5);
-      }, skin);
-      pen.line([[xi, yi], [xo, yo]], w * 0.75);
-    });
+        c.lineTo(xo, y - dir * ry * 1.6);
+        c.lineTo(xi, y - dir * ry * 1.6);
+      }, skin),
+    );
+    pen.line([[xi, yi], [xo, yo]], w * 0.75);
   };
   lid(e.top ?? 0, 1);
   lid(e.bot ?? 0, -1);
-  pen.shape(white, null, w * 0.85);
+  if (ring) pen.shape(eye, null, w * 0.85);
 };
 
 /** Wedge brow: thick and blunt at the inner end, tapering to a point outside. */
@@ -168,7 +175,7 @@ const drawMouth = (pen: Pen, x: number, y: number, m: Mouth) => {
   }
 };
 
-export type FaceOpts = { look: number; blink: boolean; fx: Effects; skin: string; eyeScale?: number; ry: number };
+export type FaceOpts = { look: number; blink: boolean; fx: Effects; skin: string; eyeScale?: number; sleepy?: boolean; ry: number };
 
 /** Face on the head frame: expression, blink, look direction and effects. */
 export const drawFace = (pen: Pen, expr: Expr, o: FaceOpts) => {
@@ -181,7 +188,9 @@ export const drawFace = (pen: Pen, expr: Expr, o: FaceOpts) => {
   }
   for (const [i, s] of [[0, -1], [1, 1]] as const) {
     const eye = Array.isArray(f.eyes) ? f.eyes[i] : f.eyes;
-    const e: Eye = fx.ringEyes ? { size: 1.3, pupil: 0.42 } : { ...eye, size: (eye.size ?? 1) * (o.eyeScale ?? 1) };
+    const e: Eye = fx.ringEyes
+      ? { kind: "ring", size: 1.3, pupil: 0.42 }
+      : { ...eye, size: (eye.size ?? 1) * (o.eyeScale ?? 1), top: o.sleepy && !eye.kind ? Math.max(eye.top ?? 0, 0.45) : eye.top };
     const x = ox + s * EYE.dx;
     drawEye(pen, x, EYE.y, s, e, o.blink, o.skin, o.look);
     const brow = (Array.isArray(f.brows[0]) ? (f.brows as [Brow, Brow])[i] : f.brows) as Brow;

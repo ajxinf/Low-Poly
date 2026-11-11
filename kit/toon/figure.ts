@@ -1,6 +1,6 @@
 import { Effects, Expr, drawFace } from "./face";
 import { Arm, Grip, Pose } from "./poses";
-import { Build, DESIGN, HEAD, Pen, Rig, pearPath, rig } from "./toon";
+import { Build, DESIGN, HEAD, Pen, Rig, isDark, pearPath, rig } from "./toon";
 
 /** What a character looks like: build, colours and hooks for the parts that vary per character. */
 export type Look = {
@@ -18,6 +18,10 @@ export type Look = {
   /** Over the face (glasses, moustache). */
   face?: (pen: Pen, ry: number, look: number) => void;
   eyeScale?: number;
+  /** Dark clothes: thin warm rim inside the torso outline (dark skin gets one on the head automatically). */
+  darkClothes?: boolean;
+  /** Eye variety for extras: sleepy adds heavy upper lids to dot eyes. Glasses go in `face`. */
+  eyes?: "dot" | "sleepy";
 };
 
 export type PropName = "phone" | "flashlight" | "box" | "can";
@@ -60,16 +64,16 @@ const mitten = (pen: Pen, r: Rig, cx: number, s: Solved, skin: string) => {
   c.rotate(th);
   const el = (x: number, y: number, rx: number, ry: number, rot = 0) => (q: CanvasRenderingContext2D) => q.ellipse(x, y, rx, ry, rot, 0, Math.PI * 2);
   if (grip === "point") {
-    pen.shape((q) => q.roundRect(R * 0.2, -R * 0.3, R * 2.1, R * 0.6, R * 0.3), skin, pen.w * 0.8);
+    pen.shape((q) => q.roundRect(R * 0.2, -R * 0.3, R * 2.1, R * 0.6, R * 0.3), skin);
     pen.shape(el(R * 0.1, 0, R * 0.95, R * 0.85), skin);
-    pen.shape(el(R * 0.3, ts * R * 0.7, R * 0.45, R * 0.3, ts * 0.5), skin, pen.w * 0.8);
+    pen.shape(el(R * 0.3, ts * R * 0.7, R * 0.45, R * 0.3, ts * 0.5), skin);
   } else {
     const spread = grip === "open" ? 1 : grip === "fist" ? 0 : 0.5;
     const open = grip === "open" ? 1.25 : 1;
     pen.shape(el(R * 0.45 * open, 0, R * (grip === "fist" ? 0.95 : 1.15) * open, R * 0.88 * open), skin);
     if (grip === "open") for (const y of [-0.3, 0.12]) pen.line([[R * 1.15, y * R], [R * 1.75, y * R * 1.2]], pen.w * 0.55);
     // Thumb on top, so it reads at phone size.
-    pen.shape(el(R * (0.15 + spread * 0.25), ts * R * (0.72 + spread * 0.35) * open, R * 0.48, R * 0.3, ts * (0.4 + spread * 0.7)), skin, pen.w * 0.75);
+    pen.shape(el(R * (0.15 + spread * 0.25), ts * R * (0.72 + spread * 0.35) * open, R * 0.48, R * 0.3, ts * (0.4 + spread * 0.7)), skin);
   }
   c.restore();
 };
@@ -93,11 +97,11 @@ const drawProp = (pen: Pen, name: PropName | undefined, arms: Solved[]) => {
   } else {
     const [hx, hy] = rr;
     if (name === "phone") {
-      pen.shape((c) => c.roundRect(hx - 22, hy - 62, 44, 74, 9), "#25242a", pen.w * 0.7);
+      pen.shape((c) => c.roundRect(hx - 22, hy - 62, 44, 74, 9), "#25242a");
       pen.fill((c) => c.roundRect(hx - 15, hy - 55, 30, 52, 4), "#9fd8ff");
     } else {
-      pen.shape((c) => c.roundRect(hx - 14, hy - 78, 28, 88, 8), "#3a3438", pen.w * 0.7);
-      pen.shape((c) => c.roundRect(hx - 20, hy - 92, 40, 22, 6), "#ffe7a0", pen.w * 0.7);
+      pen.shape((c) => c.roundRect(hx - 14, hy - 78, 28, 88, 8), "#3a3438");
+      pen.shape((c) => c.roundRect(hx - 20, hy - 92, 40, 22, 6), "#ffe7a0");
     }
   }
 };
@@ -121,10 +125,10 @@ export const drawPerson = (pen: Pen, look: Look, s: CharState) => {
     pen.poly([[hx, hipY], [kx, ky], [ax, ay]]);
     if (look.cuff) {
       const cuff = (q: CanvasRenderingContext2D) => q.roundRect(ax - 16, ay - 26, 32, 18, 5);
-      pen.shape(cuff, look.cuff[0], pen.w * 0.7);
+      pen.shape(cuff, look.cuff[0]);
       pen.line([[ax - 14, ay - 18], [ax + 14, ay - 18]], pen.w * 0.3, look.cuff[1]);
     }
-    pen.shape((q) => q.roundRect(ax - (side < 0 ? 30 : 12), ay - 6, 42, 22, [11, 13, 6, 6]), look.boots, pen.w * 0.85);
+    pen.shape((q) => q.roundRect(ax - (side < 0 ? 30 : 12), ay - 6, 42, 22, [11, 13, 6, 6]), look.boots);
   });
 
   // Upper body pivots around the hips.
@@ -148,9 +152,10 @@ export const drawPerson = (pen: Pen, look: Look, s: CharState) => {
   pen.shape(torso, "#000");
   pen.clip(torso, () => {
     look.outfit(pen, r);
-    pen.crescent(cx, (top + bottom) / 2, rb, (bottom - top) / 2, rb * 0.55);
+    pen.crescent(cx, (top + bottom) / 2, rb, (bottom - top) / 2);
   });
-  pen.shape(torso, null);
+  if (look.darkClothes) pen.warmRim(torso);
+  else pen.shape(torso, null);
   drawProp(pen, s.prop, arms);
   drawArms(undefined);
 
@@ -167,11 +172,12 @@ export const drawPerson = (pen: Pen, look: Look, s: CharState) => {
   look.hairBack?.(pen, ry, p.look);
   const head = (q: CanvasRenderingContext2D) => q.ellipse(0, 0, HEAD.W / 2, ry, 0, 0, Math.PI * 2);
   pen.shape(head, look.skin);
-  pen.clip(head, () => pen.crescent(0, 0, HEAD.W / 2, ry, HEAD.W * 0.22));
-  pen.shape(head, null);
+  pen.clip(head, () => pen.crescent(0, 0, HEAD.W / 2, ry));
+  if (isDark(look.skin)) pen.warmRim(head);
+  else pen.shape(head, null);
   look.hair(pen, ry, p.look);
   pen.occlude = false;
-  drawFace(pen, s.expr, { look: p.look, blink: s.blink, fx: s.fx, skin: look.skin, eyeScale: look.eyeScale, ry });
+  drawFace(pen, s.expr, { look: p.look, blink: s.blink, fx: s.fx, skin: look.skin, eyeScale: look.eyeScale, sleepy: look.eyes === "sleepy", ry });
   look.face?.(pen, ry, p.look);
   pen.occlude = true;
   pen.w = w0;

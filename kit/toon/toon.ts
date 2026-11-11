@@ -13,44 +13,55 @@ export const HEAD = { W: 350 };
 export const LINE = 9;
 
 /**
- * Outline width in screen px (at 1920 tall) for a head `headPx` tall on screen (at 1920): 8 px for a medium
- * (head ~400 px, like the references), growing slowly to a 14 px cap in close-ups, thinner in wides (min 3).
+ * Outline width in screen px (at 1920 tall) when a standard head (the protagonist's, so every character on a shot gets
+ * the same ink) is `headPx` tall on screen: 8 px for a medium (head ~400 px), growing slowly to a 14 px cap in
+ * close-ups, thinner in wides (min 3).
  */
 export const inkPx = (headPx: number) => Math.min(14, Math.max(3, 8 * Math.sqrt(headPx / 400)));
 
 type Path = (c: CanvasRenderingContext2D) => void;
+/** color = the card; shade = soft form-shadow band (alpha); ink = where the outline/limb ink is (alpha). */
+export type PenMode = "color" | "shade" | "ink";
+/** Warm band just inside the outline of dark fills, so dark skin/clothes separate from dark backgrounds. */
+const WARM_RIM = "#c9875a";
+export const isDark = (hex: string) => {
+  if (!/^#[0-9a-f]{6}$/i.test(hex)) return false;
+  const v = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+  return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2] < 0.33;
+};
 
 export class Pen {
-  /** Mask mode: filled shapes clear the shade mask (unless occlude is off), crescents paint it, ink is skipped. */
+  /** Shade mode: filled shapes clear the band unless occlude is off (face features keep the shade under them). */
   occlude = true;
+  /** -1 = shadow on the left of the card, +1 = right: outlines get ~35 % thicker there. */
+  shadowSide: number;
   constructor(
     public c: CanvasRenderingContext2D,
-    /** -1 = shadow on the left of the card, +1 = right: outlines get thicker there. */
-    public shadowSide = 1,
+    /** Unit vector toward the key light in canvas space (x right, y down). */
+    public light: [number, number] = [-0.6, -0.8],
     public w = LINE,
-    public mask = false,
+    public mode: PenMode = "color",
   ) {
     c.lineJoin = "round";
     c.lineCap = "round";
+    this.shadowSide = light[0] > 0 ? -1 : 1;
   }
 
-  private erase(path: Path, rule: CanvasFillRule = "nonzero") {
-    if (!this.occlude) return;
+  private paint(path: Path, how: "erase" | "ink", rule: CanvasFillRule = "nonzero") {
+    if (how === "erase" && this.mode === "shade" && !this.occlude) return;
     const c = this.c;
     c.save();
-    c.globalCompositeOperation = "destination-out";
+    c.globalCompositeOperation = how === "erase" ? "destination-out" : "source-over";
     c.beginPath();
     path(c);
-    c.fillStyle = "#000";
+    c.fillStyle = "#fff";
     c.fill(rule);
     c.restore();
   }
 
-  /** Filled shape with an ink outline that is ~35 % thicker on the shadow side. */
-  shape(path: Path, fill: string | null, w = this.w) {
-    if (this.mask) return fill ? this.erase(path) : undefined;
+  private stroke(path: Path, w: number, color: string) {
     const c = this.c;
-    c.strokeStyle = CARD_INK;
+    c.strokeStyle = color;
     c.lineWidth = w;
     c.save();
     c.translate(this.shadowSide * w * 0.35, w * 0.12);
@@ -60,15 +71,42 @@ export class Pen {
     c.restore();
     c.beginPath();
     path(c);
-    if (fill) {
-      c.fillStyle = fill;
-      c.fill();
-    }
     c.stroke();
   }
 
+  /** Filled shape with a near-black outline (~35 % thicker on the shadow side). */
+  shape(path: Path, fill: string | null, w = this.w) {
+    const c = this.c;
+    if (this.mode === "shade") return fill ? this.paint(path, "erase") : undefined;
+    if (this.mode === "ink") {
+      if (fill) this.paint(path, fill === CARD_INK ? "ink" : "erase");
+      return this.stroke(path, w, "#fff");
+    }
+    if (fill) {
+      c.beginPath();
+      path(c);
+      c.fillStyle = fill;
+      c.fill();
+    }
+    this.stroke(path, w, CARD_INK);
+  }
+
+  /** Thin warm band just inside the outline (dark skin / dark clothes), then the outline again on top. */
+  warmRim(path: Path) {
+    if (this.mode !== "color") return;
+    const c = this.c;
+    this.clip(path, () => {
+      c.strokeStyle = WARM_RIM;
+      c.lineWidth = this.w * 1.9;
+      c.beginPath();
+      path(c);
+      c.stroke();
+    });
+    this.stroke(path, this.w, CARD_INK);
+  }
+
   fill(path: Path, fill: string, rule: CanvasFillRule = "nonzero") {
-    if (this.mask) return this.erase(path, rule);
+    if (this.mode !== "color") return this.paint(path, this.mode === "ink" && fill === CARD_INK ? "ink" : "erase", rule);
     this.c.beginPath();
     path(this.c);
     this.c.fillStyle = fill;
@@ -77,9 +115,12 @@ export class Pen {
 
   /** Ink stroke: 3 points = one smooth curve, otherwise a polyline (joints stay visible, e.g. knees and elbows). */
   line(pts: [number, number][], w = this.w, color = CARD_INK, dash?: number[]) {
-    if (this.mask) return;
+    if (this.mode === "shade") return;
     const c = this.c;
-    c.strokeStyle = color;
+    const ink = this.mode === "ink";
+    c.save();
+    if (ink && color !== CARD_INK) c.globalCompositeOperation = "destination-out";
+    c.strokeStyle = ink ? "#fff" : color;
     c.lineWidth = w;
     if (dash) c.setLineDash(dash);
     c.beginPath();
@@ -87,7 +128,7 @@ export class Pen {
     if (pts.length === 3) c.quadraticCurveTo(...pts[1], ...pts[2]);
     else pts.slice(1).forEach((p) => c.lineTo(...p));
     c.stroke();
-    if (dash) c.setLineDash([]);
+    c.restore();
   }
 
   poly(pts: [number, number][], w = this.w, color = CARD_INK) {
@@ -95,9 +136,10 @@ export class Pen {
   }
 
   dot(x: number, y: number, r: number, color = CARD_INK) {
-    if (this.mask) return;
+    const path: Path = (c) => c.arc(x, y, r, 0, Math.PI * 2);
+    if (this.mode !== "color") return this.mode === "ink" ? this.paint(path, color === CARD_INK ? "ink" : "erase") : undefined;
     this.c.beginPath();
-    this.c.arc(x, y, r, 0, Math.PI * 2);
+    path(this.c);
     this.c.fillStyle = color;
     this.c.fill();
   }
@@ -112,15 +154,21 @@ export class Pen {
     this.c.restore();
   }
 
-  /** Form shadow inside a clipped shape: a crescent on the shadow side (bbox minus a shifted ellipse). Mask only. */
-  crescent(cx: number, cy: number, rx: number, ry: number, shift: number) {
-    if (!this.mask) return;
-    const c = this.c;
+  /**
+   * Form shadow inside a clipped shape (shade mode only): a soft band ~25 % of the shape's width on the side away
+   * from the key (bbox minus the shape's ellipse shifted toward the light).
+   */
+  crescent(cx: number, cy: number, rx: number, ry: number) {
+    if (this.mode !== "shade") return;
+    const c = this.c, [lx, ly] = this.light;
+    c.save();
+    c.filter = `blur(${Math.max(3, rx * 0.06)}px)`;
     c.beginPath();
-    c.rect(cx - rx * 2, cy - ry * 2, rx * 4, ry * 4);
-    c.ellipse(cx - this.shadowSide * shift, cy - shift * 0.25, rx, ry, 0, 0, Math.PI * 2);
+    c.rect(cx - rx * 3, cy - ry * 3, rx * 6, ry * 6);
+    c.ellipse(cx + lx * rx * 0.5, cy + ly * ry * 0.5, rx, ry, 0, 0, Math.PI * 2);
     c.fillStyle = "#fff";
     c.fill("evenodd");
+    c.restore();
   }
 }
 
@@ -172,7 +220,10 @@ export const pearPath = (cx: number, t: number, b: number, rt: number, rb: numbe
   c.bezierCurveTo(cx - rt, t + 0.06 * h, cx - rt * 0.75, t, cx, t);
 };
 
-/** A card canvas + texture at RES x the design size, plus a design-size shade mask. `draw` paints in design units. */
+/**
+ * A card: colour canvas at RES x the design size (1200x2000), a soft shade band at 1x and an ink mask at RES x, each
+ * a mipmapped, anisotropic texture. `draw(mode, fn)` paints in design units.
+ */
 export const makeCanvas = () => {
   const make = (res: number) => {
     const canvas = document.createElement("canvas");
@@ -182,18 +233,18 @@ export const makeCanvas = () => {
     const texture = new CanvasTexture(canvas);
     texture.minFilter = LinearMipmapLinearFilter;
     texture.magFilter = LinearFilter;
-    const draw = (fn: (c: CanvasRenderingContext2D) => void) => {
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.setTransform(res, 0, 0, res, 0, 0);
-      fn(ctx);
-      texture.needsUpdate = true;
-    };
-    return { canvas, texture, draw };
+    texture.anisotropy = 8;
+    return { canvas, ctx, texture, res };
   };
-  const color = make(DESIGN.RES);
-  color.texture.colorSpace = SRGBColorSpace;
-  color.texture.anisotropy = 8;
-  const mask = make(1);
-  return { canvas: color.canvas, texture: color.texture, draw: color.draw, mask: mask.texture, drawMask: mask.draw };
+  const layers = { color: make(DESIGN.RES), shade: make(1), ink: make(DESIGN.RES) };
+  layers.color.texture.colorSpace = SRGBColorSpace;
+  const draw = (mode: PenMode, fn: (c: CanvasRenderingContext2D) => void) => {
+    const { ctx, canvas, texture, res } = layers[mode];
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.setTransform(res, 0, 0, res, 0, 0);
+    fn(ctx);
+    texture.needsUpdate = true;
+  };
+  return { texture: layers.color.texture, shade: layers.shade.texture, ink: layers.ink.texture, draw };
 };

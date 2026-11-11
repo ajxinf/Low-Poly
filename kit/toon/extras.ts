@@ -3,6 +3,7 @@ import { Build, HEAD, Pen, Rig } from "./toon";
 
 /**
  * Cast generator: extras from a body shape, an outfit and ONE strong accessory, so crowds don't look cloned.
+ * Eye variety: dots (default), sleepy half-lids (`eyes: "sleepy"`), dots behind glasses.
  * Accessories and hair are drawn in the head frame (head centre 0,0, HEAD.W = 350 wide, `ry` half-height).
  */
 export const BUILDS = {
@@ -106,7 +107,7 @@ const capHair = (color: string, opts: { line?: number; side?: number; spikes?: n
     c.quadraticCurveTo(-R + 18, line * 0.4, -R - 6, side);
   };
   pen.shape(path, color);
-  pen.clip(path, () => pen.crescent(0, -ry * 0.5, R * 1.1, ry, 44));
+  pen.clip(path, () => pen.crescent(0, -ry * 0.5, R * 1.1, ry));
 };
 
 // ------------------------------------------------------------- accessories
@@ -133,7 +134,7 @@ const flatCap = (pen: Pen, ry: number) => {
   pen.clip(crown, () => {
     for (let x = -R; x < R + 40; x += 34) pen.line([[x, -ry - 60], [x + 8, y + 10]], pen.w * 0.3, "rgba(30,20,10,0.45)");
     for (let yy = -ry - 40; yy < y; yy += 30) pen.line([[-R - 30, yy], [R + 40, yy]], pen.w * 0.3, "rgba(230,210,170,0.35)");
-    pen.crescent(0, -ry * 0.8, R * 1.2, ry * 0.4, 30);
+    pen.crescent(0, -ry * 0.8, R * 1.2, ry * 0.4);
   });
   pen.shape((c) => {
     c.moveTo(-R * 0.7, y + 4);
@@ -170,7 +171,7 @@ const bun = (pen: Pen, ry: number) => {
   pen.shape(ell(0, -ry - 40, 62, 56), "#3a2418");
   pen.clip(ell(0, -ry - 40, 62, 56), () => {
     pen.line([[-40, -ry - 60], [0, -ry - 20], [40, -ry - 66]], pen.w * 0.4, "#5a3a28");
-    pen.crescent(0, -ry - 40, 62, 56, 18);
+    pen.crescent(0, -ry - 40, 62, 56);
   });
 };
 
@@ -191,7 +192,7 @@ const nightcap = (pen: Pen, ry: number) => {
       c.lineTo(x + 150, -ry - 160);
       c.lineTo(x - 10, y + 20);
     }, "#c23a3a");
-    pen.crescent(0, -ry, R * 1.2, ry * 0.6, 30);
+    pen.crescent(0, -ry, R * 1.2, ry * 0.6);
   });
   pen.shape(cone, null);
   pen.shape((c) => c.roundRect(-R - 10, y - 10, R * 2 + 4, 34, 14), "#f2e6d8");
@@ -205,7 +206,9 @@ export const EXTRAS: { name: string; look: Look }[] = [
     name: "tall thin + bowler",
     look: {
       build: BUILDS.tallThin,
+      darkClothes: true,
       skin: "#efe2d0",
+      eyes: "sleepy",
       boots: "#2a2224",
       outfit: outfit({ color: "#3e5a46", bottom: ["#2e2a30", 0.86], shirt: { color: "#f2ece2", tie: "#8a2a30" }, buttons: "#d8b45a" }),
       hair: (pen, ry) => {
@@ -231,7 +234,9 @@ export const EXTRAS: { name: string; look: Look }[] = [
     name: "old + moustache",
     look: {
       build: BUILDS.old,
+      darkClothes: true,
       skin: "#f0dcc8",
+      eyes: "sleepy",
       boots: "#3a2a22",
       outfit: outfit({ color: "#7a5a44", bottom: ["#4a4a52", 0.82], collar: "#f2ece2", buttons: "#3a2a22" }),
       hair: capHair("#d4d0cc", { bald: true }),
@@ -254,6 +259,7 @@ export const EXTRAS: { name: string; look: Look }[] = [
     name: "pear + bun",
     look: {
       build: BUILDS.pear,
+      darkClothes: true,
       skin: "#7a4a32",
       boots: "#2a1e1a",
       outfit: outfit({ color: "#6a2e4a", collar: "#f2ece2", buttons: "#f2ece2" }),

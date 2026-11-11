@@ -4,6 +4,8 @@ import { Color, Matrix4, ShaderMaterial, Vector2 } from "three";
 export const NOINK = 1;
 /** Layer for the sky dome and particles: colour pass only. */
 export const SKY = 2;
+/** Layer seen only by the key light's shadow camera (invisible shadow casters, e.g. character cards). */
+export const CASTER = 3;
 
 /** Ink look values, in px at 1080x1920 (scaled by output height / 1920). */
 export const INK = {

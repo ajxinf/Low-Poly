@@ -94,7 +94,7 @@ const hair: Look["hair"] = (pen, _ry, look) => {
   c.translate(look * 6, 0);
   pen.shape(HAIR, YOU.hair);
   pen.clip(HAIR, () => {
-    pen.crescent(0, -150, 200, 160, 50);
+    pen.crescent(0, -150, 200, 160);
     for (const [a, m, e] of [
       [[-140, -160], [-80, -240], [30, -276]],
       [[-70, -146], [10, -226], [92, -262]],

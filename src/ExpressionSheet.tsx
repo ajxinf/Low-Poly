@@ -17,10 +17,10 @@ const CELLS: { expr: Expr; pose: PoseName; label: string; fx: Effects; prop?: Ch
   { expr: "angry", pose: "crossed", label: "steam + colour fill", fx: { steam: 0.4, fill: { color: "rgba(214,60,50,0.55)", t: 0.7 } } },
 ];
 /** Neutral ambient for the shade side on the sheet (the card shader tints it per scene). */
-const SHADE = "#a7a0b8";
+const SHADE = "#b4adc4";
 
 /** Draws a character card at scale k into `c` at (x, y): colour, then the shade mask multiplied on top. */
-export const drawCard2D = (c: CanvasRenderingContext2D, look: Look, s: CharState, x: number, y: number, k: number, shadowSide = 1) => {
+export const drawCard2D = (c: CanvasRenderingContext2D, look: Look, s: CharState, x: number, y: number, k: number, light: [number, number] = [-0.6, -0.8]) => {
   const make = () => {
     const cv = document.createElement("canvas");
     cv.width = DESIGN.W;
@@ -30,9 +30,9 @@ export const drawCard2D = (c: CanvasRenderingContext2D, look: Look, s: CharState
   const col = make(), mask = make();
   const r = rig(look.build);
   const w = inkPx(r.HH * k) / k;
-  drawPerson(new Pen(col.getContext("2d")!, shadowSide, w), look, s);
+  drawPerson(new Pen(col.getContext("2d")!, light, w), look, s);
   const m = mask.getContext("2d")!;
-  drawPerson(new Pen(m, shadowSide, w, true), look, s);
+  drawPerson(new Pen(m, light, w, "shade"), look, s);
   m.globalCompositeOperation = "source-in";
   m.fillStyle = SHADE;
   m.fillRect(0, 0, DESIGN.W, DESIGN.H);

@@ -54,27 +54,29 @@ side, fov 60. Foreground props 3.5-6 m from the lens, cut by the frame edge (fra
 ToonTest, 150 frames at 1080x1920, `--concurrency=2`: ~30 s.
 
 ## Characters (`kit/toon/`: toon.ts figure.ts face.ts poses.ts protagonist.ts extras.ts cast.ts cardshade.ts)
-Review renders: ExpressionSheet, CastLineup (frame 10), CharacterTest 145 (medium) / 150 (squash) / 172 (close-up);
-side-by-side with the references in `out/char/sbs_refs.jpg`. Old approved frames in `frames/` predate this redesign.
-- Design canvas 600x1000 (drawn at 2x), soles at y 975, 500 px = 1 m. Proportions per `Build` (fractions of height):
-  protagonist 840 px tall, head .40 (h/w .98), pear torso .30 (shoulder .20 / hip .31 of head width), short stick
-  legs with a slight outward knee, small shoes. Arms are 2-bone sticks (elbows solved, hang down-and-out), mitten
-  hands with a thumb (mitt / fist / open / point).
-- Face (head frame, head 350 wide): eyes centred .24 head widths apart at 45 % down, white with heavy ink and big
-  pupils; lids with tilt; thick wedge brows (inner end blunt) do most of the acting; mouths wide (O, shout, grit,
-  grin, lopsided smirk, wobble).
+Review renders: ExpressionSheet, CastLineup (9:16 medium-wide, 4 characters, frame 10), CloseUp (9:16, frame 10);
+side-by-side with the references in `out/char/sbs_refs2.jpg`. Old approved frames in `frames/` predate the redesign.
+- Design canvas 600x1000, drawn at 2x (1200x2000) with mipmaps + anisotropy 8; soles at y 975, 500 px = 1 m.
+  Proportions per `Build`: protagonist 840 px tall, head .40 (h/w .98), pear torso .30, short stick legs with a
+  slight knee, small shoes. Arms are 2-bone sticks; mitten hands with a thumb (mitt / fist / open / point).
+- Outline: one near-black ink (`#1d1416`) on every part (head, body, hands, hats, shoes) and on the stick limbs, at
+  the same width. Constant on screen and the same for every character on a shot: `inkPx` of the protagonist's head
+  height at that distance = 8 px in a medium, 14 px cap in close-ups, min 3 px in wides; ~35 % thicker on the side
+  away from the key. An ink mask keeps ink near-black under any light. Dark skin (`isDark`) and `darkClothes` get a
+  thin warm band (`#c9875a`) inside the outline.
+- Face: eyes .24 head widths apart, 45 % down. Ink dots by default (lids for tired/smug/angry...), ring eyes only
+  for shocked and scared. Extras: dots, sleepy half-lids (`eyes: "sleepy"`), dots behind glasses. Thick wedge brows
+  do the acting; big mouths.
 - Poses (`POSES`, combine with any expression): idle, hips, crossed, point, shrug, chin, facepalm, panic, lean,
-  hold (props box/can/phone/flashlight), walk, run. `reactSquash(f)`: 4-frame squash/stretch, 8 %.
-- Outline: constant on screen, `inkPx(headPx)` = 8 px for a ~400 px head (medium) growing with sqrt to a 14 px cap
-  in close-ups, min 3 px in wides; recomputed per frame from the head's screen height. ~35 % thicker on the side
-  away from the key.
-- Card light (`CARD_LOOK`): key tint at .6, lit brightness capped (luma 1.02); shade side = lit x ambient tint x .45
-  (linear; reads ~35 % darker on screen) from a shade mask drawn with the character; real shadow maps on top; warm
-  inner rim on edges facing lamps (.6); cards keep the split even when backlit.
+  hold (props), walk, run. `reactSquash(f)`: 4-frame squash/stretch, 8 %.
+- Card light (`CARD_LOOK`): key tint at .6 (lit luma capped 1.02). A soft shade band ~25 % of each part's width on
+  the side away from the key (redrawn from the key direction, quantised to 6 deg); shade = lit x ambient tint x .52
+  (linear, ~30 % darker on screen). If the street shadow falls on the character (shadow map probed at chest and
+  knees) the whole card goes to shade. Thin warm inner rim on edges facing a lamp (.6).
+- Grounding: contact shadow .55 x .3 m at .85 (tight); real sun shadow (an invisible sun-facing copy of the card on
+  the `CASTER` layer, alpha-tested into the key's shadow map); lamp decal shadow .55 fading over the lamp radius.
 - Cast (`EXTRAS`): tall thin + bowler, short round + flat cap, old (stoop) + moustache, child + glasses, pear + bun,
-  stocky + nightcap. New extras = a `Build` + `outfit({...})` + one accessory.
-- Grounding: contact shadow .95 x .45 m at .75, sun cast shadow at .7, lamp cast shadow at .55 fading over the lamp
-  radius. Walk: 0.8 m steps, bob 26 px. Blinks every .5-2.3 s for 4 frames.
+  stocky + nightcap.
 - Framing: camera on the wall side of the character so the street is behind them. Close-up = head and shoulders at
   ~2.2 m, fov 36, look at 1.36 m.
 
