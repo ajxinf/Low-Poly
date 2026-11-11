@@ -9,3 +9,4 @@ renders/
 .DS_Store
 Thumbs.db
 build/
+graphify-out/
