@@ -17,7 +17,12 @@ export type LightPreset = {
   fogNear: number;
   fogFar: number;
   sat: number;
+  /** Aerial perspective: from `start` m, desaturate and mix up to `amount` of the horizon colour (full at 3x start). */
   haze: { color: string; start: number; amount: number };
+  /** Sunlit luma at most this x the shade luma (default 1.6). */
+  litMax?: number;
+  /** Palette tint the sunlit hue is pulled toward (75 %). */
+  litTint?: string;
   sunDisc?: string;
   /** Warm glow in the sky around the sun (colour, strength). */
   sunGlow?: [string, number];
@@ -40,7 +45,8 @@ export const LIGHTS = {
     fogNear: 25,
     fogFar: 300,
     sat: 1.08,
-    haze: { color: "#7fa3d6", start: 60, amount: 0.15 },
+    haze: { color: "#b8d0ec", start: 30, amount: 0.3 },
+    litTint: "#fff2dc",
   },
   golden: {
     az: 6,
@@ -54,7 +60,8 @@ export const LIGHTS = {
     fogNear: 50,
     fogFar: 300,
     sat: 1.08,
-    haze: { color: "#f0b48c", start: 50, amount: 0 },
+    haze: { color: "#f0b48c", start: 30, amount: 0.3 },
+    litTint: "#ffc89c",
     sunDisc: "#ffcf9e",
   },
   // Low warm key from ahead-left; shade is cool and ~45 % of the lit luma; low ambient; fog = horizon, past 40 m.
@@ -70,11 +77,47 @@ export const LIGHTS = {
     fog: "#ffb39a",
     fogNear: 40,
     fogFar: 260,
-    sat: 1.12,
-    haze: { color: "#ffb39a", start: 60, amount: 0 },
+    sat: 1.08,
+    haze: { color: "#ffb39a", start: 30, amount: 0.35 },
+    litTint: "#ffd4bc",
     sunGlow: ["#ffb27a", 0.9],
     clouds: { lit: "#ffa58f", shade: "#9070b8", cover: 0.68 },
     lamp: ["#ffa245", 2.4],
+  },
+  // Moon-blue key, warm practicals carry the scene (lamp pools, lit windows).
+  night: {
+    az: 40,
+    el: 35,
+    lit: [0.55, 0.66, 1.0],
+    shade: [0.24, 0.28, 0.48],
+    lift: [0.01, 0.015, 0.04],
+    skyTop: "#0d1838",
+    skyMid: "#1f3266",
+    skyHorizon: "#4a5e9a",
+    fog: "#3a4a7a",
+    fogNear: 30,
+    fogFar: 220,
+    sat: 1.05,
+    haze: { color: "#4a5e9a", start: 30, amount: 0.3 },
+    litTint: "#a9c4ff",
+    lamp: ["#ffa245", 3.2],
+  },
+  // Indoors (supermarket): overhead key through the (non-shadowing) ceiling, soft shade, ceiling panels as practicals.
+  interior: {
+    az: 20,
+    el: 72,
+    lit: [1.3, 1.28, 1.2],
+    shade: [0.86, 0.86, 0.92],
+    lift: [0.02, 0.02, 0.03],
+    skyTop: "#e8eef2",
+    skyHorizon: "#f2f0ea",
+    fog: "#e8e6e0",
+    fogNear: 40,
+    fogFar: 160,
+    sat: 1.04,
+    haze: { color: "#e8e6e0", start: 30, amount: 0.25 },
+    litTint: "#fff6e8",
+    lamp: ["#fff2d8", 0.9],
   },
 } satisfies Record<string, LightPreset>;
 

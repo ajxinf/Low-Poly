@@ -26,9 +26,10 @@ import { NOINK, inkMaterial } from "./ink";
 
 /** Post look values. Pixel sizes are at 1080x1920 and scale with output height / 1920. */
 export const POST = {
-  dof: { maxPx: 6.5, near: 14, far: 45 }, // background lens blur: 0 px before `near` m, maxPx past `far` m
+  // Lens blur on close-ups and mediums only; wides and establishing shots stay sharp (the default).
+  dof: { maxPx: 0, near: 14, far: 45 },
   bloom: { threshold: 1.0, intensity: 0.5, levels: 6, radius: 0.6 },
-  grade: { sat: 1.22, contrast: 1.06, lift: 0.035, vignette: 0.85, warm: 0.02 },
+  grade: { sat: 1.28, contrast: 1.06, lift: 0.02, vignette: 0.85, warm: 0.02 }, // sat/lift re-tuned after the 1.6x lit cap and aerial haze flattened the frame
 };
 
 const vert = /* glsl */ `
@@ -130,6 +131,12 @@ void main() {
  * NEUTRAL tone map -> grade. Mount once inside <ThreeCanvas>.
  */
 export type Dof = { maxPx: number; near: number; far: number };
+/** Lens presets: focus on the front character at `d` m (background blur 0 px before d+1.2, max past d+10). */
+export const DOF = {
+  none: POST.dof,
+  medium: (d: number): Dof => ({ maxPx: 10, near: d + 1.2, far: d + 10 }),
+  closeup: (d: number): Dof => ({ maxPx: 13, near: d + 0.6, far: d + 4 }),
+};
 
 export const Composer: React.FC<{ dof?: Dof }> = ({ dof = POST.dof }) => {
   const { gl, scene, camera } = useThree();

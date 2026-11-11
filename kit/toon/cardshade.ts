@@ -11,7 +11,7 @@ import {
   Vector3,
   ZeroFactor,
 } from "three";
-import { MAX_LAMPS, shared } from "./shade";
+import { AERIAL, shared } from "./shade";
 
 /**
  * Card lighting, so a flat character belongs in the lit scene:
@@ -49,10 +49,12 @@ varying vec3 vW;
 varying vec3 vRight;
 varying vec4 vProbeA;
 varying vec4 vProbeB;
+varying vec3 vView;
 void main() {
   vUv = uv;
   #include <begin_vertex>
   #include <project_vertex>
+  vView = mvPosition.xyz;
   vW = (modelMatrix * vec4(transformed, 1.0)).xyz;
   vRight = normalize(modelMatrix[0].xyz);
   #if defined(USE_SHADOWMAP) && NUM_DIR_LIGHT_SHADOWS > 0
@@ -71,15 +73,16 @@ const cardFrag = /* glsl */ `
 uniform sampler2D uMap, uShadeMap, uInk;
 uniform float uPass, uLight, uShadeK, uRim;
 uniform vec2 uRimUv;
-uniform vec3 uSunDir, uLit, uShade, uLift, uLampColor;
-uniform float uSat, uLampRadius;
-uniform vec3 uLampPos[${MAX_LAMPS}];
+uniform vec3 uSunDir, uLit, uShade, uLift, uHazeColor;
+uniform float uSat, uHazeStart, uHazeAmount;
+varying vec3 vView;
 varying vec2 vUv;
 varying vec3 vW;
 varying vec3 vRight;
 varying vec4 vProbeA;
 varying vec4 vProbeB;
 const vec3 W = vec3(0.2126, 0.7152, 0.0722);
+${AERIAL}
 void main() {
   vec4 tex = texture2D(uMap, vUv);
   if (uPass > 0.5) {
@@ -101,22 +104,27 @@ void main() {
   // Shade: ~30 % darker on screen than lit, tinted toward the scene ambient (luma-normalised shade colour).
   vec3 tint = uShade / max(dot(uShade, W), 1e-3);
   vec3 m = mix(lit * tint * uShadeK, lit, t) + uLift * (1.0 - t);
+  // Practicals (real point lights): warm light on the card, plus a thin rim just inside the outline on the edge
+  // facing each light (2 outline widths toward it is empty, 1.1 widths is still card, so the ink stays ink).
   vec3 rim = vec3(0.0);
-  for (int i = 0; i < ${MAX_LAMPS}; i++) {
-    vec3 d = uLampPos[i] - vW;
+  vec3 rightV = normalize((viewMatrix * vec4(vRight, 0.0)).xyz), upV = normalize((viewMatrix * vec4(0.0, 1.0, 0.0, 0.0)).xyz);
+  #if NUM_POINT_LIGHTS > 0
+  for (int i = 0; i < NUM_POINT_LIGHTS; i++) {
+    vec3 d = pointLights[i].position - vView;
     float r = length(d);
-    float f = 1.0 - smoothstep(0.0, uLampRadius, r);
-    m += uLampColor * f * f * 0.5;
-    // Thin warm rim just inside the outline on the edge facing the lamp: 2 outline widths toward the lamp is empty,
-    // 1.1 widths is still card (so the outline itself stays ink).
-    vec2 dir = normalize(vec2(dot(d, vRight), d.y) + 1e-4);
+    float D = pointLights[i].distance;
+    float f = 1.0 - smoothstep(0.55 * D, D, r);
+    m += pointLights[i].color * f * 0.5;
+    vec2 dir = normalize(vec2(dot(d, rightV), dot(d, upV)) + 1e-4);
     float edge = (1.0 - texture2D(uMap, vUv + dir * uRimUv).a) * texture2D(uMap, vUv + dir * uRimUv * 0.55).a;
-    float fr = 1.0 - smoothstep(0.0, uLampRadius * 1.3, r);
-    rim += uLampColor * edge * fr * fr;
+    float fr = 1.0 - smoothstep(0.0, D * 1.3, r);
+    rim += pointLights[i].color * edge * fr * fr;
   }
+  #endif
   float ink = texture2D(uInk, vUv).a;
   vec3 c = tex.rgb * m + rim * uRim * tex.a;
   c = mix(c, tex.rgb * mix(0.7, 1.0, street), ink); // ink stays near-black under any light
+  c = aerial(c, length(vView));
   gl_FragColor = vec4(c, tex.a);
   #include <fog_fragment>
 }`;

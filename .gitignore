@@ -8,6 +8,7 @@ renders/
 .env.*
 .DS_Store
 Thumbs.db
-build/
+/build/
+__pycache__/
 graphify-out/
 assets/references/frames/

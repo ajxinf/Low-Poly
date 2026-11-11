@@ -16,7 +16,7 @@ export const INK = {
   farM: 90,
   creaseDeg: 35,
   depthJump: 0.01,
-  fogTint: 0.3,
+  fogTint: 0, // same ink at every distance
   skyMaxM: 150, // no silhouette against the sky beyond this (keeps the horizon line-free)
 };
 
@@ -93,7 +93,7 @@ void main() {
     }
   }
   float fogF = smoothstep(uFogNear, uFogFar, zInk);
-  cover *= 1.0 - smoothstep(0.8, 1.0, fogF); // lines vanish with the surface they outline
+  cover *= 1.0 - smoothstep(0.97, 1.0, fogF); // lines only vanish where fog fully hides the surface
   vec3 ink = mix(uInk, uFog, uFogTint * fogF);
   gl_FragColor = vec4(mix(col, ink, cover), 1.0);
 }`;

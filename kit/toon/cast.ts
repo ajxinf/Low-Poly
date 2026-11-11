@@ -6,7 +6,7 @@ import { CharState, Look, drawPerson } from "./figure";
 import { CASTER, NOINK, SKY } from "./ink";
 import { rng } from "./paint";
 import { youLook } from "./protagonist";
-import { shared } from "./shade";
+import { practicals, shared } from "./shade";
 import { BUILD_YOU, DESIGN, Pen, inkPx, makeCanvas, rig } from "./toon";
 
 export type { CharState } from "./figure";
@@ -66,17 +66,17 @@ export const Character: React.FC<{ position: Vector3; state: CharState; look?: L
     const sun = shared.uSunDir.value;
     p.caster.rotation.y = Math.atan2(sun.x, sun.z); // full silhouette as seen from the sun
     // Nearest lamp throws a second shadow, fading out over the lamp radius.
-    let lamp = shared.uLampPos.value[0], best = Infinity;
-    for (const l of shared.uLampPos.value) {
-      const d = Math.hypot(l.x - position.x, l.z - position.z);
+    let lamp = practicals[0], best = Infinity;
+    for (const l of practicals) {
+      const d = Math.hypot(l.pos.x - position.x, l.pos.z - position.z) / l.reach;
       if (d < best) [best, lamp] = [d, l];
     }
     const lu = (p.lampCast.material as ShaderMaterial).uniforms;
-    lu.uLampP.value.copy(lamp);
-    const k = Math.max(0, 1 - best / shared.uLampRadius.value);
+    if (lamp) lu.uLampP.value.copy(lamp.pos);
+    const k = lamp ? Math.max(0, 1 - best) : 0;
     lu.uStrength.value = CARD_LOOK.lampCast * k * k;
     p.lampCast.visible = k > 0;
-    p.lampCast.rotation.y = Math.atan2(position.x - lamp.x, position.z - lamp.z);
+    if (lamp) p.lampCast.rotation.y = Math.atan2(position.x - lamp.pos.x, position.z - lamp.pos.z);
     // Key light direction on the card (canvas space: x right, y down), quantised to 6 deg.
     const lx = sun.x * Math.cos(yaw) - sun.z * Math.sin(yaw);
     const ang = Math.round(Math.atan2(-sun.y, lx) / (Math.PI / 30)) * (Math.PI / 30);

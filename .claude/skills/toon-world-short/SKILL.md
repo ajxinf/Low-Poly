@@ -38,8 +38,9 @@ by the numbers in this file plus `docs/STYLE.md` and the approved frames in `doc
 
 ## Layout
 ```
-kit/toon/          shared look: lights.ts shade.ts paint.ts world.ts ink.ts lensblur.ts grade.ts
-                   toon.ts cast.ts cardshade.ts Composer.tsx Captions.tsx protagonist.ts
+kit/toon/          shared look: lights.ts shade.ts paint.ts world.tsx ink.ts camera.ts Composer.tsx
+                   toon.ts figure.ts face.ts poses.ts cast.ts cardshade.ts protagonist.ts extras.ts
+kit/toon/build/    world library: building.ts props.ts ground.ts street.tsx presets.ts (era presets)
 src/videos/<slug>/ per video: story.ts (shots, cameras), build.ts (world layout), roles.ts (who is where), Video.tsx
 videos/<slug>/     SCRIPT.md, script.json, sources.md, voice/ (voice.wav, words.json), audio/ (mix.wav, stems, cues.md)
 templates/base/    clean copy of a finished video folder to start new ones from (made after the pilot)
@@ -97,8 +98,9 @@ and a rust-orange accent.
    - `CAMS`: per-shot keys `{f, dur?, cut?, s: f => {pos, look, fov, roll}}`; `KICKS` impact flip-shakes;
      `DOF`/`dofAt` lens blur per beat; `FOREGROUND` near framing props.
    - Every visual reaction lands 0-3 frames before its word.
-5. **World**: a new layout in `build.ts` for this story (reuse kit materials and props, not layouts). Sight-line
-   culling on.
+5. **World**: pick an era preset (`kit/toon/build/presets.ts`) and build this story's own layout with
+   `<Street preset opts>` (seed, length, curve, lamp spots, landmark, `extra` props) in `build.ts`. Keep cameras
+   clear of facades and props (no culler yet).
 6. **Cast**: roles, costumes, expressions and walks in `roles.ts`.
 7. **Captions** on, from `words.json`.
 8. **Sound** (`scripts/audio/`): lock picture timing first. Event table -> synthesized SFX + original score ducked
@@ -127,7 +129,7 @@ and a rust-orange accent.
 - **Albedos** (`paint.ts`/`build.ts`): muted, never neon. Buildings with plinth, cornice, sills, door step; warm grey/
   beige stone; wood with near-black seams; metal dark and desaturated. Never lemon, never lavender lit faces.
 - **Ink** (`ink.ts`): `#1c1210`, 4 px near (6 m) -> 2.5 px far (90 m) at 1080x1920; creases from 35 deg; depth
-  jumps from 1 %; fog tint 0.3 only far. Silhouettes, depth jumps and creases only: no lines on wall/floor joins or the
+  jumps from 1 %; same ink at every distance (no fog tint). Silhouettes, depth jumps and creases only: no lines on wall/floor joins or the
   horizon. Character cards are on `NOINK` and carry their own plum ink.
 - **Colour** (`python scripts/measure.py <png|mp4>`): dusk luma .39-.51, p5 .08-.17, C* p90 57-68, mean sat .50-.58.
   Day median luma ~.57, non-ink p5 ~.23 (no crushed blacks), lit chroma C* p90 ~55. Golden shadows
@@ -139,7 +141,8 @@ and a rust-orange accent.
 - **Characters**: head 40 % of height; mitten hands; ink constant on screen (8 px mediums, 14 px cap) and
   thicker on the shadow side; poses from `POSES` + any expression; 4-frame squash on reactions; walk bob 3-7 %, lean 1-7 deg, planted 0.8 m stride; blinks every 0.5-2.3 s lasting 4 f;
   tight contact shadow under the feet + sun-direction tail by day; golden rim light inner only, head/torso only.
-- **Camera**: hard cuts on big jumps; everything else a smootherstep glide of 18-40 f (peak <= 25 px/f at 720p);
+- **Camera** (`kit/toon/camera.ts`: drift, pushIn, pullOut, arc, followTilt, reveal): hard cuts on big jumps;
+  everything else a glide (peak <= 25 px/f, typical ~3 px/f, no still run of 12+ f; check with measure.py);
   every hold creeps in 0.15-0.35 %/f (0.6 %/f on punch words), never a static hold >= 4 f; rolls 4-5 deg; impact
   shakes flip sign every frame and decay over 7 f; foreground props in ~1/3 of shots.
 

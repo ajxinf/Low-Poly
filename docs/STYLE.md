@@ -6,52 +6,83 @@ of truth (`kit/toon/*`), this file records what was approved and why. Approved f
 ## Approved frames
 | Frame | What it locks |
 |---|---|
-| `frames/street_dusk.png` | ToonTest frame 30 (2026-11-11): dusk light, cast shadows, paint, ink, post |
+| `frames/street_dusk.png` | ToonTest frame 30 (2026-11-11): dusk light, cast shadows, paint, ink, post (predates the world library) |
 
-## Colour targets (`python scripts/measure.py <png|mp4>`)
-| Metric | Dusk target | street_dusk.png | ToonTest video |
-|---|---|---|---|
-| median luma | .39-.51 | .449 | .445 |
-| p5 luma (non-ink) | .08-.17 | .124 | .119 |
-| C* p90 | 57-68 | 58.8 | 59.2 |
-| mean HSV sat | .50-.58 | .520 | .528 |
-| vignette (corner/centre) | ~.85 | 1.02 | 1.00 |
+## Colour and motion targets (`python scripts/measure.py <png|mp4>`)
+| Metric | Dusk target | StreetWide | StreetMedium | ToonTest move (5 s) |
+|---|---|---|---|---|
+| median luma | .39-.51 | .483 | .437 | .429 |
+| p5 luma (non-ink) | .08-.17 | .177 | .136 | .190 |
+| C* p90 | 57-68 | 63.5 | 73.0 | 60.0 |
+| mean HSV sat | .50-.58 | .523 | .587 | .461 |
+| drift p50 (px/f at 1080) | >= 2.5 | | | 2.58 |
+| drift p95 | <= 25 | | | 4.1 |
+| still frames (< .5 px/f) | <= 5 % | | | 0 % |
+| longest still run | < 12 f | | | 0 |
 
-Vignette is applied at .85 in the grade; the measured ratio depends on what sits in the corners (lamps read high).
+Colour depends on content: road-heavy frames read flatter (the 1.6x lit cap and aerial haze), orange-heavy mediums
+read hotter. The grade (sat 1.28) is the compromise. Vignette (graded .85) is a trend only.
+Motion is block phase correlation on every frame; flat blocks (clear sky) are skipped.
 
-## Light: `LIGHTS.dusk` (`kit/toon/lights.ts`)
-- Key: az -28 / el 30 (ahead-left of the opening camera), lit `[1.62, 1.12, 0.74]` (warm).
-- Shade: `[0.5, 0.55, 0.8]`, cool, ~45 % of lit luma. Hard terminator (smoothstep +-.03). Lift `[.01, .01, .03]`.
-- Real cast shadows: 4096 shadow map, PCF, area set per shot (`ToonWorld shadow={{center, size}}`).
-- Sky: `#6468c0` top -> `#c48ad2` mid -> `#ffb39a` horizon, sun glow `#ffb27a` x.9, painted clouds
-  (lit `#ffa58f`, shade `#9070b8`, cover .68).
-- Fog = horizon colour, 40 -> 260 m. No haze.
-- Practicals: lamp glass emissive `#ffb35a` x6, lit windows `#ffb76a` x2.6, shop fronts x2.2. Light pools
-  `#ffa245` x2.4, radius 6.5 m, up to 12 (`setLamps`).
-- Keep the sun-side buildings low (2-3 floors) or leave alleys, or a narrow street ends up fully shaded.
+## Camera (`kit/toon/camera.ts`)
+`shot(base, [moves], frames)` with moves `drift`, `pushIn`, `pullOut`, `arc`, `followTilt`, `reveal`, `roll`.
+Easing `glide` = .55 smootherstep + .45 linear: the ends creep at ~45 % of the average speed (no still holds), the
+peak is ~1.5x. Rolls clamp to 5 deg.
+- To drift ~3 px/f, turn the view: arc around a subject 10-15 m away (18 deg over 5 s from mid-street). Pushing down
+  a street barely moves a view that is mostly far away.
+- Never pass within ~2 m of a prop (it sweeps across the frame at 30-60 px/f) and keep arcs clear of facades (from
+  the pavement, a 6 deg arc around a far point put the lens inside a shop front).
 
-## Paint (`kit/toon/paint.ts`)
-Seeded Canvas2D, 2 m tiles (1 m for props), world-metre box mapping in `props.ts`. Every surface: base fill,
-broad strokes, fine strokes, grain, seams as dark tints. Albedos used in ToonTest: cobbles `#c09078`, slabs
-`#c4a283`, plaster `#c98f6a #d8b07a #9fae8e #8a9fbc #dcc4a0 #b97a84 #c2a26a`, bricks `#9a5a44 #8a4e4a`,
-roofs `#a4503a #7a4a5c #5a4a6a #8a5a3a #9a4a40`.
+## Light (`kit/toon/lights.ts`, `kit/toon/shade.ts`)
+- Presets: day, golden, dusk, night (moon-blue), interior. Key az/el per preset; the sun is frozen per shot.
+- Sunlit vs shade: lit luma at most 1.6x shade (both pulled toward their geometric mean), lit hue pulled 75 % toward
+  the preset's `litTint` (dusk `#ffd4bc` peach). Hard terminator; cast-shadow edges are PCF-soft (~2-4 px at 10-25 m).
+- Practicals are real three PointLights (`practicalLights`): lamps reach 4.4 m (ground pool ~3.5 m wide under a
+  3.55 m lantern), shop fronts 3.6 m, lit windows 3 m, fires 4 m; plateau-then-edge falloff, colour/strength from the
+  preset `lamp`. They light walls, ground and character cards (with a thin warm card rim). Max 24 per street, nearest
+  the shot first.
+- Aerial perspective (`haze`): from 30 m, desaturate and mix toward the horizon colour, up to 35 % at 90 m (dusk).
+- Fog = horizon colour, 40 -> 260 m (dusk).
+
+## Ground (`kit/toon/build/ground.ts`)
+One rule set for cobbles, slabs, planks, dirt, snow (cart tracks + footprints), tiles, asphalt, grass: pieces 0.7-1.3x,
+`contrast` .5 (half the old cobbles), joints lighter than before (never near-black). The street adds a worn smoother
+path down the middle (`wear`), sky-reflecting puddles (mostly wet-ground tone, sky at grazing angles), loose stones
+and scraps along curbs and wall bases.
 
 ## Ink (`kit/toon/ink.ts`)
-`#1c1210`, 4 px at 6 m -> 2.5 px at 90 m (at 1080x1920). Creases from 35 deg, depth jumps from 1 %, fog tint .3.
-Silhouettes, depth jumps and major edges only. Character cards are on `NOINK` and carry their own outline.
+`#1c1210`, 4 px at 6 m -> 2.5 px at 90 m (at 1080x1920), the same on every mesh at every distance (no fog tint;
+lines only fade where fog fully hides the surface). Creases from 35 deg, depth jumps from 1 %. No silhouettes
+against the sky past 150 m (keeps the horizon line-free). Character cards are on `NOINK` and carry their own outline.
 
 ## Post (`kit/toon/Composer.tsx`, `POST`)
 ink -> lens blur -> bloom -> NEUTRAL tone map -> grade.
-- Lens blur (background): 0 px before 14 m, 6.5 px past 45 m; overridden per shot with `<Composer dof>`.
+- Lens blur: none by default (wides and establishing shots stay sharp). Close-ups and mediums pass
+  `DOF.closeup(d)` / `DOF.medium(d)` (focus distance d m).
 - Bloom: threshold 1.0, intensity .5, 6 levels, radius .6 (HDR emissives only).
-- Grade: sat 1.22, contrast 1.06, lift .035, warm split .02, vignette .85.
+- Grade: sat 1.28, contrast 1.06, lift .02, warm split .02, vignette .85.
+
+## World library (`kit/toon/build/`)
+- `building(spec)`: floors, width, wall (brick, plaster, clapboard, stone, planks), roof (gable, gableFront, hip, flat,
+  falseFront, steep; snow caps), lean +-1.5 deg, roofline irregularity (cornice height, pitch, dormers, stepped
+  parapets), windows (sash, shutters, flower boxes, boarded, broken; lit with curtains or a silhouette, or dark),
+  shop fronts (painted sign, striped awning), chimneys with smoke, drainpipes, posters, porches.
+- Every building in a street differs from every other in >= 3 of 13 parameters (`pickVaried`, self-test:
+  `node kit/toon/build/variety.test.mjs`).
+- Props: lamp post, bench, barrel, crate, cart, signpost, bollard, fence, washing line, birds (on roof perches),
+  flags, campfire, hay bale, trough, pine, mailbox, hedge, car, bin, shelves, checkout, aisle signs, clock tower.
+- `buildStreet(preset, light, opts)` / `<Street>`: spine, ground, varied buildings (terrace or detached), closing row
+  or clock-tower square, lamps, props, practicals, puddles, debris, washing lines, birds, flags, smoke, a distant
+  backdrop (hills, mesas or snowy mountains). Interiors (supermarket) get their own builder.
+- Presets (`PRESETS`): victorian_town (dusk), wild_west (golden), modern_suburb (day), supermarket_interior
+  (interior), snowy_village (night). Each video picks a preset and its own seed, length, curve, lamp spots and extras.
 
 ## Composition (street shots)
-Narrow street (11 m between fronts) that bends or ends in a landmark within ~60 m. Lens 1.2 m high, offset to one
-side, fov 60. Foreground props 3.5-6 m from the lens, cut by the frame edge (frame half-width ~ .32 x distance).
+Narrow street (11 m between fronts) that bends or ends in a landmark or closing row within ~60 m. Lens 1.2-1.7 m
+high, fov 56-60. Foreground props 3.5-6 m from the lens, cut by the frame edge (frame half-width ~ .32 x distance).
 
 ## Render speed (this laptop)
-ToonTest, 150 frames at 1080x1920, `--concurrency=2`: ~30 s.
+ToonTest (library street, 24 practical lights), 150 frames at 1080x1920, `--concurrency=2`: ~40 s.
 
 ## Characters (`kit/toon/`: toon.ts figure.ts face.ts poses.ts protagonist.ts extras.ts cast.ts cardshade.ts)
 Review renders: ExpressionSheet, CastLineup (9:16 medium-wide, 4 characters, frame 10), CloseUp (9:16, frame 10);
