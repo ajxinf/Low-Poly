@@ -67,12 +67,12 @@ Build in this order, commit after each, and get a verifier pass on stills before
 ## The protagonist ("you")
 The same card in every video; he is the viewer. Costumes are overlays (hat, coat, uniform) that always keep the hair
 and a rust-orange accent.
-- Bean head h/w .94, skin `#deaa80`, plum ink `#241726`.
-- Hair: dark brown-black `#241b17`, 3-4 chunky locks swept to one side, short fringe.
-- Face: dot eyes, heavy straight brows angled slightly down toward the centre (stern-tired default), small nose mark,
-  flat mouth line. No blush, no eye highlights.
-- Default outfit: rust-orange jacket `#a8502c` (shadow `#7e3a20`) open over a charcoal tee `#2e2f30`, jeans `#33456b`,
-  boots `#5a3a26`.
+- Head 40 % of height, h/w .98, pale cream `#f4ece0`, ink `#1d1416`. Pear torso, short stick legs, elbowed stick
+  arms, mitten hands with a thumb (values in `docs/STYLE.md`).
+- Hair: dark brown-black `#211915`, tall swept quiff with one cowlick up and forward (reads in pure silhouette).
+- Face: eyes high and close (.24 head widths apart, 45 % down), thick wedge brows that do the acting, big mouths.
+- Default outfit: rust jacket `#a8502c` with collar, two pockets, zip and darker stitching over a striped charcoal tee
+  `#2e2f30`; jeans `#33456b` with a rolled cuff; boots `#5a3a26`.
 - Expressions: neutral, tired, worried, scared, shocked, smug, determined, sad, angry, sneaky, relieved, confused,
   deadpan, laughing.
 
@@ -136,8 +136,8 @@ and a rust-orange accent.
   eyes of the front character. DOF on about 1/3 of screen time.
 - **Post** (`Composer.tsx`, `POST`): background DOF 6.5 px past 45 m, grade sat 1.22, vignette .85; bloom threshold 1.0, intensity .5, 6 levels, radius .6 (HDR emissives only); NEUTRAL tone map; grade last.
   Film grain off.
-- **Characters**: about 3.5 head-heights tall, legs 1.4 HH; stick limbs ~0.055 of head width; ink-dot hands; plum ink
-  thicker on the shadow side; walk bob 3-7 %, lean 1-7 deg, planted 0.8 m stride; blinks every 0.5-2.3 s lasting 4 f;
+- **Characters**: head 40 % of height; mitten hands; ink constant on screen (8 px mediums, 14 px cap) and
+  thicker on the shadow side; poses from `POSES` + any expression; 4-frame squash on reactions; walk bob 3-7 %, lean 1-7 deg, planted 0.8 m stride; blinks every 0.5-2.3 s lasting 4 f;
   tight contact shadow under the feet + sun-direction tail by day; golden rim light inner only, head/torso only.
 - **Camera**: hard cuts on big jumps; everything else a smootherstep glide of 18-40 f (peak <= 25 px/f at 720p);
   every hold creeps in 0.15-0.35 %/f (0.6 %/f on punch words), never a static hold >= 4 f; rolls 4-5 deg; impact

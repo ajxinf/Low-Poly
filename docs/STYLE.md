@@ -53,20 +53,30 @@ side, fov 60. Foreground props 3.5-6 m from the lens, cut by the frame edge (fra
 ## Render speed (this laptop)
 ToonTest, 150 frames at 1080x1920, `--concurrency=2`: ~30 s.
 
-## Characters (`kit/toon/toon.ts`, `protagonist.ts`, `cast.ts`, `cardshade.ts`)
-Approved: `frames/char_closeup_dusk.png` (CharacterTest frame 170), `frames/expressions.png` (all 14 + effects).
-- Design canvas 600x1000 (drawn at 2x), soles at y 975, 500 px = 1 m. Head 250 x 255 px (h/w .98), figure 3.5 heads.
-- Egg torso 232 px wide (about head width, as in the references), legs 1.4 heads, stick limbs in ink.
-- Ink `#1d1416`, outline and limbs .04 of head width (references measure ~.035-.04; spec asked .045), ~35 % thicker
-  on the side away from the sun. Painted form crescent on head and torso.
-- Card light (`CARD_LOOK`): picks up the scene light at .6 (key tint where the sun reaches it via the real shadow map,
-  shade/ambient where not, lamp pools on the side facing each lamp). No world saturation boost on cards.
-- Grounding: contact shadow .95 x .45 m at .75, sun cast shadow (projected silhouette, skipped on already-shaded
-  ground) at .7, lamp cast shadow from the nearest lamp at .55 fading over the lamp radius.
-- Walk: 0.8 m steps, bob 30 px (~3.5 % of figure), sway +-2.5 deg, arms swing against legs. Idle bob 6 px / 3 s.
-  Blinks every .5-2.3 s for 4 frames.
-- Framing: put the camera on the wall side of the character so the street (not a facade) is behind them.
-  Close-up = head and shoulders at ~2.2 m, fov 36 (frame width ~ .37 x distance).
+## Characters (`kit/toon/`: toon.ts figure.ts face.ts poses.ts protagonist.ts extras.ts cast.ts cardshade.ts)
+Review renders: ExpressionSheet, CastLineup (frame 10), CharacterTest 145 (medium) / 150 (squash) / 172 (close-up);
+side-by-side with the references in `out/char/sbs_refs.jpg`. Old approved frames in `frames/` predate this redesign.
+- Design canvas 600x1000 (drawn at 2x), soles at y 975, 500 px = 1 m. Proportions per `Build` (fractions of height):
+  protagonist 840 px tall, head .40 (h/w .98), pear torso .30 (shoulder .20 / hip .31 of head width), short stick
+  legs with a slight outward knee, small shoes. Arms are 2-bone sticks (elbows solved, hang down-and-out), mitten
+  hands with a thumb (mitt / fist / open / point).
+- Face (head frame, head 350 wide): eyes centred .24 head widths apart at 45 % down, white with heavy ink and big
+  pupils; lids with tilt; thick wedge brows (inner end blunt) do most of the acting; mouths wide (O, shout, grit,
+  grin, lopsided smirk, wobble).
+- Poses (`POSES`, combine with any expression): idle, hips, crossed, point, shrug, chin, facepalm, panic, lean,
+  hold (props box/can/phone/flashlight), walk, run. `reactSquash(f)`: 4-frame squash/stretch, 8 %.
+- Outline: constant on screen, `inkPx(headPx)` = 8 px for a ~400 px head (medium) growing with sqrt to a 14 px cap
+  in close-ups, min 3 px in wides; recomputed per frame from the head's screen height. ~35 % thicker on the side
+  away from the key.
+- Card light (`CARD_LOOK`): key tint at .6, lit brightness capped (luma 1.02); shade side = lit x ambient tint x .45
+  (linear; reads ~35 % darker on screen) from a shade mask drawn with the character; real shadow maps on top; warm
+  inner rim on edges facing lamps (.6); cards keep the split even when backlit.
+- Cast (`EXTRAS`): tall thin + bowler, short round + flat cap, old (stoop) + moustache, child + glasses, pear + bun,
+  stocky + nightcap. New extras = a `Build` + `outfit({...})` + one accessory.
+- Grounding: contact shadow .95 x .45 m at .75, sun cast shadow at .7, lamp cast shadow at .55 fading over the lamp
+  radius. Walk: 0.8 m steps, bob 26 px. Blinks every .5-2.3 s for 4 frames.
+- Framing: camera on the wall side of the character so the street is behind them. Close-up = head and shoulders at
+  ~2.2 m, fov 36, look at 1.36 m.
 
 ## CharacterTest numbers (`out/char/charactertest.mp4`)
 luma .471, p5 .170, C* p90 67.0, sat .620 (above .58: sunlit orange cobbles fill much of the frame). 240 frames at

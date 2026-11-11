@@ -3,7 +3,7 @@ import { ThreeCanvas } from "@remotion/three";
 import { useLayoutEffect } from "react";
 import { AbsoluteFill, Easing, Sequence, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import { PerspectiveCamera, Vector3 } from "three";
-import { CharState, Character, blinkAt, idlePose, walkPose } from "../kit/toon/cast";
+import { CharState, Character, blinkAt, posed, reactSquash, walkPose } from "../kit/toon/cast";
 import { Composer, Dof, POST } from "../kit/toon/Composer";
 import { Dust } from "../kit/toon/dust";
 import { LIGHTS } from "../kit/toon/lights";
@@ -38,10 +38,12 @@ const P = posAt(WALK_END); // where he stops
 const stateAt = (f: number): CharState => {
   const look = interpolate(f, [90, 98, 110, 122, 134, 149], [0, -1, -1, 1, 1, 0.2], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
   const amount = interpolate(f, [WALK_END - DECEL, WALK_END], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-  const pose = f < WALK_END ? walkPose(walked(f), amount) : idlePose((f - WALK_END) / FPS, look);
+  const t = (f - WALK_END) / FPS;
+  const pose = f < WALK_END ? walkPose(walked(f), amount) : posed(f < 112 ? "idle" : "chin", t, look);
   if (f < 90) return { pose, expr: "neutral", blink: blinkAt(f, FPS, 3), fx: {} };
   if (f < 150) return { pose, expr: "worried", blink: blinkAt(f, FPS, 3), fx: {} };
-  return { pose: { ...pose, look: 0 }, expr: "shocked", blink: false, fx: { ringEyes: true, sweat: clamp01((f - 152) / 24), ...(f < 190 ? { bang: f - 150 } : {}) } };
+  // Reaction: squash/stretch over 4 frames, arms up.
+  return { pose: { ...posed("panic", t, 0), squash: reactSquash(f - 150) }, expr: "shocked", blink: false, fx: { ringEyes: true, sweat: clamp01((f - 152) / 24), ...(f < 190 ? { bang: f - 150 } : {}) } };
 };
 
 type Cam = { pos: Vector3; look: Vector3; fov: number; dof: Dof };
@@ -59,20 +61,20 @@ const camAt = (f: number, wide: boolean): Cam => {
     const c = posAt(f), cs = lerp(START.s, STOP.s, Math.min(walked(f) / PATH, 1));
     const d = lerp(4.2, 5.1, smooth(f / 89));
     const pos = at(cs - d, lerp(START.x, STOP.x, Math.min(walked(f) / PATH, 1)) + 0.4, 0.9);
-    return { pos, look: c.clone().setY(1.15), fov: 50, dof: { maxPx: 8, near: d + 2, far: d + 18 } };
+    return { pos, look: c.clone().setY(1.0), fov: 50, dof: { maxPx: 8, near: d + 2, far: d + 18 } };
   }
   if (f < 150) {
     // Arc toward the street and push in to a medium shot.
     const t = smooth((f - 90) / 59);
     const r = lerp(5.1, 2.5, t), th = lerp(0, 0.45, t); // + swings toward the wall, the view opens onto the street
     const dir = v0.clone().normalize().applyAxisAngle(new Vector3(0, 1, 0), th);
-    return { pos: P.clone().addScaledVector(dir, r).setY(lerp(0.9, 1.3, t)), look: P.clone().setY(lerp(1.15, 1.32, t)), fov: lerp(50, 42, t), dof: { maxPx: 10, near: r + 1.2, far: r + 10 } };
+    return { pos: P.clone().addScaledVector(dir, r).setY(lerp(0.9, 1.12, t)), look: P.clone().setY(lerp(1.0, 1.12, t)), fov: lerp(50, 42, t), dof: { maxPx: 10, near: r + 1.2, far: r + 10 } };
   }
   // Hard cut: close-up, creeping in.
   const t = (f - 150) / 40;
   const r = lerp(2.35, 2.15, t); // head and shoulders: frame width ~ .37 r at fov 36
   const dir = v0.clone().normalize().applyAxisAngle(new Vector3(0, 1, 0), 0.35); // looks down the street, not at the wall
-  return { pos: P.clone().addScaledVector(dir, r).setY(1.45), look: P.clone().setY(1.47), fov: 36, dof: { maxPx: 13, near: r + 0.6, far: r + 4 } };
+  return { pos: P.clone().addScaledVector(dir, r).setY(1.3), look: P.clone().setY(1.36), fov: 36, dof: { maxPx: 13, near: r + 0.6, far: r + 4 } };
 };
 
 const CameraRig: React.FC<{ cam: Cam }> = ({ cam }) => {
