@@ -1,6 +1,6 @@
 ---
 name: toon-world-short
-description: Make a Stickrified vertical Short (61-90 s) in the "2D stickman cartoon characters in a painted 3D world" style - flat bean-head stickman cards with plum ink outlines, ink-lined painted 3D world, saturated sky, depth-of-field, gliding cameras, second-person ElevenLabs narration, synthesized SFX and an original score - rendered with three.js inside Remotion. Use for any new Stickrified video, "make the next short", a what-if scenario or strange-true-history short, building the toon kit, or "use the toon world skill".
+description: Make a Stickrified vertical Short (61-90 s) in the "2D stickman cartoon characters in a painted 3D world" style - flat round-head stickman cards with thick ink outlines, hand-inked painted 3D world, saturated colour script, lit cards, an always-moving camera, 10-frame dissolves, literal visual gags, second-person ElevenLabs narration, synthesized SFX and an original score - rendered with three.js inside Remotion. Use for any new Stickrified video, "make the next short", a what-if scenario or strange-true-history short, building the toon kit, or "use the toon world skill".
 ---
 
 # Toon-world short (three.js + Remotion)
@@ -10,16 +10,23 @@ Two pillars, both narrated in **second person ("you")**:
 - **Scenario**: "What if you were trapped in a supermarket for 30 days during a zombie apocalypse?"
 - **Strange true history**: "You're one of 74 soldiers about to knock down an iron bridge just by walking across it."
 
-Everything (story, characters, world, music) is our own. There is no outside reference channel: the style is defined
-by the numbers in this file plus `docs/STYLE.md` and the approved frames in `docs/style/frames/`.
+Everything (story, characters, world, music) is our own. The look targets come from a frame-by-frame study of four
+reference shorts: numbers in `docs/style/REFERENCE_NOTES.md`, the videos themselves in `references/` on the laptop
+(git-ignored). Those videos are **private study material**: never upload, publish or send them, never copy their
+stories, characters, jokes or shots, never name their channels. Once our pilot is approved, our own frames in
+`docs/style/frames/` become the main reference and `docs/STYLE.md` holds our final values.
 
 ## House rules
 - English only. Narration in second person. One narrator voice (ElevenLabs Eleven v4, same voice ID every video),
   steady delivery; audio tags only on beats (`[deadpan]`, `[whispers]`, `[nervous]`), at most one per two lines.
 - Surprising lines and jokes are researched real facts (history) or real-world logic (scenarios).
-- Captions: word-by-word, 1-3 words on screen, chunky rounded bold font, cream fill `#fff3df`, plum outline `#241726`,
-  lower-middle third, never over a face. Timed from `words.json`.
-- Mix: music +3 dB, SFX -6 dB, voice unchanged; master to -14 LUFS integrated, true peak -1 dBTP.
+- Captions (measured): 1-2 words at a time from `words.json`, white `#ffffff` bold rounded sans (e.g. Nunito Black or
+  Poppins ExtraBold, bundled locally), dark outline `#141014` ~0.006 W plus a soft drop shadow (offset 0.003 W, blur
+  0.006 W, 60 % black), centred horizontally at y = 0.70 H, font size 0.055 W (~60 px at 1080 wide), punctuation kept,
+  no pop or bounce: each group appears instantly on its first word and holds until the next (median 10 f). Never over
+  a face: nudge the shot, not the caption.
+- Mix: music +3 dB, SFX -6 dB, voice unchanged; master to -14 LUFS integrated, true peak -1 dBTP (the louder
+  references measure -14.2 LUFS / -0.8 dBTP). End the mix on the last word: no outro sting, no end card.
 - Final export 2K vertical 1440x2560 (`--scale 1.3333`). If a final render on the laptop takes more than 30 min,
   export 1080x1920 instead and note it in `docs/STYLE.md`.
 - A fresh verifier agent (Opus, max effort) checks every look step and the final video.
@@ -54,12 +61,13 @@ Build in this order, commit after each, and get a verifier pass on stills before
 2. **Ink**: `ink.ts` outline pass (its own pass, before any blur), `NOINK` layer for character cards.
 3. **Materials**: `paint.ts` Canvas2D painted textures with seams painted in as dark tints; Kenney CC0 props recoloured
    (record each in `assets/CREDITS.md`).
-4. **Characters**: `toon.ts` Pen API (600x1000 design canvas, soles at y = 975), bean heads, stick limbs, plum
+4. **Characters**: `toon.ts` Pen API (600x1000 design canvas, soles at y = 975), round heads, stick limbs, near-black
    variable-width outline, face library (14 expressions); `protagonist.ts` (spec below).
 5. **Cast**: `cast.ts` camera-facing billboards, walk cycles, blinks, crowds, effect cards; `cardshade.ts` card lighting.
 6. **Post**: `Composer.tsx` ink -> lens pre -> lens main -> bloom -> NEUTRAL tone map -> grade, MSAA 4.
 7. **Captions**: `Captions.tsx` from `words.json`.
-8. **Scripts**: `tts.ts` (ElevenLabs with-timestamps -> voice.wav + words.json), audio scripts, `stills.mjs`,
+8. **Scripts**: `measure.py` (the reference-study measurements: optical-flow camera motion, still frames, colour,
+   vignette, caption change rate), `tts.ts` (ElevenLabs with-timestamps -> voice.wav + words.json), audio scripts, `stills.mjs`,
    `sbs_sheet.py`, `short_qa.py`.
 9. **Pilot Short** through the full pipeline, then copy its folder to `templates/base/`, save the best frames to
    `docs/style/frames/` and write `docs/STYLE.md` with the final values and measured render speed.
@@ -67,14 +75,14 @@ Build in this order, commit after each, and get a verifier pass on stills before
 ## The protagonist ("you")
 The same card in every video; he is the viewer. Costumes are overlays (hat, coat, uniform) that always keep the hair
 and a rust-orange accent.
-- Bean head h/w .94, skin `#deaa80`, plum ink `#241726`.
+- Round head h/w .98 (the references' heads are near-circles), skin `#deaa80`, ink `#1a1416`.
 - Hair: dark brown-black `#241b17`, 3-4 chunky locks swept to one side, short fringe.
-- Face: dot eyes, heavy straight brows angled slightly down toward the centre (stern-tired default), small nose mark,
-  flat mouth line. No blush, no eye highlights.
+- Face: dot eyes, heavy brows angled slightly down toward the centre (stern-tired default), small nose mark, flat mouth
+  line. No blush, no eye highlights.
 - Default outfit: rust-orange jacket `#a8502c` (shadow `#7e3a20`) open over a charcoal tee `#2e2f30`, jeans `#33456b`,
   boots `#5a3a26`.
-- Expressions: neutral, tired, worried, scared, shocked, smug, determined, sad, angry, sneaky, relieved, confused,
-  deadpan, laughing.
+- Expressions: neutral, tired, worried, scared, shocked (ring eyes), smug, determined, sad, angry, sneaky, relieved,
+  confused, deadpan, laughing. Extras: sweat drop, steam puffs, colour fill over the face, "!" pop.
 
 ## Pipeline per video (hands-on target <= 2 h; renders run unattended)
 1. **Topic and facts.** Pick from `videos/BACKLOG.md`. It must be visual: a physical cause and effect, plus one
@@ -88,6 +96,12 @@ and a rust-orange accent.
      3-4 beats -> Snap -> deadpan double -> Explanation (one idea through an everyday analogy) -> Consequence (the
      rule or change it caused) -> Callback twist that loops.
    - Never describe on screen what the viewer already sees.
+   - **Cold open**: the first frame already shows the most absurd image of the story, on the first word.
+   - **Literal gags**: every metaphor or key phrase becomes a picture (a face "goes purple" -> it fills purple;
+     "like climbing a mountain" -> a staircase up a mountain). Mark each one in `script.json` as `gag`.
+   - **Two-part option**: a story too big for 90 s becomes Part 1 / Part 2. Part 1 stops mid-sentence on the
+     cliffhanger; Part 2 opens by replaying Part 1's last line over its last shot.
+   - Narration pace ~3.5-4 words/s (captions change 2.2-3 times per second); end on the last word, no outro.
 3. **Voice.** `npx tsx scripts/tts.ts videos/<slug>` -> `voice/voice.wav` + `voice/words.json` (character
    alignment converted to word times). Hand-check the word times; everything is timed to `words.json`.
 4. **Shot plan** in `src/videos/<slug>/story.ts` (copy `templates/base/`, register the composition in
@@ -104,7 +118,7 @@ and a rust-orange accent.
 8. **Sound** (`scripts/audio/`): lock picture timing first. Event table -> synthesized SFX + original score ducked
    under the voice -> `mix.wav` (48 kHz, exact length), stems, `cues.md`. Any later timing change means re-running sound.
 9. **Look checks**: `node scripts/stills.mjs out/<slug>/x_ 100,400 0.5`; side-by-sides against
-   `docs/style/frames/` with `python scripts/sbs_sheet.py out.jpg --ours ... --ref ...`; a verifier gives a <=200-word
+   `docs/style/frames/` (and, until the pilot is approved, frames grabbed from `references/`) with `python scripts/sbs_sheet.py out.jpg --ours ... --ref ...`; a verifier gives a <=200-word
    verdict, scores (colour, lighting, ink, textures, characters, depth, composition) and a numbered fix list.
 10. **Final render**:
     `npx remotion render src/index.ts <Comp> out/<slug>/video.mp4 --codec h264 --crf 16 --scale 1.3333 --gl=angle --concurrency=2`,
@@ -114,34 +128,61 @@ and a rust-orange accent.
 11. **Deliver**: SendUserFile `final.mp4`; 3 title options; description with "Narration: AI voice" (+ sources for
     history); add minutes per step to `videos/TIMELOG.md`; mark the topic done in `BACKLOG.md`; commit and push.
 
-## Look values (starting targets; tune during Phase 0, then record finals in docs/STYLE.md)
-- **Light presets** (`lights.ts`, sun camera-relative and frozen per shot):
-  - day: az 75 / el 48, lit [1.58,1.5,1.33], shade [.30,.29,.36], lift [.05,.06,.11] (cool tint only in shade), sky
-    top `#3e7fd2` -> horizon `#b8d0ec`, fog = horizon, 25->300 m, uSat 1.08, ~15 % blue haze past 60 m.
-  - golden: az 6 / el 7 (backlit low sun), key toward `#FFB36B` x1.5, violet-blue shade (facade ~ `#444380`), sky
-    `#ffc47c` -> `#8a6f8a`, peach fog only past 50 m, sun disc `#ffcf9e` + bloom, contact blobs + real card shadows.
-  - night (add for scenarios): moon-blue key, warm practical lights (lamps, fires, shop signs) as HDR emissives.
-- **Albedos** (`paint.ts`/`build.ts`): muted, never neon. Buildings with plinth, cornice, sills, door step; warm grey/
-  beige stone; wood with near-black seams; metal dark and desaturated. Never lemon, never lavender lit faces.
-- **Ink** (`ink.ts`): `#030303`, 5.1 px near (6 m) -> 3.3 px far (90 m) at 1080x1920; creases from 35 deg; depth
-  jumps from 1 %; fog tint 0.3 only far. Silhouettes, depth jumps and creases only: no lines on wall/floor joins or the
-  horizon. Character cards are on `NOINK` and carry their own plum ink.
-- **Colour**: day median luma ~.57, non-ink p5 ~.23 (no crushed blacks), lit chroma C* p90 ~55. Golden shadows
-  violet-blue, never brown.
-- **Lens** (`dofAt`): cInf px at 1080: hook CU 15-16, close-ups 12-14, mediums 10-12, wides/aerials 0. Focus on the
-  eyes of the front character. DOF on about 1/3 of screen time.
-- **Post**: bloom threshold 1.0, intensity .5, 6 levels, radius .6 (HDR emissives only); NEUTRAL tone map; grade last.
-  Film grain off.
-- **Characters**: about 3.5 head-heights tall, legs 1.4 HH; stick limbs ~0.055 of head width; ink-dot hands; plum ink
-  thicker on the shadow side; walk bob 3-7 %, lean 1-7 deg, planted 0.8 m stride; blinks every 0.5-2.3 s lasting 4 f;
-  tight contact shadow under the feet + sun-direction tail by day; golden rim light inner only, head/torso only.
-- **Camera**: hard cuts on big jumps; everything else a smootherstep glide of 18-40 f (peak <= 25 px/f at 720p);
-  every hold creeps in 0.15-0.35 %/f (0.6 %/f on punch words), never a static hold >= 4 f; rolls 4-5 deg; impact
-  shakes flip sign every frame and decay over 7 f; foreground props in ~1/3 of shots.
+## Look values (measured from the references; tune in Phase 0, then record finals in docs/STYLE.md)
+Full measurements: `docs/style/REFERENCE_NOTES.md`. The house look is the **hand-inked painted world** (references
+R3/R4) with the **saturated daylight colour** of R2. No near-realistic PBR worlds.
+
+- **Colour script**: every scene gets one strong time-of-day palette and keeps it:
+  - day: cobalt sky `#2f62d8` -> pale horizon `#cfe0f5`, warm sun, fog = horizon colour.
+  - golden/dusk: sky pink `#f2a6c8` -> violet `#7b6fd6` -> blue `#3f5fd8` at the top; peach rim light; violet-blue
+    shadows (never brown).
+  - night: deep blue ambient `#1d2a8c` -> `#3646c4`, snow/ground lit blue `#6f86e8`; warm practicals (lamps, candles,
+    windows `#ffb35c`) as HDR emissives with bloom.
+  - interior: warm wood and lamplight `#ffc27a`; if it is night outside, blue window light crosses the room.
+  - desert/heat: orange-red rock `#e0552a`/`#f28a2f` under cobalt sky.
+- **Targets** (measured): luma median .39-.51 (darker than "storybook"), non-ink p5 .08-.17 (deep but not crushed),
+  lit chroma C* p90 57-68 (saturated), saturation median .50-.58.
+- **Light**: key light + one practical per scene; volumetric light shafts through windows and doors (additive
+  cones, 15-25 % opacity, slow drifting dust); bloom threshold 1.0, intensity .6 only on emissives; particles
+  (snow, dust, embers, rain) in most outdoor shots.
+- **Vignette**: corner/centre luma .85 by default, .60 at night or in dark interiors.
+- **Ink** (`ink.ts`): near-black brown `#1c1210`, 4 px near -> 2.5 px far at 1080x1920, on silhouettes, depth
+  jumps and creases from 30 deg, including major wall/floor edges (the inked look draws them). Character cards are
+  on `NOINK` and carry their own outline.
+- **Paint** (`paint.ts`): visible brush strokes and grain in every fill (wood grain, plaster mottling, grass
+  strokes, snow sparkle), seams painted as dark tints; never flat untextured fills on big surfaces.
+- **Lens** (`dofAt`): background clearly soft in close-ups (cInf 10-14 px at 1080) and mediums (5-8 px), wides and
+  establishing shots sharp (0). Focus on the speaking or reacting character's eyes.
+- **Post**: ink -> lens -> bloom -> NEUTRAL tone map -> grade -> vignette; MSAA 4; film grain off.
+- **Characters** (`toon.ts`/`cast.ts`/`cardshade.ts`):
+  - round heads h/w .95-1.0, about 3.2 head-heights tall; torso a soft rounded shape with clothing detail (buttons,
+    pockets, chains, stripes); stick limbs ~.045 of head width in ink colour; small mitten/dot hands.
+  - outline near-black, 0.045 of head width (min 3 px at 1080), slightly thicker on the shadow side.
+  - expressions swap instantly on the word; emotion FX (sweat drop, steam puffs, colour fill rising over ~8 f, ring
+    eyes) land 0-3 f before the word.
+  - idle: bob 2-4 %, lean 1-5 deg, blinks every 0.5-2.3 s lasting 4 f; walks with planted feet.
+  - cards take the scene light: key-light tint, light shafts and practical glow cross them; night tints them blue;
+    contact shadow under the feet.
+- **Camera** (`story.ts`, measured):
+  - never still: still frames <= 5 %, never a static hold >= 12 f. Every hold drifts, pushes or arcs.
+  - drift speed at 1080 wide: typical 3 px/f, normal moves 10-25 px/f, fast follows up to ~60 px/f.
+  - push-in on ~65 % of screen time (0.2-0.6 %/f; up to 2.5 %/f on punch words), pull-out ~25 %.
+  - arcs/orbits around characters with slow banking (roll 0.2-1 deg/f, max 5 deg).
+  - fast moves are continuous follows (tilt down with a falling object, tilt up to reveal sky), smootherstep eased,
+    with motion blur when faster than 40 px/f.
+  - impact kicks: flip sign every frame, decay over 7 f.
+  - a new shot every 3-5 s; foreground framing props in ~1/3 of shots; low angles for authority, top-down for maps
+    and graves, over-the-shoulder for "you".
+- **Transitions** (`XFADE`):
+  - default: a 10 f crossfade between two moving shots; the caption switches on its word mid-dissolve.
+  - hard cut: punch close-ups, reaction inserts, object close-ups.
+  - big jump in place or era: fly-through or fast pull-out with motion-blur streaks, or a white-wash dissolve.
 
 ## Polish loop (Phase 0, or when a video's scores stay low)
 Heavy on time and tokens: use it for the kit, not for every video.
-1. **Targets**: the numbers above and `docs/STYLE.md` are the source of truth for every agent.
+1. **Targets**: the numbers above, `docs/style/REFERENCE_NOTES.md` and `docs/STYLE.md` are the source of truth for
+   every agent. To re-measure our own render the same way, run `python scripts/measure.py out/<slug>/final.mp4`
+   (camera motion, still frames, colour, vignette, caption rate) and compare with REFERENCE_NOTES.
 2. **Sandboxes, one owner per file area**: copy the video folder to `src/videos/<slug>_{cam,world,mat,char,post}`
    with entries `src/sandboxes/<n>/index.tsx`. Owners: cam = story.ts; world = world/lights/shade/grade;
    mat = paint/build; char = toon/cast/cardshade/protagonist; post = ink/Composer/lensblur. Agents edit only their own
@@ -179,4 +220,6 @@ Heavy on time and tokens: use it for the kit, not for every video.
 - Rim light as an offset outer copy turns hats into picture frames: inner rim only.
 - Railings at chest height cut through characters: raise the lens so rails cross legs, not torsos.
 - Flat holds read as freezes in QA (frozen span >= 12 f): every hold needs a creeping push-in.
+- A dissolve between two static shots looks like a slideshow: both sides of every crossfade must be moving.
+- A caption over a face or a gag kills the joke: reframe so the action sits above y = 0.62 H or below 0.78 H.
 - Anything that could read as graphic violence: cut away to a reaction or a sound instead.
