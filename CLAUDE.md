@@ -1,55 +1,42 @@
 # LowPolyFeed — project instructions
 
-Faceless channel (YouTube Shorts, TikTok, Facebook Reels; long-form later) of 3D low-poly **PS1-style** videos. Two pillars: survival "what if" scenarios and strange true history. All narration in **second person ("you")**. Audience: US/UK/Canada, Gen Z + Millennials. English only.
+Faceless channel (YouTube Shorts, TikTok, Facebook Reels; long-form later). **Style: flat 2D cartoon characters in a painted, ink-lined 3D world.** Two pillars: survival "what if" scenarios and strange true history. All narration in **second person ("you")**. Audience: US/UK/Canada, Gen Z + Millennials. English only.
+
+**How to make a video: follow `.claude/skills/toon-world-short/SKILL.md`.** It holds the pipeline, story formulas, look values, protagonist spec and gotchas. This file only holds the project-wide rules.
 
 ## Machine
-Windows 11 laptop: i5-11400H, RTX 3050 4 GB VRAM, 16 GB RAM. Commands must work in PowerShell. Render with `--gl=angle` and `--concurrency=1` or `2` (raise only if stable).
+Windows 11 laptop: i5-11400H, RTX 3050 4 GB VRAM, 16 GB RAM. Commands must work in PowerShell. Render with `--gl=angle` and `--concurrency=1` or `2` (raise only if stable). Set `$env:TEMP`/`$env:TMP` to `C:\remotion-tmp` before rendering.
 
 ## Stack
 - Remotion + `@remotion/three` (React Three Fiber). Every motion (characters, camera, shaders) must be driven by `useCurrentFrame()`, never by clocks or `useFrame` time.
-- ElevenLabs **Eleven v4** TTS with inline audio tags (`[whispers]`, `[nervous]`…). API key in `.env` as `ELEVENLABS_API_KEY` (never commit it).
+- ElevenLabs **Eleven v4** TTS (one narrator voice, audio tags only on beats). API key in `.env` as `ELEVENLABS_API_KEY` (never commit it).
 - Assets: CC0 only (Kenney, Quaternius, similar). Record each asset's source + license in `assets/CREDITS.md`.
+- Sound: synthesized SFX + original score (Python scripts). No commercial music.
 
 ## Pipeline (audio-first)
-1. **Script file** per video in `videos/<slug>/script.json`, the single source of truth. Each line: `narration`, `audioTag`, `scene`, `camera`, `onScreenText`. Claude drafts; the user edits.
-2. Generate voiceover + word timestamps from the script (ElevenLabs with-timestamps endpoint).
-3. Word timings drive cuts, camera moves and captions.
-4. Render Three.js scenes in Remotion.
+Script (`videos/<slug>/script.json`, the single source of truth; Claude drafts, the user edits) → voice + word timings → shot plan timed to words → world, cast, captions → sound → look checks → render, mux, QA. Details in the skill.
 
-## Look
-- Full-resolution output: 1080×1920 (Shorts), 1920×1080 (long-form), 30fps.
-- PS1 feel comes from the shader layer: vertex snapping/jitter, affine texture warp, ordered dithering, distance fog, low-res nearest-filtered textures.
-- Character animation **stepped at 15fps**; camera smooth at 30fps.
-- One recurring low-poly protagonist with a signature item and swappable costumes/props.
-- Shorts: word-by-word burned-in captions in a chunky pixel font. Long-form: no burned captions (export .srt).
-- Audio: no commercial music. ElevenLabs SFX + royalty-free ambient/lo-fi beds.
-
-### House look (`kit/ps1/houseLook.ts`)
-Every PS1 component defaults to these; scenes may override per prop.
-- Vertex snap: height 180, width from 4:3 (240×180)
-- Affine texture warp: on
-- Fog: near 7, far 17; colour is per scene (default `#2a332e`)
-- Post FX: on, dither scale 3 (each 4×4 Bayer cell = 3×3 px), 5 bits per channel
-- Lights: ambient 0.15; one point light per fixture, intensity 12, distance 6, decay 2, hung at y 1.9
-- Every surface gets a low-res nearest-filtered texture; no flat untextured or fully saturated materials.
-
-## Shorts structure (61–90s)
-Hook within the first 2s → timeline markers ("Day 3…") → escalating stakes → cut/camera move every 2–3s (push-in, whip pan, top-down cutaway) → ending that loops into the opening.
+## Formats
+- Shorts: 61–90 s, 1080×1920 composition, 30 fps, final export 2K (1440×2560) unless renders are too slow.
+- Shorts: word-by-word burned-in captions (see skill). Long-form (later): 1920×1080, no burned captions (export .srt).
 
 ## Content rules
 - Advertiser-friendly, evergreen. No graphic true crime; violence stays off-screen.
 - True history: every script ships with `sources.md`; check claims before voiceover; keep invented details (dialogue, thoughts) vague.
-- Every video gets its own scenes (no reskinned templates). Protects against YouTube's inauthentic-content policy.
+- Every video gets its own world layout and shots (no reskinned templates). Protects against YouTube's inauthentic-content policy.
 - Every description includes "Narration: AI voice".
 
-## Repo layout (target)
+## Repo layout
 ```
-kit/        shared: PS1 shader, protagonist, scene library, camera presets, caption component
-videos/     one folder per video: script.json, sources.md, audio/, timings.json
-assets/     CC0 models, textures, fonts + CREDITS.md
-scripts/    CLI: tts generation, render helpers
+kit/toon/          shared toon look (world, lights, ink, paint, characters, post, captions)
+src/videos/<slug>/ per-video compositions (story.ts, build.ts, roles.ts)
+videos/<slug>/     script, sources, voice, audio
+templates/base/    starting point for new videos (made after the pilot)
+docs/STYLE.md      style bible + approved frames in docs/style/frames/
+scripts/           tts, audio, stills, QA helpers
 ```
+`kit/ps1/`, `kit/character/` and the PS1 test compositions are the **retired PS1 style**: don't build on them; delete them once the toon kit replaces them.
 Rendered output (`out/`, `*.mp4`) is git-ignored.
 
 ## Current phase
-Weeks 1–2: build the kit and one test Short ("What if you were trapped in a supermarket for 30 days during a zombie apocalypse" unless the user picks another). Daily posting starts week 3.
+Weeks 1–2: Phase 0 of the skill (build the toon kit) and a pilot Short ("What if you were trapped in a supermarket for 30 days during a zombie apocalypse" unless the user picks another). Daily posting starts week 3.
