@@ -1,0 +1,21 @@
+{
+ "integrated_lufs": -14.14,
+ "true_peak_dbtp": -1.3,
+ "samples": 716800,
+ "seconds": 14.933333333333334,
+ "premaster": {
+  "lufs": -17.95,
+  "dbtp": 0.32
+ },
+ "levels_db": {
+  "voice": 0,
+  "music_bed": -3,
+  "button": -3,
+  "sfx": -6,
+  "duck": -16
+ },
+ "voice_music_gap_db": 18.8,
+ "voice_music_gap_min_word_db": 2.5,
+ "worst_word": "*laughing*.",
+ "voice_button_gap_db": 2.5
+}

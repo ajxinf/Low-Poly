@@ -1,0 +1,57 @@
+{
+  "slug": "_pipeline-test-2",
+  "title": "What if you painted your roof white? (15 s pipeline smoke test 2, not for posting)",
+  "pillar": "Scenario",
+  "formula": "Scaled for 15 s: strange act + mocker -> time stamp + setback for him -> 'You see,' mechanism -> his comeuppance gag -> loop: now you're the one laughing",
+  "loop": "Line 1: your neighbour laughs at your white roof. Last: now he's painting his roof white, and you're the one laughing.",
+  "voiceId": "zfc8CJQpe8Kqyl0vvCzo",
+  "model": "eleven_v4",
+  "facts": [
+    "Light-coloured 'cool roofs' reflect more sunlight and stay much cooler than dark roofs in the sun; a dark roof absorbs it (US Department of Energy, Energy Saver: 'Cool Roofs'; verify wording before posting anything like this).",
+    "Shed, neighbour, ice cream and day 90: scenario framing."
+  ],
+  "lines": [
+    {
+      "narration": "You paint your shed roof white, and your neighbour *laughs*.",
+      "audioTag": "fast-paced, energetic storyteller",
+      "scene": "Cold open, sunny suburb: you on a step ladder, rolling white paint across your little shed's roof, half done. Over the fence, the neighbour (bowler hat) points and laughs beside his own shed with a black roof.",
+      "camera": "S1: low angle push-in on you, arc to include the laughing neighbour",
+      "onScreenText": "",
+      "gag": "The neighbour laughs so hard his bowler hat bounces"
+    },
+    {
+      "narration": "Day 90. A *heatwave*.",
+      "spoken": "Day ninety. A heatwave.",
+      "audioTag": "",
+      "scene": "Same two sheds, wide, the sun now huge and white-hot; heat haze, the grass gone yellow.",
+      "camera": "S2: crane down from the blazing sun to the two sheds",
+      "onScreenText": "DAY 90",
+      "gag": "The sun is so big it fills the top of the frame"
+    },
+    {
+      "narration": "You see, white bounces sunlight *away*. Black soaks it *up*.",
+      "audioTag": "curious, explaining fast",
+      "scene": "Glowing sun rays hit your white roof and bounce back into the sky; the rays that hit his black roof sink in and it glows red-hot.",
+      "camera": "S3: side-on wide of both roofs, slow push",
+      "onScreenText": "",
+      "gag": "His black roof glows red like a stove"
+    },
+    {
+      "narration": "His ice cream doesn't stand a *chance*.",
+      "audioTag": "amused",
+      "scene": "Hard cut: the neighbour in front of his shed, sweating, his face filling red, an ice cream cone melting in his hand.",
+      "camera": "S4: punch close-up, hard cut",
+      "onScreenText": "",
+      "gag": "The ice cream melts down to the cone; his face fills red"
+    },
+    {
+      "narration": "So now he's painting his roof white, and you're the one *laughing*.",
+      "spoken": "So now he's painting his roof white, and [laughs] you're the one laughing.",
+      "audioTag": "",
+      "scene": "The neighbour on the ladder, painting his roof white; you in the foreground with a lemonade, laughing, his half-white roof behind you.",
+      "camera": "S5: push-in on you, end on the word",
+      "onScreenText": "",
+      "gag": "You raise your lemonade to him"
+    }
+  ]
+}

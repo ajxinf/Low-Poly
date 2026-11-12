@@ -8,6 +8,8 @@ import { PresetWide, StreetMedium, StreetWide } from "./StreetShots";
 import { SupermarketMedium, SupermarketNight, SupermarketWide } from "./Supermarket";
 import { PRESETS, PresetName } from "../kit/toon/build/presets";
 import { PipelineTest } from "./videos/_pipeline-test/Video";
+import { PipelineTest2 } from "./videos/_pipeline-test-2/Video";
+import { FRAMES as PT2_FRAMES } from "./videos/_pipeline-test-2/story";
 
 export const RemotionRoot: React.FC = () => (
   <>
@@ -26,5 +28,6 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="ExpressionSheet" component={ExpressionSheet} fps={30} durationInFrames={1} width={1080} height={1920} />
     <Composition id="CastSheet" component={CastSheet} fps={30} durationInFrames={1} width={1080} height={1920} />
     <Composition id="PipelineTest" component={PipelineTest} fps={30} durationInFrames={450} width={1080} height={1920} />
+      <Composition id="PipelineTest2" component={PipelineTest2} fps={30} durationInFrames={PT2_FRAMES} width={1080} height={1920} />
   </>
 );

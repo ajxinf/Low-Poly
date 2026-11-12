@@ -1,0 +1,22 @@
+{
+ "fps": 30,
+ "frames": 448,
+ "events": [
+  {"f": 8, "sfx": "swish", "note": "your roller stroke (S1)"},
+  {"f": 40, "sfx": "swish", "note": "your roller stroke (S1)"},
+  {"f": 70, "sfx": "pop", "note": "neighbour bursts out laughing on 'laughs' (squash, 2 f lead)"},
+  {"f": 103, "sfx": "whoosh", "note": "S1->S2 dissolve (mid), crane up to the sun"},
+  {"f": 103, "sfx": "pat", "note": "DAY 90 stamp thump, on 'Day'"},
+  {"f": 173, "sfx": "whoosh", "note": "S2->S3 dissolve (mid)"},
+  {"f": 186, "sfx": "swish", "note": "rays reach your white roof ('white')"},
+  {"f": 221, "sfx": "pop", "note": "rays bounce off on 'away'"},
+  {"f": 238, "sfx": "swish", "note": "rays reach his black roof ('Black')"},
+  {"f": 267, "sfx": "sting", "note": "his roof glows red-hot on 'up'"},
+  {"f": 286, "sfx": "swish", "note": "hard cut to the ice-cream close-up"},
+  {"f": 324, "sfx": "splat", "note": "scoop gone, face fills red on 'chance'"},
+  {"f": 348, "sfx": "whoosh", "note": "S4->S5 dissolve (mid)"},
+  {"f": 380, "sfx": "swish", "note": "his roller stroke (S5)"},
+  {"f": 420, "sfx": "pop", "note": "you burst out laughing on 'laughing' (squash, 2 f lead)"}
+ ],
+ "music": {"bpm": 120, "frames": 448, "button": 422, "stop": [282, 296]}
+}
