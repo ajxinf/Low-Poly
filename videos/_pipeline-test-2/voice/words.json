@@ -41,87 +41,87 @@
  },
  {
   "text": "neighbour",
-  "start": 1.96,
-  "end": 2.24
+  "start": 2,
+  "end": 2.32
  },
  {
   "text": "*laughs*.",
-  "start": 2.4,
-  "end": 3.16
+  "start": 2.48,
+  "end": 3.24
  },
  {
   "text": "Day",
-  "start": 3.44,
-  "end": 3.6
+  "start": 3.52,
+  "end": 3.68
  },
  {
   "text": "90.",
-  "start": 3.76,
-  "end": 4.36
+  "start": 3.84,
+  "end": 4.44
  },
  {
   "text": "A",
-  "start": 4.56,
-  "end": 4.64
+  "start": 4.64,
+  "end": 4.72
  },
  {
   "text": "*heatwave*.",
-  "start": 4.72,
-  "end": 5.48
+  "start": 4.8,
+  "end": 5.56
  },
  {
   "text": "You",
-  "start": 5.753,
-  "end": 5.76
+  "start": 5.905,
+  "end": 5.92
  },
  {
   "text": "see,",
-  "start": 5.84,
-  "end": 6.16
+  "start": 6,
+  "end": 6.24
  },
  {
   "text": "white",
-  "start": 6.32,
-  "end": 6.56
+  "start": 6.4,
+  "end": 6.64
  },
  {
   "text": "bounces",
-  "start": 6.64,
-  "end": 6.96
+  "start": 6.72,
+  "end": 7.12
  },
  {
   "text": "sunlight",
-  "start": 7.04,
-  "end": 7.36
+  "start": 7.2,
+  "end": 7.44
  },
  {
   "text": "*away*.",
-  "start": 7.44,
-  "end": 7.92
+  "start": 7.6,
+  "end": 8
  },
  {
   "text": "Black",
-  "start": 8.08,
-  "end": 8.4
+  "start": 8.16,
+  "end": 8.48
  },
  {
   "text": "soaks",
-  "start": 8.48,
-  "end": 8.72
+  "start": 8.56,
+  "end": 8.8
  },
  {
   "text": "it",
-  "start": 8.8,
+  "start": 8.84,
   "end": 8.88
  },
  {
   "text": "*up*.",
   "start": 8.96,
-  "end": 9.39
+  "end": 9.28
  },
  {
   "text": "His",
-  "start": 9.57,
+  "start": 9.573,
   "end": 9.6
  },
  {
@@ -131,7 +131,7 @@
  },
  {
   "text": "cream",
-  "start": 9.96,
+  "start": 9.92,
   "end": 10.08
  },
  {
@@ -141,12 +141,12 @@
  },
  {
   "text": "stand",
-  "start": 10.52,
-  "end": 10.64
+  "start": 10.48,
+  "end": 10.56
  },
  {
   "text": "a",
-  "start": 10.72,
+  "start": 10.64,
   "end": 10.8
  },
  {
@@ -171,7 +171,7 @@
  },
  {
   "text": "painting",
-  "start": 12.16,
+  "start": 12.2,
   "end": 12.4
  },
  {
@@ -185,33 +185,33 @@
   "end": 12.8
  },
  {
-  "text": "white,",
+  "text": "white.",
   "start": 12.88,
   "end": 13.28
  },
  {
-  "text": "and",
-  "start": 13.36,
-  "end": 13.44
- },
- {
-  "text": "you're",
-  "start": 13.584,
+  "text": "And",
+  "start": 13.52,
   "end": 13.76
  },
  {
-  "text": "the",
-  "start": 13.8,
-  "end": 13.84
- },
- {
-  "text": "one",
-  "start": 13.92,
+  "text": "you're",
+  "start": 13.84,
   "end": 14
  },
  {
-  "text": "*laughing*.",
+  "text": "the",
   "start": 14.08,
-  "end": 14.72
+  "end": 14.16
+ },
+ {
+  "text": "one",
+  "start": 14.24,
+  "end": 14.32
+ },
+ {
+  "text": "*laughing*.",
+  "start": 14.4,
+  "end": 15.04
  }
 ]

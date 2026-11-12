@@ -6,6 +6,9 @@ Writes videos/<slug>/audio/sfx.wav (48 kHz mono float, exact video length; peaks
 Sounds: step, whoosh, swish, splat, pat, pop, sting. Each event starts on its frame (the transient lands there;
 whooshes are centred on it).
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import events
 import json
 import sys
 
@@ -91,7 +94,7 @@ CENTRED = {"whoosh"}
 
 
 def main(d):
-    cfg = json.load(open(f"{d}/audio/events.json"))
+    cfg = events.load(d)  # word-anchored cues resolved (scripts/audio/events.py)
     n = round(cfg["frames"] / cfg["fps"] * SR)
     out = np.zeros(n)
     for e in cfg["events"]:

@@ -270,7 +270,11 @@ export const buildStreet = (p: EraPreset, light: LightPreset, o: StreetOpts = {}
   if (p.debris.length) g.add(...debris(140, edge, p.debris, seed + 5));
   if (p.scraps.length) g.add(...scraps(40, edge, p.scraps, seed + 6));
 
-  if (p.backdrop) g.add(backdrop(p.backdrop, at(L + 14, 0), tangent(L + 14), seed));
+  if (p.backdrop) {
+    g.add(backdrop(p.backdrop, at(L + 14, 0), tangent(L + 14), seed));
+    // Both sides too: cross-street shots see the horizon through every gap between houses.
+    for (const side of [-1, 1]) g.add(backdrop(p.backdrop, at(L / 2, side * (FRONT + 20)), right(L / 2).multiplyScalar(side), seed + 3 + side, 0.6));
+  }
   extras.forEach((obj) => {
     obj.userData.collider ??= "foreground prop";
     g.add(obj);
@@ -281,12 +285,12 @@ export const buildStreet = (p: EraPreset, light: LightPreset, o: StreetOpts = {}
 };
 
 /** Distant hills / mesas / snowy mountains in a 120 deg fan 90-150 m past the street end (aerial perspective hazes them). */
-const backdrop = (b: NonNullable<EraPreset["backdrop"]>, end: Vector3, dir: Vector3, seed: number) => {
+const backdrop = (b: NonNullable<EraPreset["backdrop"]>, end: Vector3, dir: Vector3, seed: number, k0 = 1) => {
   const r = rng(seed + 77), k = new Kit();
   const m = MAT.color(b.color), snow = MAT.color("#f4f6fc"), tree = b.trees ? MAT.color(b.trees) : null;
   const base = Math.atan2(dir.x, -dir.z);
   for (let i = 0; i < 14; i++) {
-    const a = base + (i / 13 - 0.5) * 2.2, d = 90 + r() * 60;
+    const a = base + (i / 13 - 0.5) * 2.2, d = (90 + r() * 60) / Math.sqrt(k0) ;
     const x = end.x + Math.sin(a) * d, z = end.z - Math.cos(a) * d;
     if (b.shape === "mesas") {
       const w = 30 + r() * 40, h = 22 + r() * 18;
@@ -296,7 +300,7 @@ const backdrop = (b: NonNullable<EraPreset["backdrop"]>, end: Vector3, dir: Vect
       k.add(m, new ConeGeometry(h * 0.9, h, 6), x, h / 2 - 2, z);
       k.add(snow, new ConeGeometry(h * 0.3, h * 0.33, 6), x, h - h * 0.165 - 2, z);
     } else {
-      const w = 40 + r() * 50, h = 20 + r() * 16;
+      const w = (40 + r() * 50) * k0, h = (20 + r() * 16) * k0 * k0;
       const hill = new SphereGeometry(1, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2);
       hill.scale(w, h, w * 0.6);
       k.add(m, hill, x, -1, z);

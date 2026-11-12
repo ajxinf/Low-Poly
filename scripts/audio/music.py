@@ -7,6 +7,9 @@ Writes videos/<slug>/audio/music.wav (the bed: 48 kHz mono float, exact length, 
 final hit alone, same scale as the bed) so the mix can duck the bed without burying the button.
 Everything after the button is the chord's natural decay: no hard cut.
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import events
 import json
 import sys
 
@@ -32,7 +35,7 @@ def pluck(midi, dur, bright=1.0, decay=0.35):
 
 
 def main(d):
-    cfg = json.load(open(f"{d}/audio/events.json"))["music"]
+    cfg = events.load(d)["music"]  # word-anchored button/stop resolved
     fps = 30
     n = round(cfg["frames"] / fps * SR)
     beat = 60 / cfg["bpm"]

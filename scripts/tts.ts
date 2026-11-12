@@ -62,3 +62,29 @@ if (spoken.length !== caption.length) throw new Error(`alignment has ${spoken.le
 const words = caption.map((text, i) => ({ text, start: +spoken[i].start.toFixed(3), end: +spoken[i].end.toFixed(3) }));
 fs.writeFileSync(path.join(voiceDir, "words.json"), JSON.stringify(words, null, 1));
 console.log(`${words.length} words, voice ${words[words.length - 1].end.toFixed(2)} s -> ${voiceDir}`);
+
+// Non-verbal tags must be performed: the gap the voice leaves between the words around the tag (measured on
+// _pipeline-test: a performed [laughs] 0.60 s, [gasps] 0.52 s; a skipped one 0.05-0.14 s). Each tag's audio is cut to
+// voice/tag_<name>_<n>.wav for the ear check (a tag can still be read aloud as a word).
+const NONVERBAL = /^(laughs|gasps|sighs|chuckles|giggles|exhales|inhales|clears throat)$/i;
+const MIN_GAP = 0.3;
+const joined = chars.join("");
+const isWord = (c: string) => /[\p{L}\p{N}]/u.test(c);
+let bad = 0, n = 0;
+for (const m of joined.matchAll(/\[([^\]]+)\]/g)) {
+  if (!NONVERBAL.test(m[1].trim())) continue;
+  const a = m.index!, b = a + m[0].length - 1;
+  let p = a - 1, q = b + 1;
+  while (p >= 0 && !isWord(chars[p])) p--;
+  while (q < chars.length && !isWord(chars[q])) q++;
+  const from = p >= 0 ? t1[p] : 0, to = q < chars.length ? t0[q] : t1[chars.length - 1], gap = to - from;
+  const clip = path.join(voiceDir, `tag_${m[1].trim().replace(/\s+/g, "_")}_${++n}.wav`);
+  execFileSync("npx", ["remotion", "ffmpeg", "-y", "-loglevel", "error", "-ss", String(Math.max(from - 0.3, 0)), "-to", String(to + 0.3), "-i", path.join(voiceDir, "voice.wav"), clip], { stdio: "inherit", shell: true });
+  const ok = gap >= MIN_GAP;
+  if (!ok) bad++;
+  console.log(`${ok ? "ok  " : "FAIL"} [${m[1]}] ${from.toFixed(2)}-${to.toFixed(2)} s: ${gap.toFixed(2)} s between the words (>= ${MIN_GAP} s = performed) -> ${clip}`);
+}
+if (bad) {
+  console.error(`${bad} non-verbal tag(s) not performed. Move each to the start of a sentence (after a full stop), then rerun with --new.`);
+  process.exit(1);
+}

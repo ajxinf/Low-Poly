@@ -1,11 +1,11 @@
 {
- "integrated_lufs": -14.14,
+ "integrated_lufs": -14.13,
  "true_peak_dbtp": -1.3,
- "samples": 716800,
- "seconds": 14.933333333333334,
+ "samples": 731200,
+ "seconds": 15.233333333333333,
  "premaster": {
-  "lufs": -17.95,
-  "dbtp": 0.32
+  "lufs": -18.15,
+  "dbtp": -0.47
  },
  "levels_db": {
   "voice": 0,
@@ -14,8 +14,8 @@
   "sfx": -6,
   "duck": -16
  },
- "voice_music_gap_db": 18.8,
- "voice_music_gap_min_word_db": 2.5,
+ "voice_music_gap_db": 18.4,
+ "voice_music_gap_min_word_db": 3.3,
  "worst_word": "*laughing*.",
- "voice_button_gap_db": 2.5
+ "voice_button_gap_db": 3.3
 }

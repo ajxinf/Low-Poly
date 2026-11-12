@@ -56,6 +56,8 @@ export const LIGHTS = {
     fogFar: 400,
     sat: 1.1,
     haze: { color: "#b8d0ec", start: 50, amount: 0.25 },
+    // Painted cumulus: white tops, cool lavender-blue undersides (2026-11-13, empty skies read unfinished).
+    clouds: { lit: "#ffffff", shade: "#c4cdea", cover: 0.42 },
     litTint: "#fff2dc",
     char: { tint: [1.0, 0.97, 0.96], shade: 0.86 },
     grade: "day",

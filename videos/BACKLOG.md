@@ -23,3 +23,8 @@ From the R1-R12 pass (2026-11-12):
 - [ ] **Cross-section cut-away** helper: clip a set with a plane and paint the cut face (soil layers, wall).
 - [ ] **Costumes for the new drafts**: Chad (tank top, backwards cap, sunglasses, megaphone), Brad (slick hair,
   shiny suit, chimney-tall top hat with a painted number), pyjamas variant.
+
+From _pipeline-test-2 round 2 (2026-11-13):
+- [ ] **Day colour targets on dressed frames**: luma 0.601 (max 0.57) and vignette 0.91 (day range 1.1-1.4) after clouds, hills, trees and shafts filled the corners. Re-measure the day range on dressed frames or darken the day grade.
+- [ ] **Protagonist wardrobe pass** (only if the user wants it): his rust jacket is the identity; candidates are sneaker soles and a readable pin badge.
+- [ ] **Background check in the guard**: share of the 7x4 probe rays that hit only sky or bare ground in wides (today only the frames.py checklist catches it).

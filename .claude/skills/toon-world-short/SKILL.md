@@ -132,6 +132,9 @@ overlays (hat, coat, uniform) that always keep the quiff and a rust-orange `#c85
 3. **Voice.** `node scripts/tts.ts videos/<slug>` (Node 22.6+ runs TypeScript directly; `--new` regenerates,
    otherwise the saved `voice/tts_response.json` is reused so credits are not spent twice) -> `voice/voice.wav` + `voice/words.json` (character
    alignment converted to word times). Hand-check the word times; everything is timed to `words.json`.
+   `tts.ts` fails when a non-verbal tag (`[laughs]`, `[gasps]`...) left less than 0.3 s between its words (not
+   performed: Eleven v4 skips tags now and then, more often mid-sentence) and cuts each tag to
+   `voice/tag_<name>_<n>.wav` for the ear check. Put tags after a full stop and retake with `--new` until it passes.
 4. **Shot plan** in `src/videos/<slug>/story.ts` (copy `templates/base/`, or until the pilot
    `src/videos/_pipeline-test/`; register the composition in `src/Root.tsx`):
    - `SHOTS`: id, a/b frames, light day/golden, crowd mode, `tau` story time.
@@ -142,13 +145,18 @@ overlays (hat, coat, uniform) that always keep the quiff and a rust-orange `#c85
 5. **World**: pick an era preset (`kit/toon/build/presets.ts`) and build this story's own layout with
    `<Street preset opts>` (seed, length, curve, lamp spots, landmark, `extra` props) in `build.ts`. Keep cameras
    clear of facades and props (no culler yet).
-6. **Cast**: roles, costumes, expressions and walks in `roles.ts`.
+6. **Cast**: roles, costumes, expressions and walks in `roles.ts`. Every speaking role is designed with
+   `kit/toon/wardrobe.ts` (see "Visual storytelling"). Story props live in `props.ts` as `MovingProp`s, used by
+   both `Video.tsx` and the guard (`Shot.moving`); tag door colliders with `userData.door`.
 7. **Captions** on, from `words.json`.
 8. **Sound** (`scripts/audio/`): lock picture timing first. Any later timing change means re-running sound.
    - Event table `videos/<slug>/audio/events.json`, every frame taken from `words.json` or a motion formula:
      `{"fps": 30, "frames": N, "events": [{"f": 206, "sfx": "splat", "note": "why"}],
      "music": {"bpm": 120, "frames": N, "button": <frame of the last word>, "stop": [f0, f1]}}`.
      Sounds: step, whoosh (centred on its frame, for dissolves), swish, splat, pat, pop, sting.
+     Sync cues to words, not typed frames: `{"word": "laughs", "n": 0, "lead": 2, "sfx": "pop"}`, music
+     `button`/`stop` the same way, `"frames": "auto"` (`scripts/audio/events.py` resolves them), so a new voice
+     take moves every cue. Dissolve whooshes keep their shot-plan frames.
    - `python scripts/audio/sfx_gen.py videos/<slug>` -> `sfx.wav`.
    - `python scripts/audio/music.py videos/<slug>` -> `music.wav` (bed) + `button.wav`.
    - `python scripts/audio/mix.py videos/<slug>` -> `mix.wav` (48 kHz, exact length), `loudness.json` (LUFS, true
@@ -169,6 +177,11 @@ overlays (hat, coat, uniform) that always keep the quiff and a rust-orange `#c85
 
 ## Visual storytelling (from the R5-R7 study)
 The look values below make a frame pretty; these rules make the frames tell the story. Plan them in the shot plan.
+- **Signature design (wardrobe).** Flat single-colour beans are forgettable. Every speaking role gets ONE pattern
+  (`pattern`: plaid, dots, flowers, quilt, pinstripe) and ONE OR TWO signature accessories that read at phone size
+  (`bowtie`, `visor`, `boater`, `cap`, `shadesUp`, `tache`, `overalls`, `suspenders`, `belt`, `nameTag`; legs:
+  `shorts`, `socks`), all in `kit/toon/wardrobe.ts`. Example: Gary in `_pipeline-test-2` (visor, sunglasses up,
+  walrus moustache, turquoise flower shirt, socks and sandals). Never copy a reference character's outfit.
 - **Cast by silhouette.** Every speaking role gets a costume that reads in pure silhouette at 120 px: a hat, a
   hairdo or a prop (helmet with plume, cap, beanie, slick hair, name-tag vest, braces, sunglasses on the head).
   "You" keeps the quiff and rust accent under any costume; the opponent or rival gets the opposite silhouette and
@@ -216,9 +229,16 @@ R3/R4) with the **saturated daylight colour** of R2. No near-realistic PBR world
   - desert/heat: orange-red rock `#e0552a`/`#f28a2f` under cobalt sky.
 - **Targets** (measured): luma median .39-.51 (darker than "storybook"), non-ink p5 .08-.17 (deep but not crushed),
   lit chroma C* p90 57-68 (saturated), saturation median .50-.58.
-- **Light**: key light + one practical per scene; volumetric light shafts through windows and doors (additive
-  cones, 15-25 % opacity, slow drifting dust); bloom threshold 1.0, intensity .6 only on emissives; particles
+- **Light**: key light + one practical per scene; bloom threshold 1.0, intensity .6 only on emissives; particles
   (snow, dust, embers, rain) in most outdoor shots.
+  - **Volumetric shafts** (`kit/toon/shafts.tsx`, `<LightShafts shafts={[{from, to, r0, r1, color, opacity}]} />`):
+    through windows, doors, house gaps and canopies. Interiors and night 0.2-0.35 opacity; bright day needs
+    ~0.3 and a darker background (a shaded facade), or it is invisible. Start the beam where it is unoccluded:
+    a shaft traced back to a sun behind the houses is hidden by them.
+  - **Sky and horizon**: day skies carry painted clouds (`LIGHTS.day.clouds`); presets with a `backdrop` get hills
+    behind both rows of houses as well as past the street end, so cross-street shots never look at an empty plain.
+  - **Set dressing**: every wide shows life in the yard or street (trees, beds, gnomes, hoses, bins, washing).
+    Real sizes: doors 2.0 m, garden sheds 2.3-2.75 m walls, ladders for anyone working above 2 m.
 - **Vignette**: corner/centre luma .85 by default, .60 at night or in dark interiors. `measure.py` checks the
   corner/centre ratio by lighting (`--light`): dusk, golden, night and interior 0.8-0.9; **day exteriors 1.1-1.4**
   (mean over the sampled frames). Sky and sunlit ground fill a day frame's corners, so the ratio stays above 1

@@ -168,6 +168,8 @@ Goal: the most entertaining 61-90 s possible. A swipe-away means a line was bori
   ~0.5-0.6 s each (measured on `_pipeline-test`; `check_script.py` adds it to the length). Use them only on beats.
   With two of them, a 39-word script ran 14.9 s, i.e. 2.6 words/s, not 3.1. Listen to them before you approve
   the voice: a tag can come out read aloud as a word.
+  **Place them after a full stop** ("...roof white. [laughs] And you're..."): mid-sentence, v4 skipped `[laughs]` in
+  `_pipeline-test-2`, and even at a sentence start it took two takes. `tts.ts` now fails a skipped tag.
 - **No sound-effect tags** (`[footsteps]`, `[thunder]`...): our SFX are synthesized. If a delivery tag comes out as a
   sound, describe the voice instead ("[low, dry voice]").
 - **Numbers, dates, names**: written out in `spoken` ("seventy-four", "eighteen thirty-one"); captions keep numerals.

@@ -88,7 +88,7 @@ const fillInk = (p: Pen, h: Head, pts: P2[], col: string) => {
   p.inkRing(pts, outline(h));
 };
 
-const capHair = (col: string, k: number, sides = 0.35, spikes = 0) => (p: Pen, h: Head) => fillInk(p, h, capPts(h, k, sides, spikes), col);
+export const capHair = (col: string, k: number, sides = 0.35, spikes = 0) => (p: Pen, h: Head) => fillInk(p, h, capPts(h, k, sides, spikes), col);
 
 /** Half-ellipse dome (crown of a hat) standing on y0. */
 const dome = (cx: number, y0: number, rx: number, ry: number, flat = 2.4): P2[] => {

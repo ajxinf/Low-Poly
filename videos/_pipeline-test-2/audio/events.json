@@ -1,22 +1,112 @@
 {
  "fps": 30,
- "frames": 448,
+ "frames": "auto",
  "events": [
-  {"f": 8, "sfx": "swish", "note": "your roller stroke (S1)"},
-  {"f": 40, "sfx": "swish", "note": "your roller stroke (S1)"},
-  {"f": 70, "sfx": "pop", "note": "neighbour bursts out laughing on 'laughs' (squash, 2 f lead)"},
-  {"f": 103, "sfx": "whoosh", "note": "S1->S2 dissolve (mid), crane up to the sun"},
-  {"f": 103, "sfx": "pat", "note": "DAY 90 stamp thump, on 'Day'"},
-  {"f": 173, "sfx": "whoosh", "note": "S2->S3 dissolve (mid)"},
-  {"f": 186, "sfx": "swish", "note": "rays reach your white roof ('white')"},
-  {"f": 221, "sfx": "pop", "note": "rays bounce off on 'away'"},
-  {"f": 238, "sfx": "swish", "note": "rays reach his black roof ('Black')"},
-  {"f": 267, "sfx": "sting", "note": "his roof glows red-hot on 'up'"},
-  {"f": 286, "sfx": "swish", "note": "hard cut to the ice-cream close-up"},
-  {"f": 324, "sfx": "splat", "note": "scoop gone, face fills red on 'chance'"},
-  {"f": 348, "sfx": "whoosh", "note": "S4->S5 dissolve (mid)"},
-  {"f": 380, "sfx": "swish", "note": "his roller stroke (S5)"},
-  {"f": 420, "sfx": "pop", "note": "you burst out laughing on 'laughing' (squash, 2 f lead)"}
+  {
+   "f": 8,
+   "sfx": "swish",
+   "note": "your roller stroke (S1)"
+  },
+  {
+   "f": 40,
+   "sfx": "swish",
+   "note": "your roller stroke (S1)"
+  },
+  {
+   "word": "laughs",
+   "lead": 2,
+   "sfx": "pop",
+   "note": "Gary bursts out laughing on 'laughs' (squash, 2 f lead)"
+  },
+  {
+   "word": "day",
+   "lead": 0,
+   "sfx": "pat",
+   "note": "DAY 90 stamp thump, on 'Day'"
+  },
+  {
+   "sfx": "whoosh",
+   "note": "S1->S2 dissolve, crane up to the sun (shot plan frame: dissolve middle)",
+   "f": 103
+  },
+  {
+   "sfx": "whoosh",
+   "note": "S2->S3 dissolve (shot plan frame: dissolve middle)",
+   "f": 173
+  },
+  {
+   "word": "white",
+   "n": 1,
+   "lead": 4,
+   "sfx": "swish",
+   "note": "rays reach your white roof ('white')"
+  },
+  {
+   "word": "away",
+   "lead": 2,
+   "sfx": "pop",
+   "note": "rays bounce off on 'away'"
+  },
+  {
+   "word": "black",
+   "lead": 4,
+   "sfx": "swish",
+   "note": "rays reach his black roof ('Black')"
+  },
+  {
+   "word": "up",
+   "n": 0,
+   "lead": 2,
+   "sfx": "sting",
+   "note": "his roof glows red-hot on 'up'"
+  },
+  {
+   "word": "his",
+   "n": 0,
+   "lead": 1,
+   "sfx": "swish",
+   "note": "hard cut to the ice-cream close-up"
+  },
+  {
+   "word": "chance",
+   "lead": 2,
+   "sfx": "splat",
+   "note": "scoop gone, face fills red on 'chance'"
+  },
+  {
+   "sfx": "whoosh",
+   "note": "S4->S5 dissolve (shot plan frame: dissolve middle)",
+   "f": 348
+  },
+  {
+   "word": "roof",
+   "n": 1,
+   "lead": 0,
+   "sfx": "swish",
+   "note": "Gary's roller stroke (S5)"
+  },
+  {
+   "word": "laughing",
+   "lead": 2,
+   "sfx": "pop",
+   "note": "you burst out laughing on 'laughing' (squash, 2 f lead)"
+  }
  ],
- "music": {"bpm": 120, "frames": 448, "button": 422, "stop": [282, 296]}
+ "music": {
+  "bpm": 120,
+  "frames": "auto",
+  "button": {
+   "word": "laughing"
+  },
+  "stop": [
+   {
+    "word": "his",
+    "lead": 4
+   },
+   {
+    "word": "his",
+    "lead": -10
+   }
+  ]
+ }
 }

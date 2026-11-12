@@ -1,41 +1,39 @@
-# _pipeline-test-2: second pipeline smoke test (2026-11-13)
+# _pipeline-test-2: second pipeline smoke test (2026-11-13, round 2)
 
-**Final (2K):** `out/_pipeline-test-2/final.mp4` (1440x2560, 448 frames, 14.93 s). Not for posting.
+**Final (2K):** `out/_pipeline-test-2/final.mp4` (1440x2560, 457 frames, 15.23 s). Not for posting.
 **Story:** "You paint your shed roof white, and your neighbour laughs." Day 90 heatwave; white bounces sunlight,
-black soaks it up; his ice cream melts; he paints his roof white "and you're the one laughing" (loop to line 1).
+black soaks it up; his ice cream melts; he paints his roof white, "and you're the one laughing" (loop to line 1).
 
-Purpose: run every step a real Short uses, after the story rules changed (rival/mocker, loop, in-world text),
-and exercise parts the first test never touched: the DAY stamp, a colour-fill gag, a mirrored loop shot, HDR
-practicals (rays), a new era preset (modern suburb) and a new kit component (`kit/toon/Stamp.tsx`).
+## Round 2: what the user found, why QA missed it, what changed
 
-| # | Step | Result | Notes |
+| User found | Why QA missed it | Fix in the pipeline (all videos) | Fix in this video |
 |---|---|---|---|
-| 1 | Script (`stickrified-script`) | PASS | 43 words, `loop` field set. Checker: the expected length errors for 15 s; long-word warn (12 %) is noise at 43 words |
-| 2 | Voice (`scripts/tts.ts`) | PASS (ear check open) | Eleven v4, 14.72 s, `words.json` 43 words. `[laughs]` before "you're": **listen** to `voice/voice.wav` 13.4-13.6 s |
-| 3 | Shot plan + world + cast | PASS | 5 shots, 3 dissolves + 1 hard cut. Two sheds and a fence in a modern-suburb front yard (`build.ts`) |
-| 4 | QA layer 1 (guard, every frame) | PASS | 11/11 checks; 2 intended (closing row of buildings built to meet). It caught 12 real problems on the way (below) |
-| 5 | Captions | PASS | Key words orange: laughs, heatwave, away, up, chance, laughing. No caption over a face (guard) |
-| 6 | DAY stamp (new) | PASS | `kit/toon/Stamp.tsx`: upper third, thump on "Day" (f103), rust text, held 60 f |
-| 7 | Reactions on the word | PASS | Neighbour laughs f70 ("laughs" f72), face fills red f324 ("chance" f326), you laugh f420 ("laughing" f422) |
-| 8 | SFX + music + mix | PASS | 15 events (`audio/cues.md`). -14.1 LUFS / -1.3 dBTP. Voice over music 18.8 dB (FAIL < 15). Button 2.5 dB under the voice on the last word (same as test 1) |
-| 9 | Final render 2K, concurrency 1 | PASS | **178 s** incl. bundle + QA layer 1 (test 1: 198 s) |
-| 10 | QA layer 2 | PASS (1 minor) | `video_qa.py`: no flags. `short_qa.py`: -14.3 LUFS, no black/white/frozen/pops. `measure.py --light day`: luma **0.577 vs 0.57 max (OFF, minor)**, rest ok |
-| 11 | QA layer 3 (review) | PASS after 2 fixes | Done by me on `qa/sheet.png`, not by a separate reviewer agent (see open issues) |
+| No laugh (not spoken, no sound) | Nothing checked that a tag was performed; the ear check was left to the user | `tts.ts` fails when a non-verbal tag leaves < 0.3 s between its words, and cuts each tag to `voice/tag_*.wav`. Script skill: tags after a full stop | `[laughs]` moved after a full stop; 2 takes: **0.40 s, performed** |
+| Clipping | The guard checked props only at frame 0 and only tagged colliders; story props (roller pole, rays, cone) were invisible to it | Guard check **"Moving props"**: every frame, every `Shot.moving` prop vs the world and the cards (holder's head included). One `props.ts` feeds render and guard | Ladders for the painters, poles clear the eaves, steeper rays, cone and lemonade lowered |
+| Neighbour too tall for the shed | No size check at all | Guard check **"Scale"**: people vs tagged doors (`userData.door`) | Real shed: 2.0 m door, 2.3 / 2.75 m walls |
+| Background empty | No check; reviews watched playback | `scripts/frames.py`: exact-frame sheets + key frames + checklist (layer 3 reads frames, not video). Day clouds, side hills behind both house rows (kit) | Trees, flower bed, gnome, hose reel, ladders; clouds, hills |
+| Characters bland | No design rule | `kit/toon/wardrobe.ts` (patterns, signature accessories, shorts/socks) + skill rule "Signature design" | Gary: visor, sunglasses up, walrus moustache, turquoise flower shirt, socks and sandals |
+| Lighting: volumetric | Did not exist | `kit/toon/shafts.tsx` (additive soft cones, dust bands, NaN-proof, not raycast) | Three heatwave shafts down the shaded facades |
 
-## What the QA caught and what changed
-- Guard: feet were placed at y 0 but the yards sit at y 0.015, so the contact shadows were hidden under the grass.
-  Characters now stand on `YARD_Y` / `WALK_Y`.
-- Guard: a street hedge ran through both characters and the fence (seed changed), the sheds and fence touched a
-  house's front path (moved), cast in S2/S3 sat under the captions (removed: nobody outside in the heat).
-- Guard: three "Camera curve" holds (S1, S3, S5). Fixed with longer glides that start before the shot.
-- Guard: S5 put your head on the caption band twice; fixed by tilting the lens down, not up.
-- Layer 2: the sun disc clipped 7 % of the frame to pure white (`video_qa` CLIP). Now 0.97, not HDR.
-- Layer 3: his roof never visibly turned white in the loop shot (the paint grew on the off-screen half); S1 cut the
-  laughing neighbour at the frame edge. Both fixed and re-checked on stills.
+Also: sound cues now sync to words (`scripts/audio/events.py`), so the new voice take moved every cue; a draft mode
+for stills (`--draft`) to keep look work going while the guard still fails.
 
-## Open issues
-1. **Ear check**: the `[laughs]` tag at ~13.5 s.
-2. **Luma 0.577** (target max 0.57): bright day exterior; same family as test 1's minor colour note.
-3. **Layer 3 by a fresh reviewer agent** (skill rule) was not run: the session's tool rules only allow sub-agents
-   when you ask for them. Say so if you want it before production.
-4. The rays' bounce is thin in S3 wides; fine at 15 s, worth a thicker ray helper (`BACKLOG.md`: glow streak).
+## Results (final render)
+
+| Layer | Check | Result |
+|---|---|---|
+| Voice | `tts.ts` tag check | PASS: `[laughs]` 0.40 s |
+| 1 (guard, every frame, 5 shots) | 13 checks incl. Moving props + Scale | **PASS** (2 intended: closing row of buildings) |
+| Sound | mix | -14.1 LUFS, -1.3 dBTP, voice over music 18.4 dB (min 15) |
+| Render | 2K, concurrency 1 | 194 s |
+| 2 | `video_qa.py` | no flags |
+| 2 | `short_qa.py` | -14.2 LUFS, no black/white/frozen frames, no pops |
+| 2 | `measure.py --light day` | std, sat, C*p90 ok. **luma 0.601 (max 0.57), vignette 0.91 (day range 1.1-1.4): OFF** |
+| 3 | `frames.py` sheets, read tile by tile | no clipping, scale right, every reaction on its word, backgrounds dressed |
+
+## Open
+1. **Luma 0.601 / vignette 0.91.** Clouds, shafts and white roofs lift the luma; trees, hills and houses now fill the
+   corners that used to be bright sky, so the day vignette rule (corners brighter than the centre) no longer holds.
+   Decide whether to darken the day grade a touch or re-measure the day range on dressed frames (BACKLOG).
+2. The protagonist did not get a wardrobe pass (his look is the channel identity): say if you want one.
+3. Layer 3 was read by me on the exact-frame sheets; a fresh reviewer agent runs only when you ask for sub-agents.

@@ -33,6 +33,10 @@ export type Look = {
   brim?: boolean;
   /** Light rim on the torso's shadow edge. */
   rim?: boolean;
+  /** Shorts colour: bare legs below a short trouser leg (wardrobe; `pants` then colours only the hem band). */
+  shorts?: string;
+  /** Socks colour: a thick sock band above the shoe (socks-and-sandals, striped sports socks...). */
+  socks?: string;
 };
 
 export type PropName = "phone" | "flashlight" | "box" | "can";
@@ -139,7 +143,19 @@ export const drawPerson = (p: Pen, look: Look, s: CharState) => {
     const hx = CX + side * 15 * u, hy = torsoBot - 0.12 * HH;
     const fx = CX + side * (22 * u - lift * 0.15), fy = SOLE - 4 * u - lift;
     const bow = side * (1.5 * u + (pose.knee ?? 0) * 0.35 + lift * 0.25 + stoop * 3 * u);
-    p.stroke([[hx, hy], [(hx + fx) / 2 + bow, (hy + fy) / 2], [fx, fy]], 5.8 * u, legCol);
+    const leg: P2[] = [[hx, hy], [(hx + fx) / 2 + bow, (hy + fy) / 2], [fx, fy]];
+    p.stroke(leg, 5.8 * u, look.shorts ? mix(CREAM, INK, 0.5) : legCol);
+    // Point at t (0 hip .. 1 ankle) along the two-segment leg.
+    const along = (t: number): P2 => {
+      const [a, b] = t < 0.5 ? [leg[0], leg[1]] : [leg[1], leg[2]], k = t < 0.5 ? t * 2 : t * 2 - 1;
+      return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k];
+    };
+    const band = (t0: number, t1: number, w: number, col: string) => {
+      p.stroke([along(t0), along((t0 + t1) / 2), along(t1)], w + 3 * u, INK);
+      p.stroke([along(t0), along((t0 + t1) / 2), along(t1)], w, col);
+    };
+    if (look.shorts) band(0, 0.24, 12 * u, look.shorts);
+    if (look.socks) band(0.68, 0.97, 7.5 * u, look.socks);
     const drop = lift > 2 ? 0.35 : 0; // the toe drops while the foot is off the ground
     p.stroke([[fx, fy], [fx + side * 16 * u * Math.cos(drop), fy + 0.5 * u + 16 * u * Math.sin(drop)]], 7.5 * u, footCol);
   });

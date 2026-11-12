@@ -34,6 +34,7 @@ const SAFE_X: [number, number] = [0.08, 0.92], CAPTION_Y: [number, number] = [0.
 export const CHECKS = [
   "Camera clearance", "Feet on the ground", "Card penetration", "Props through props", "Camera curve",
   "Subject in frame", "Caption vs face", "Caption width", "Reaction timing", "Light continuity", "Shadows",
+  "Moving props", "Scale",
 ] as const;
 export type Check = (typeof CHECKS)[number];
 export type Span = [number, number];
@@ -60,7 +61,15 @@ export type Shot = {
   flash?: Span[];
   /** Marked intended (check -> why): reported, not failed. */
   allow?: Partial<Record<Check, string>>;
+  /**
+   * Story props that move or appear (a roller, a ray, a held cone). `make` builds a fresh copy, `pose` places it for a
+   * COMPOSITION frame (the same function Video.tsx uses; return false when hidden). The guard tests it every frame
+   * against the world's colliders and the cards, except what it is meant to touch (`touches`: collider names;
+   * `heldBy`: the cast name holding it).
+   */
+  moving?: MovingProp[];
 };
+export type MovingProp = { name: string; make: () => Object3D; pose: (o: Object3D, f: number) => boolean | void; touches?: string[]; heldBy?: string };
 export type Plan = { slug: string; shots: Shot[]; words?: CaptionWord[] };
 export type Fail = { check: Check; shot: string; frame: number; to: number; object: string; note: string; intended?: string };
 
@@ -147,6 +156,9 @@ const card = (c: CastSpec, f: number) => {
   const head = { x: ((L.hx - DESIGN.W / 2) / PX) * (1 + sq), y: ((DESIGN.SOLE - L.hc) / PX) * (1 - sq), a: ((L.H.a * 1.1) / PX) * (1 + sq), b: ((L.H.b * 1.1) / PX) * (1 - sq) };
   return { w, top, head };
 };
+/** Head rectangle of a card (card plane, 0.3 m deep), facing the lens. */
+const headOBB = (p: Vector3, yaw: number, h: { x: number; y: number; a: number; b: number }) =>
+  new OBB(p.clone().add(new Vector3(Math.cos(yaw) * h.x, h.y, -Math.sin(yaw) * h.x)), new Vector3(h.a, h.b, 0.15), yawMat(yaw));
 /** Card body (footprint width x 0.3 m, from 5 cm above the soles to the head top), facing the lens. */
 const cardOBB = (p: Vector3, yaw: number, w: number, top: number) =>
   new OBB(p.clone().setY(p.y + (0.05 + top) / 2), new Vector3(w / 2, (top - 0.05) / 2, CARD_DEPTH / 2), yawMat(yaw));
@@ -288,6 +300,49 @@ const sceneChecks = (shot: Shot, scene: Object3D, aspect: number) => {
     const gap = box.min.y - (g ?? 0);
     if (gap > FLOAT_TOL) r.add("Props through props", setup, 0, c.name, `floats ${(gap * 100).toFixed(1)} cm above its support`);
   }
+
+  // Moving props: every frame, each story prop vs every collider part and every card, minus its allowed contacts.
+  if (shot.moving?.length) {
+    r.ran.add("Moving props");
+    const from = shot.from ?? 0;
+    for (const m of shot.moving) {
+      const obj = m.make();
+      for (let f = 0; f < shot.frames; f++) {
+        if (m.pose(obj, from + f) === false || !obj.visible) continue;
+        obj.updateMatrixWorld(true);
+        const mine = parts([{ name: m.name, root: obj, inv: new Matrix4(), box: new Box3() }]);
+        for (const a of mine) {
+          for (const pt of ps) {
+            if (m.touches?.includes(pt.name) || a.obb.center.distanceTo(pt.obb.center) > a.r + pt.r || !a.obb.intersectsOBB(pt.obb)) continue;
+            r.add("Moving props", shot, f, `${m.name} vs ${pt.name}`, `passes through it (${partInfo(pt)})`);
+          }
+          for (const c of cast) {
+            // The holder's body may touch what it holds; its head never (a pole through a hat is a clip).
+            const p = c.at(f), k = card(c, f), yaw = cardYaw(p, cams[f].position);
+            const o = c.name === m.heldBy ? headOBB(p, yaw, k.head) : cardOBB(p, yaw, k.w, k.top);
+            if (a.obb.center.distanceTo(o.center) <= a.r + o.halfSize.length() && a.obb.intersectsOBB(o))
+              r.add("Moving props", shot, f, `${m.name} vs "${c.name}"${c.name === m.heldBy ? " head" : ""}`, "passes through the character card");
+          }
+        }
+      }
+    }
+  } else r.na["Moving props"] = "no moving props in the plan";
+
+  // Scale: nobody standing within 3 m of a door (collider `userData.door` = door height, m) is taller than the door
+  // minus 10 cm headroom (head top incl. a hat brim estimate).
+  const doors = cols.filter((c) => typeof c.root.userData.door === "number");
+  if (doors.length && cast.length) {
+    r.ran.add("Scale");
+    for (const c of cast) {
+      const look = c.look ?? youLook, top = card(c, 0).top + (look.brim ? 0.18 : 0);
+      for (const d of doors) {
+        const box = new Box3().setFromObject(d.root), p = c.at(0);
+        const dist = Math.hypot(Math.max(box.min.x - p.x, 0, p.x - box.max.x), Math.max(box.min.z - p.z, 0, p.z - box.max.z));
+        if (dist <= 3 && top > d.root.userData.door - 0.1)
+          r.add("Scale", shot, 0, `"${c.name}" vs ${d.name}`, `${top.toFixed(2)} m tall next to a ${Number(d.root.userData.door).toFixed(2)} m door (needs 10 cm headroom)`);
+      }
+    }
+  } else r.na["Scale"] = cast.length ? "no doors tagged (userData.door) in the set" : "no characters";
 
   // Shadows: sun shadows on in day/golden presets; every character card has a contact blob on top of the ground.
   r.ran.add("Shadows");
