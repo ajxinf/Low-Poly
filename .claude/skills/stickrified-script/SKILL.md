@@ -51,7 +51,25 @@ breaks, it is a list: rewrite it.
    analogy (it gets its own mini-scene).
 8. **Pay everything off**: the opening number or object comes back, the doubter's line comes back, the opponent's own
    plan backfires.
-9. **End in 3-8 words on the punch word**, over a close-up of a face (smug, guilty, stunned). No moral, no outro.
+9. **End in 3-8 words on the punch word**, over a close-up of a face (smug, guilty, stunned), and **loop back
+   to line 1** (see below). No moral, no outro.
+
+### What the strongest references add (12-short study, `REFERENCE_NOTES.md` "All references")
+- **The hook is a contradiction the ending answers.** "They built a machine to punish prisoners, and today
+  millions pay to use it" -> "And that's how the treadmill was invented." Line 1 holds a question; the last line
+  closes it.
+- **Loop to line 1 (required, `loop` field).** The last line returns to the first, by its words ("it's all your
+  fault" -> "And it's all your fault.") or by its idea flipped ("the room is laughing at him" -> "nobody's
+  laughing anymore"; "you haven't said a word" -> "Brad hasn't said a word since"). Write the last line first.
+- **Someone laughs at "you".** A rival, a boss or a whole crowd mocks the strange act out loud ("You're wrecking my
+  railroad", "Hey, mirror man"). Viewers stay to see them proven wrong.
+- **The rival has the "perfect" version** (a perfect railroad, a perfect circle, a fortress with steel shutters, a
+  perfect number). The viewer believes the rival is right until the end.
+- **Status flip**: the rival's own strength or habit beats him at the end (perfect rails buckle in the heat, his
+  laugh, his megaphone, his hat). "You" wins by understanding the rule better, never by luck.
+- **Hidden plan**: "you" knew something all along. One line reveals it late ("Every night, you've been counting
+  his fuel cans."), and the viewer replays the video in their head. Plant it as a visible oddity early.
+- **Measured progress**: show the plan ripening in steps ("a coin by May, a sheet of paper by July").
 
 ### The back half (where our first drafts died)
 Our second drafts peaked at 43-55 % of the words and then wound down into aftermath and explanation. The
@@ -161,6 +179,7 @@ Goal: the most entertaining 61-90 s possible. A swipe-away means a line was bori
 ```json
 {
   "slug": "zombie-supermarket-30-days", "title": "...", "pillar": "Scenario", "formula": "...",
+  "loop": "Line 1: the guy across the street laughs at you. Last: ...the guy across the street doesn't make a sound.",
   "voiceId": "zfc8CJQpe8Kqyl0vvCzo", "model": "eleven_v4", "facts": ["..."],
   "lines": [{
     "narration": "Day 3, the power's still on, so you live like royalty: ... eaten *standing up*!",
@@ -173,6 +192,7 @@ Goal: the most entertaining 61-90 s possible. A swipe-away means a line was bori
   }]
 }
 ```
+- `loop` (required, checker ERROR if missing) = one line on how the last line returns to the first.
 - `narration` = caption text: normal case, numerals, one `*key word*` per sentence, **never** a tag.
 - `spoken` (optional) = what the voice reads when it differs: numbers written out, inline tags, CAPS, `...`.
 - `audioTag` = the line's lead tag without brackets. `onScreenText` = stamp cards ("DAY 3", "1831"). `gag` = the
@@ -180,5 +200,5 @@ Goal: the most entertaining 61-90 s possible. A swipe-away means a line was bori
 - Never describe on screen what the viewer already sees; the scene shows it, the narration adds to it.
 
 ## Examples
-Example scripts, second drafts rewritten on the story engine (2026-11-12), still under the user's critique:
+Example scripts, third drafts (rival, hidden plan, loop; 2026-11-12), still under the user's critique:
 `videos/zombie-supermarket-30-days/`, `videos/broughton-bridge-1831/`, `videos/lie-counter/`.

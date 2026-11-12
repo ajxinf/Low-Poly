@@ -28,6 +28,10 @@
 - Uniform colour (dark rifle green) is a scene note, not narration: check a period source before the cast is built.
 
 ## Comic exaggeration (framing only, not presented as fact)
+- "The British Army can march anywhere, except across a bridge" (true rule: troops break step, i.e. stop
+  marching in step, when crossing; the script states the real rule two lines before the end)
+- "and it's all your fault" (you are one of the 74; the bolt was also to blame, see the bolt line)
+- The cold open's modern column shuffling across a bridge is a visual gag, not a claim about current drill
 - "all of you think it's hilarious" (sources: they found it amusing)
 - "the best-timed push a bridge has ever felt"
 - "You just made eventually happen today."

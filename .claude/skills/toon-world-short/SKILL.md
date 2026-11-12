@@ -190,6 +190,15 @@ The look values below make a frame pretty; these rules make the frames tell the 
 - **Object POVs**: besides "your" POV, ride on the thing that matters (the cart down the ramp, the bridge deck,
   the swing). They count as the video's POV shot.
 - **End on a face**: the last word lands on a close-up (smug, guilty, sly) with the payoff blurred behind it.
+  When there is a rival, end on the rival's face (silenced, shocked) or the hero and rival together, with the
+  payoff happening behind them.
+- **Mirror the opening shot at the end** so the loop is seen as well as heard (same framing, flipped meaning:
+  your zipped mouth in the cold open, Brad's zipped mouth at the end).
+- **Mocker shots**: the rival or crowd laughing in a medium two-shot early; the same framing, silent, late.
+- **Cross-section cut-aways** for hidden spaces (under the ground, inside a wall, inside a toy).
+- **Colour encodes the physics** (rails glow hotter, a fuse burns down, a fuel gauge drops) so the viewer sees the
+  plan ripening.
+- **Device POV** through a circular mask (binoculars, a window slot, a telescope) for spying on the rival.
 - **Rough stills before the build**: block each shot as a quick still (`scripts/stills.mjs`) and check it reads
   with the sound off: who wants what, and what just changed.
 

@@ -17,3 +17,9 @@ From the R5-R7 study ("Visual storytelling" in the toon-world-short skill; 2026-
 - [ ] **Glow streak**: additive ribbon along a curve, length and head driven by `useCurrentFrame()` (sound trail,
   bridge wave, swing arc), bloom on the head.
 - [ ] **Rolling number counter**: scoreboard digits that roll on a cue (lie counter 4,000 -> 4,001).
+
+From the R1-R12 pass (2026-11-12):
+- [ ] **Circular device-POV mask** (binoculars, slot, telescope) as a post effect with a soft ink ring.
+- [ ] **Cross-section cut-away** helper: clip a set with a plane and paint the cut face (soil layers, wall).
+- [ ] **Costumes for the new drafts**: Chad (tank top, backwards cap, sunglasses, megaphone), Brad (slick hair,
+  shiny suit, chimney-tall top hat with a painted number), pyjamas variant.

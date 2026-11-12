@@ -2,7 +2,8 @@
   "slug": "broughton-bridge-1831",
   "title": "You're one of 74 soldiers about to destroy a bridge... by walking.",
   "pillar": "Strange true history",
-  "formula": "Strange act (stomping on purpose) -> why (it bounces, it's funny) -> ticking bomb (one bad bolt) -> escalation (whistle, stomp on the beat) -> You see + swing analogy while it's bouncing -> tension stretch (every step, the bolt) -> the snap at ~80% -> Luckily/Unluckily landing -> one-line consequence",
+  "formula": "Paradox hook (an army that can't march on bridges, your fault) -> who you are + ticking bomb (bad bolt) -> the joke escalates (stomp on the beat) -> You see + swing analogy mid-bounce -> tension stretch -> snap at ~75% -> Luckily/Unluckily -> the rule -> loop: 'And it's all your fault'",
+  "loop": "Line 1: the British Army can march anywhere except across a bridge, and it's all your fault. Last: 'And it's all your fault.' (same words, now earned).",
   "voiceId": "zfc8CJQpe8Kqyl0vvCzo",
   "model": "eleven_v4",
   "facts": [
@@ -17,29 +18,21 @@
   ],
   "lines": [
     {
-      "narration": "You're stomping across a bridge on purpose, with 73 other *soldiers*.",
-      "spoken": "You're stomping across a bridge on purpose, with seventy-three other soldiers.",
+      "narration": "The British Army can march anywhere, except across a bridge, and it's all your *fault*.",
       "audioTag": "fast-paced, energetic storyteller",
-      "scene": "Cold open: a chain suspension bridge mid-bounce, the deck bent like a wave; a column of stickmen in dark rifle-green jackets and tall caps stamping in sync, you in the front row with a rust-orange sash.",
-      "camera": "Low angle from the riverbank, slow push-in",
+      "scene": "Cold open: a modern stone bridge; a column of soldiers in modern dress uniform marches up to it, then breaks into a silly out-of-step shuffle to cross. Smash to you in 1831, rifle-green jacket and tall cap, rust-orange sash, whistling innocently.",
+      "camera": "Low angle push-in on the shuffling column, whip-dissolve to your face",
       "onScreenText": "1831",
-      "gag": "The bridge wobbles like jelly under the boots"
+      "gag": "The whole column shuffles across like penguins"
     },
     {
-      "narration": "Because the bridge is bouncing in time with your feet, and all of you think it's *hilarious*.",
-      "audioTag": "amused",
-      "scene": "Faces down the column: grins, a soldier bobbing up and down with his cheeks puffed, caps bouncing.",
-      "camera": "Lateral glide along the grinning faces",
-      "onScreenText": "",
-      "gag": "Every cap bobs in perfect unison"
-    },
-    {
-      "narration": "It's the town's pride, a bridge hanging from iron chains, the wonder of the *age*.",
+      "narration": "You're one of 74 soldiers, marching home across the town's pride, a bridge hanging from iron *chains*.",
       "audioTag": "",
-      "scene": "Wide: the bridge hanging between two stone towers over a brown river; townsfolk in top hats on the bank, one admiring the chains through a monocle.",
-      "camera": "Crane down from the sky past the chains",
+      "scene": "A chain suspension bridge between two stone towers over a brown river; the column of four abreast steps onto it; townsfolk in top hats admire it from the bank.",
+      "camera": "Crane down from the sky past the chains to the column",
       "onScreenText": "BROUGHTON BRIDGE",
-      "gag": "A townsman polishing a chain link with his sleeve"
+      "gag": "A townsman polishes a chain link with his sleeve",
+      "spoken": "You're one of seventy-four soldiers, marching home across the town's pride, a bridge hanging from iron chains."
     },
     {
       "narration": "But somewhere in those chains, there's one badly made *bolt*.",
@@ -50,19 +43,26 @@
       "gag": "The bolt has a nervous little face and a sweat drop"
     },
     {
-      "narration": "You're the 60th Rifles, marching home from drills, four abreast, in perfect *step*.",
-      "spoken": "You're the Sixtieth Rifles, marching home from drills, four abreast, in perfect step.",
-      "audioTag": "",
-      "scene": "Ground level: rows of four boots land together on the planks; dust jumps on each beat.",
-      "camera": "Boot-level track with the column",
+      "narration": "Halfway across, the bridge starts bouncing in time with your *feet*.",
+      "audioTag": "amused",
+      "scene": "Side view: the deck rises and falls under each step; caps bob.",
+      "camera": "Side-on, the camera bobs with the deck",
       "onScreenText": "",
-      "gag": "Dust puffs jump off the planks on every beat"
+      "gag": "Every cap bobs in perfect unison"
     },
     {
-      "narration": "So somebody starts whistling a marching tune, and all 74 of you stomp right on the *beat*.",
-      "spoken": "So somebody starts whistling a marching tune, and all seventy-four of you stomp right on the beat.",
+      "narration": "A normal person would stop walking. 74 soldiers think it's *hilarious*.",
+      "audioTag": "",
+      "scene": "Faces down the column: grins spreading, one soldier puffing his cheeks with each bounce.",
+      "camera": "Lateral glide along the grinning faces",
+      "onScreenText": "",
+      "gag": "One soldier bounces so high his cap stays in the air",
+      "spoken": "A normal person would stop walking. [deadpan] Seventy-four soldiers think it's hilarious."
+    },
+    {
+      "narration": "So somebody starts whistling a marching tune, and all of you stomp right on the *beat*.",
       "audioTag": "mischievous",
-      "scene": "A soldier whistles; music-note cards float out; the whole column lifts its knees and stamps harder.",
+      "scene": "A soldier whistles; music-note cards float out; the whole column lifts its knees and stamps harder; dust jumps off the planks on each beat.",
       "camera": "Push-in on the whistler, then pull out to the column",
       "onScreenText": "",
       "gag": "Music notes bounce on the beat with the deck"
@@ -117,13 +117,13 @@
       "gag": "A '!' pops over every head in the column at once"
     },
     {
-      "narration": "Before anyone can stop, an iron column falls, and the whole corner of the bridge drops 16 feet into the *river*.",
-      "spoken": "[panicked, fast] Before anyone can stop, an iron column falls, and the whole corner of the bridge drops sixteen feet into the river.",
-      "audioTag": "",
-      "scene": "The column tips (cut away before it lands); the deck corner swings down like a slide; soldiers slide off in a row into a wall of splash.",
+      "narration": "An iron column falls, and the whole corner of the bridge drops 16 feet into the *river*.",
+      "audioTag": "panicked, fast",
+      "scene": "The column tips (cut away before it lands); the deck corner swings down like a slide; soldiers slide off in a row into a wall of splash. On the bank, the townsfolk's top hats fly off.",
       "camera": "Fast tilt down with the fall, impact kick on the splash",
       "onScreenText": "",
-      "gag": "Soldiers slide off the deck like kids on a water slide"
+      "gag": "Soldiers slide off the deck like kids on a water slide",
+      "spoken": "An iron column falls, and the whole corner of the bridge drops sixteen feet into the river."
     },
     {
       "narration": "Luckily, the river is only 2 feet deep, and nobody *dies*.",
@@ -144,18 +144,26 @@
       "gag": "Same shot repeated, worse"
     },
     {
-      "narration": "Nearly 200 years later, a bridge in London still has a *sign*,",
-      "spoken": "[amused] Nearly two hundred years later, a bridge in London still has a sign,",
-      "audioTag": "",
-      "scene": "Dissolve: an old painted sign, 'TROOPS MUST BREAK STEP', on a modern London bridge with traffic.",
-      "camera": "Fast pull-out from the sign with motion-blur streaks",
-      "onScreenText": "TODAY",
-      "gag": "A jogger crosses the modern bridge perfectly in step; the sign shakes"
+      "narration": "So the army makes a new rule: when soldiers cross a bridge, they break *step*.",
+      "audioTag": "confident",
+      "scene": "An officer nails a painted sign to a bridge post: 'TROOPS MUST BREAK STEP'. Each hammer blow makes the sign bounce.",
+      "camera": "Low angle push on the sign",
+      "onScreenText": "",
+      "gag": "The sign bounces in time with the hammer"
     },
     {
-      "narration": "telling soldiers not to do what *you* did.",
-      "audioTag": "",
-      "scene": "Dissolve back to 1831: you in the river, soaked, holding up your floating cap, smug grin on 'you'.",
+      "narration": "Nearly 200 years later, a bridge in London still has that *sign*.",
+      "audioTag": "amused",
+      "scene": "Dissolve: the same sign, old and weathered, on a painted modern London bridge with traffic; the modern column from the cold open shuffles past it.",
+      "camera": "Fast pull-out from the sign with motion-blur streaks",
+      "onScreenText": "TODAY",
+      "gag": "A jogger crosses perfectly in step; the sign shakes",
+      "spoken": "Nearly two hundred years later, a bridge in London still has that sign."
+    },
+    {
+      "narration": "And it's all your *fault*.",
+      "audioTag": "deadpan",
+      "scene": "Dissolve back to 1831: you in the river, soaked, holding up your floating cap, sheepish grin.",
       "camera": "Push-in on your face, end on the word",
       "onScreenText": "",
       "gag": "Your cap pours out a stream of river water"

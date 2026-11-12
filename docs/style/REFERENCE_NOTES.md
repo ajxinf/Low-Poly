@@ -111,6 +111,38 @@ person beat a problem" stories: a siege weapon, a roller-coaster loop, an insura
 The references explain *during* the danger (R6 explains loop physics while the cart is climbing), and each has a
 late reversal (sabotage that saves him, the victim's camera). Rules: "The back half" in the stickrified-script skill.
 
+## All references, R1-R12 (2026-11-12, second pass)
+`ref13.mp4` is a byte-identical copy of `ref12.mp4`. Same visual family as ours (round heads, stick limbs,
+painted 3D): R1, R2/R3, R5, R6, R7, R11 (R4 close). Other styles, taken for script only: R8-R10 (blocky avatars),
+R12 (flat 2D, 5.7 min).
+
+| Ref | Hook (line 1) | Who mocks / opposes | Twist | Last line loops by |
+|---|---|---|---|---|
+| R1 | sawed gaps into a railroad every 39 ft | his boss ("you're wrecking my railroad"), newspapers | heat closes his gaps; the rival's perfect rails buckle | the train rolls onto the rival's snaking track |
+| R2/R3 | they buried a man alive with a bell on his finger | the neighbours who won't check | the wife practised the signal: she let the bell ring | "the house was all hers" (the bell, the house) |
+| R4 | built to punish prisoners, millions pay to use it | prisoners, magistrate | a punishment becomes a product | "that's how the treadmill was invented" |
+| R5 | drilled 82 holes into wood | his commander ("grating cheese?") | 82 rockets | the packed army: not one misses |
+| R6 | bent the loop out of shape | the rival who copies, then sabotages | the sabotage saves him | rival's perfect circle crushes his cart |
+| R7 | slammed the brakes on the highway | insurers, victims | the quiet guy's box is a camera | "that's how the dashcam was invented" |
+| R8 | everyone lives on a train that never stops | the train's rulers | the outside is alive | "we're finally free" |
+| R9 | vampires can't come in unless invited | grandpa's rules | grandpa's handshake is wrong: impostor | "Grandpa's handshake: still wrong." |
+| R10 | your first word becomes your superpower | the school calls Jonas the greediest | "Mine" took his sister's sickness | "MINE was never the greediest word" |
+| R11 | bet his life savings on the slowest horse | the whole betting room laughs | a mirror flash beats the telegraph | "nobody's laughing anymore" |
+| R12 | don't run to town when the zombies come | strangers, his own instinct | the farm was only the start | "someone else's first day was just beginning" |
+
+Patterns our drafts lacked: (1) a **contradiction hook** the last line answers; (2) a **loop** back to line 1; (3)
+a **mocker** who is **out-done by his own strength** (status flip); (4) the rival owns the **"perfect" version**;
+(5) a **hidden plan / reframing twist** ("Wait. Practised?"); (6) **measured progress** toward the payoff.
+
+Visuals worth taking from the same-style refs:
+- **Cross-section cut-aways** (R2: the coffin under a layered soil slice with the bell rope running up).
+- **Colour encodes the physics** (R1: rails glow pink -> yellow as they heat; gaps shrink in macro shots).
+- **Device POV with a circular mask** (R11: the race seen through the mirror/telescope ring).
+- **Mocker reaction shots**: the crowd or rival in a medium two-shot, laughing, then the same framing silent at the
+  end (R11 betting room, R1 boss with a purple face).
+- **Boards and documents carry the plot**: winner boards, a death certificate, a newspaper headline.
+- **Final shot = rival and hero in the foreground, payoff exploding behind them** (R1, R6).
+
 ## Language
 - Plain spoken English: almost every word one or two syllables; contractions everywhere (he's, can't, it's).
 - Physical verbs carry the story: drill, bolt, slap, rip, race, bend, crank, beat, slam, smash, limp, clutch.

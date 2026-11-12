@@ -2,206 +2,192 @@
   "slug": "zombie-supermarket-30-days",
   "title": "What if you were trapped in a supermarket for 30 days during a zombie apocalypse?",
   "pillar": "Scenario",
-  "formula": "Strange act -> why (zombies hunt by sound) -> weird preparation with a doubter (Dave) -> break-in -> the plan fires -> reversal (cart jams on a bean can, 400 heads turn back) -> Dave's forbidden duck saves it -> chase -> 4-word kicker",
+  "formula": "Strange act + mocker (Chad laughs) -> why (400 zombies hunt by sound) -> rival's 'perfect' fortress vs your weird prep -> mocker gets louder, you stay silent -> hidden plan reveal (you've been counting his fuel) -> his fortress fails on day 30 -> your decoy sends the horde into his store -> loop: the guy across the street doesn't make a sound",
+  "loop": "Line 1: the guy across the street laughs at you. Last: for the first time in 30 days, the guy across the street doesn't make a sound (the mocker is silenced by the world's own rule).",
   "voiceId": "zfc8CJQpe8Kqyl0vvCzo",
   "model": "eleven_v4",
   "facts": [
     "Many toddler toys play sounds when shaken (motion switches); with the batteries out they are silent (real-world logic, no source needed).",
-    "Zombies hunting by sound: genre convention, played straight as the world's one rule.",
-    "Dogs chase a thrown ball: everyday analogy, no source needed."
+    "A generator stops when its fuel runs out; one can a day is story framing, not a fact claim.",
+    "Zombies hunting by sound: genre convention, played straight as the world's one rule."
   ],
   "lines": [
     {
-      "narration": "You pull the batteries out of 212 talking *toys*.",
-      "spoken": "You pull the batteries out of two hundred and twelve talking toys.",
+      "narration": "You pull the batteries out of 212 talking toys, and the guy across the street *laughs* at you.",
+      "spoken": "You pull the batteries out of two hundred and twelve talking toys, and the guy across the street laughs at you.",
       "audioTag": "fast-paced, energetic storyteller",
-      "scene": "Cold open, toy aisle under flickering fluorescent light: you kneel in a mountain of plush ducks, dinosaurs and robots, popping a battery out of a duck mid-quack. A hand-painted 'AISLE 9 TOYS' sign hangs above you.",
-      "camera": "Low angle push-in through a gap in the shelf",
+      "scene": "Cold open, toy aisle by the front window: you kneel in a mountain of plush ducks and robots, popping out a battery. Through the glass, across the street, a man on a hardware-store roof points and laughs into a megaphone.",
+      "camera": "Low angle push-in through a gap in the shelf, rack focus to the laughing man",
       "onScreenText": "DAY 1",
       "gag": "Each toy freezes mid-word, mouth open, the moment its battery pops out"
     },
     {
-      "narration": "Because outside, 400 zombies are waiting, and they hunt by *sound*.",
-      "spoken": "Because outside, four hundred zombies are waiting, and they hunt by sound.",
+      "narration": "Because outside, 400 zombies hunt by *sound*.",
+      "spoken": "Because outside, four hundred zombies hunt by sound.",
       "audioTag": "",
-      "scene": "Fly back through the store and out the front glass: the parking lot packed with green-grey zombies, every head tilted, listening. Pale day sky.",
-      "camera": "Fast pull-out with motion blur, through the doors to an extreme wide",
+      "scene": "Pull out through the glass: the street between the two stores packed with green-grey zombies, every head tilted, listening.",
+      "camera": "Fast pull-out with motion blur to an extreme wide of the street",
       "onScreenText": "",
       "gag": "Hundreds of heads tilt the same way at the same time, like birds"
     },
     {
-      "narration": "One squeaky toy, and you're *lunch*.",
-      "audioTag": "",
-      "scene": "Back inside: a single plush duck on the floor; your hand hovers over it. Behind the glass, one zombie licks its lips.",
-      "camera": "Insert close-up on the duck, slow creep-in",
-      "onScreenText": "",
-      "gag": ""
-    },
-    {
-      "narration": "The only other person in here is Dave from the night shift. He thinks you've *lost it*.",
+      "narration": "That guy is Chad. Chad has a hardware store, steel shutters, and a *megaphone*.",
       "audioTag": "playful",
-      "scene": "Dave peeks over a shelf of cereal: teen stocker, tall messy hair, green store vest, name tag 'DAVE', braces. He watches you tape a toy's mouth shut.",
-      "camera": "Glide along the cereal shelf to Dave",
+      "scene": "Chad's fortress: a hardware store with steel roll-down shutters, floodlights, a humming generator, and a hand-painted sign 'CHAD'S. MEMBERS ONLY'. Chad: tank top, backwards cap, sunglasses, megaphone.",
+      "camera": "Crane up the shutters to Chad on the roof",
       "onScreenText": "",
-      "gag": "Dave's name tag is upside down"
+      "gag": "Chad flexes, megaphone in one hand"
     },
     {
-      "narration": "Then it gets weirder. You tape every toy to one cart, until it looks like a *hedgehog*.",
-      "audioTag": "mischievous",
-      "scene": "Night, blue window light and a green exit sign: a shopping cart bristling with 212 taped-on toys, arms and tails sticking out every way.",
-      "camera": "Slow orbit around the cart",
-      "onScreenText": "",
-      "gag": "A dinosaur's tail sticks straight up like a flag"
-    },
-    {
-      "narration": "You park it at the top of the loading ramp, under a sign: do not *push*.",
+      "narration": "On day 1, you knocked on his door. He said, \"Members *only*.\"",
+      "spoken": "On day one, you knocked on his door. He said, \"Members only.\"",
       "audioTag": "",
-      "scene": "Back of the store, loading dock doors. You hang a cardboard sign above the cart, hand-written 'DO NOT PUSH'. The ramp slopes down toward the dock doors.",
-      "camera": "Tilt down from the sign to the cart",
+      "scene": "Flashback: you at Chad's shutter, a tiny slot slides open, two sunglasses look out, the slot slams shut.",
+      "camera": "Insert on the slot, hard cut",
       "onScreenText": "",
-      "gag": "The sign is drawn with a crayon from the toy aisle"
+      "gag": "The slot slams so hard your hair blows back"
     },
     {
-      "narration": "Dave whispers, \"Can I keep the duck?\" You say *no*.",
-      "spoken": "Dave whispers, \"Can I keep the duck?\" [deadpan] You say no.",
+      "narration": "So you're stuck in here with Dave from the night shift, eating cold beans in total *silence*.",
       "audioTag": "",
-      "scene": "Dave holds the plush duck to his cheek, big pleading eyes. You take it and drop it in the toy bin.",
-      "camera": "Two-shot, push-in on Dave's face",
-      "onScreenText": "",
-      "gag": "Dave's eyes go huge and shiny"
-    },
-    {
-      "narration": "So for weeks, you live on cold beans and *whispers*.",
-      "audioTag": "playful",
-      "scene": "Montage in one shot: you and Dave on a pallet eating beans out of cans, mouthing words, tiptoeing in socks; empty bean cans pile up by the ramp. Calendar on the wall flips by.",
+      "scene": "Night, blue window light, green exit sign: you and Dave (teen stocker, messy hair, green store vest, braces) on a pallet, eating beans from cans with their pinkies.",
       "camera": "Slow lateral glide past the two of you",
       "onScreenText": "",
       "gag": "You both eat beans with your pinkies to stay quiet"
     },
     {
-      "narration": "Then Dave sneezes once, and every zombie outside turns at the same *time*.",
-      "audioTag": "tense, hushed",
-      "scene": "Dave's sneeze (cartoon spray). Cut outside: 400 heads snap toward the store at once.",
-      "camera": "Hard cut from Dave's face to an extreme wide of the lot",
-      "onScreenText": "",
-      "gag": "400 heads snap in perfect sync"
-    },
-    {
-      "narration": "On day 29, the weirdest thing yet. You put every battery back *in*.",
-      "spoken": "On day twenty-nine, the weirdest thing yet. You put every battery back in.",
+      "narration": "Every morning, Chad grabs his megaphone. \"Morning, toy *boy*!\"",
       "audioTag": "",
-      "scene": "Moonlight: you sliding a battery into a dinosaur like a bomb squad, tongue out, sweat drop; Dave holding a flashlight with both hands, horrified.",
-      "camera": "Slow push-in, shallow focus on the battery",
-      "onScreenText": "DAY 29",
-      "gag": "Bomb-squad sweat drop; Dave's flashlight shakes"
+      "scene": "Sunrise, Chad on his roof, megaphone to his mouth, sound rings coming out of it.",
+      "camera": "Low angle push on Chad",
+      "onScreenText": "",
+      "gag": "Sound-wave rings ripple out of the megaphone across the street"
     },
     {
-      "narration": "Very, very *gently*.",
-      "audioTag": "whispers",
-      "scene": "Extreme close-up: the battery clicks home; the dinosaur's eye twitches but it stays silent.",
-      "camera": "Macro insert, creep-in",
+      "narration": "400 heads turn, bang on his steel, and give *up*.",
+      "spoken": "Four hundred heads turn, bang on his steel, and give up.",
+      "audioTag": "",
+      "scene": "The horde shuffles to Chad's shutters, thumps on them, then drifts away. Chad laughs on the roof, safe.",
+      "camera": "Top-down crane over the horde surging and ebbing like a tide",
+      "onScreenText": "",
+      "gag": "Chad does a little dance on the roof"
+    },
+    {
+      "narration": "Dave thinks Chad is winning. Dave might be *right*.",
+      "audioTag": "deadpan",
+      "scene": "Dave at the window, beans in hand, watching Chad's floodlights glow; he looks at you, then at your cold beans.",
+      "camera": "Two-shot through the window, push-in on Dave",
+      "onScreenText": "",
+      "gag": "Chad's floodlights light up his steak on a grill; your bean can is empty"
+    },
+    {
+      "narration": "Then it gets weirder. You tape every toy to one cart, until it looks like a *hedgehog*.",
+      "audioTag": "mischievous",
+      "scene": "A shopping cart bristling with 212 taped-on toys, arms and tails sticking out every way.",
+      "camera": "Slow orbit around the cart",
+      "onScreenText": "",
+      "gag": "A dinosaur's tail sticks straight up like a flag"
+    },
+    {
+      "narration": "You park it on the loading ramp, pointed straight at Chad's front *door*.",
+      "audioTag": "",
+      "scene": "Top of the loading ramp; the cart lined up like a bowling ball; down the ramp, out the dock, across the street: Chad's shutter. A crayon sign 'DO NOT PUSH'.",
+      "camera": "Push down the line from the cart to Chad's door",
+      "onScreenText": "",
+      "gag": "The DO NOT PUSH sign is drawn in crayon"
+    },
+    {
+      "narration": "Dave asks why. You just point at Chad's *generator*.",
+      "audioTag": "",
+      "scene": "You point through the window. Across the street, beside Chad's generator, a neat stack of red fuel cans.",
+      "camera": "Over your pointing arm to the fuel cans",
       "onScreenText": "",
       "gag": ""
     },
     {
-      "narration": "The next morning, the front glass cracks. Then it *bursts*.",
-      "audioTag": "urgent",
-      "scene": "Cold dawn. Spider cracks race across the doors; white flash; glass sprays inward (no one hurt on screen).",
-      "camera": "Impact kick, fast pull-back down the main aisle",
-      "onScreenText": "DAY 30",
-      "gag": "The first zombie through the door is still wearing a 'Welcome!' greeter badge"
-    },
-    {
-      "narration": "They pour in, sniffing. Aisle one. Aisle two. Aisle *three*.",
-      "spoken": "They pour in, sniffing. Aisle one. Aisle two. [whispers] Aisle three.",
-      "audioTag": "tense, building",
-      "scene": "Hanging aisle signs pass overhead as the horde shuffles deeper; you and Dave crouched behind the cart at the top of the ramp.",
-      "camera": "Overhead track along the aisle signs, ending on you two",
+      "narration": "Every night, you've been counting his fuel cans. One can a *day*.",
+      "audioTag": "sneaky, quick",
+      "scene": "Your wall, by flashlight: a tally chart of red cans, one crossed out per day, 29 crossed, 1 left, circled.",
+      "camera": "Pan across the tally chart, stop on the last can",
       "onScreenText": "",
-      "gag": "Their stomachs growl so loud the aisle signs swing"
+      "gag": "The last can on the chart has a little skull drawn on it"
     },
     {
-      "narration": "So you kick the cart down the *ramp*,",
+      "narration": "On day 29, you put every battery back in. Very, very *gently*.",
+      "spoken": "On day twenty-nine, you put every battery back in. [whispers] Very, very gently.",
+      "audioTag": "",
+      "scene": "Moonlight: you sliding a battery into a dinosaur like a bomb squad, sweat drop; Dave holding the flashlight with both hands.",
+      "camera": "Slow push-in, shallow focus on the battery",
+      "onScreenText": "DAY 29",
+      "gag": "Bomb-squad sweat drop"
+    },
+    {
+      "narration": "On day 30, Chad's generator coughs, *dies*,",
+      "spoken": "On day thirty, Chad's generator coughs, dies,",
+      "audioTag": "tense, building",
+      "scene": "Dawn. The generator sputters a black puff and stops; Chad's floodlights go out one by one.",
+      "camera": "Insert on the generator, hard cut to the floodlights dying",
+      "onScreenText": "DAY 30",
+      "gag": "The generator coughs out one sad smoke ring"
+    },
+    {
+      "narration": "and his electric shutters roll all the way *up*.",
+      "audioTag": "",
+      "scene": "With a rattle, Chad's steel shutters roll up, revealing Chad in his pyjamas holding a toothbrush, wide open to the street.",
+      "camera": "Tilt up with the rising shutter",
+      "onScreenText": "",
+      "gag": "Chad in pyjamas, toothbrush in his mouth, ring-eyed shock"
+    },
+    {
+      "narration": "That's when you kick the cart down the *ramp*.",
       "audioTag": "excited",
-      "scene": "Your boot hits the cart; the 'DO NOT PUSH' sign flutters off; the cart lurches down the ramp.",
-      "camera": "POV from the front of the cart, rushing down the ramp",
+      "scene": "Your boot hits the cart; the DO NOT PUSH sign flutters off; the cart rattles down the ramp and bursts out the dock doors.",
+      "camera": "POV from the front of the cart, rushing down the ramp into daylight",
       "onScreenText": "",
       "gag": "The DO NOT PUSH sign flips over as it falls"
     },
     {
-      "narration": "and every bump makes 212 toys scream at *once*.",
-      "spoken": "and every bump makes two hundred and twelve toys scream at once.",
+      "narration": "Every bump makes 212 toys scream at *once*.",
+      "spoken": "Every bump makes two hundred and twelve toys scream at once.",
       "audioTag": "",
-      "scene": "The cart rattles; every toy yells, sings and roars; a glowing sound-trail streams behind it.",
+      "scene": "The cart bounces across the street; every toy yells, sings and roars; a glowing rainbow sound-trail streams behind it.",
       "camera": "Fast side-on follow with motion blur",
       "onScreenText": "",
       "gag": "The cart leaves a glowing rainbow trail of music notes"
     },
     {
-      "narration": "You see, they only talk when they're shaken, and right now, that cart is the loudest thing in *town*.",
+      "narration": "You see, they only talk when they're shaken, and now that cart is the loudest thing in *town*.",
       "audioTag": "",
-      "scene": "Macro inserts while it rolls: a toy box printed 'SHAKE ME!', the tiny motion switch inside the duck-shaped hole where the duck used to be. In the aisles, 400 heads swing toward the cart.",
-      "camera": "Two quick macro inserts, then whip to the turning horde",
+      "scene": "Macro insert on a toy box printed 'SHAKE ME!', then 400 heads swing toward the cart at once.",
+      "camera": "Macro insert, then whip to the turning horde",
       "onScreenText": "",
       "gag": "Every box says 'SHAKE ME!'"
     },
     {
-      "narration": "Then it hits one empty bean can, and stops *dead*.",
-      "audioTag": "deadpan",
-      "scene": "The front wheel jams on a single empty bean can at the bottom of the ramp, ten feet short of the dock doors. The cart stops. The rainbow trail fizzles out.",
-      "camera": "Low insert on the wheel and the can, hard stop",
-      "onScreenText": "",
-      "gag": "The can is from your bean pile"
-    },
-    {
-      "narration": "Not one toy makes a *sound*.",
-      "audioTag": "tense, hushed",
-      "scene": "Total silence. Toys frozen mid-scream on the still cart.",
-      "camera": "Slow creep-in on the silent cart",
-      "onScreenText": "",
-      "gag": ""
-    },
-    {
-      "narration": "And 400 heads turn back to *you*.",
-      "spoken": "And four hundred heads turn back to you.",
-      "audioTag": "",
-      "scene": "The horde, packed in the aisles, slowly swivels its heads toward you and Dave at the top of the ramp. They start to shuffle closer, so close you can count their teeth.",
-      "camera": "Push down the aisle toward the two of you, the horde in the foreground",
-      "onScreenText": "",
-      "gag": "Every head turns in one slow, creaking sync"
-    },
-    {
-      "narration": "That's when Dave pulls something out of his pocket. The *duck*.",
-      "audioTag": "",
-      "scene": "Close-up: Dave's vest pocket; the plush duck comes out. You stare at him. He shrugs, guilty.",
-      "camera": "Insert on the pocket, then push-in on Dave's guilty grin",
-      "onScreenText": "",
-      "gag": "Dave's guilty braces grin"
-    },
-    {
-      "narration": "He throws it. It smacks the cart, the cart jerks free, and every toy starts screaming *again*.",
-      "audioTag": "excited",
-      "scene": "The duck spins through the air, bonks the hedgehog cart, the wheel pops off the can, the cart rolls on, toys screaming, and bursts out through the dock doors into bright morning.",
-      "camera": "Follow the duck's arc, then ride the cart out the doors into daylight",
-      "onScreenText": "",
-      "gag": "The duck quacks 'Shake me!' mid-air"
-    },
-    {
-      "narration": "And 400 zombies chase it like dogs after the loudest ball in the *world*.",
-      "spoken": "And four hundred zombies chase it like dogs after the loudest ball in the world.",
+      "narration": "And 400 zombies chase it like dogs after a ball, straight through Chad's open *door*.",
+      "spoken": "And four hundred zombies chase it like dogs after a ball, straight through Chad's open door.",
       "audioTag": "amused",
-      "scene": "The whole horde stampedes down the ramp and out across the lot after the cart, tongues out, arms up. You and Dave stand alone in the empty store.",
-      "camera": "Crane up from you two to an extreme wide of the stampede",
+      "scene": "The cart smashes into Chad's store; the whole horde stampedes in after it, tongues out, arms up, and the store fills to the ceiling.",
+      "camera": "Crane up from the street to an extreme wide as the store fills",
       "onScreenText": "",
       "gag": "One zombie's tongue flaps like a dog's"
     },
     {
-      "narration": "Dave wants his duck *back*.",
-      "audioTag": "deadpan",
-      "scene": "Close-up: Dave staring after the cart, lower lip trembling; you beside him, one eyebrow up. The cart and horde tiny in the distance.",
-      "camera": "Push-in on Dave's face, end on the word",
+      "narration": "Chad makes it to the roof. He's still holding his *megaphone*.",
+      "audioTag": "",
+      "scene": "Chad on the roof in pyjamas, toothbrush in mouth, megaphone clutched to his chest, zombies' arms reaching up from the skylight below.",
+      "camera": "Slow push-in on Chad",
       "onScreenText": "",
-      "gag": "A single tear rolls down Dave's cheek"
+      "gag": "The megaphone shakes in his hands"
+    },
+    {
+      "narration": "But for the first time in 30 days, the guy across the street doesn't make a *sound*.",
+      "spoken": "[deadpan] But for the first time in thirty days, the guy across the street doesn't make a sound.",
+      "audioTag": "",
+      "scene": "Close-up: Chad, sweat drop, lips pressed shut. Over his shoulder, far below, you and Dave stroll out of the supermarket into the empty street; you give him a tiny wave.",
+      "camera": "Push-in on Chad's face, end on the word",
+      "onScreenText": "",
+      "gag": "You give Chad a tiny wave"
     }
   ]
 }

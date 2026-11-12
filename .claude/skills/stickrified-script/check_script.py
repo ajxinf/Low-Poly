@@ -84,6 +84,7 @@ def main():
     if not lines[0].get("audioTag"): warns.append("line 1 has no audioTag: set the energetic base delivery on the hook")
     if tagged < len(lines) * 0.3: warns.append(f"only {tagged}/{len(lines)} lines tagged: delivery may go flat")
     for w in story_warns(" ".join(spoken_of(ln) for ln in lines)): warns.append(w)
+    if not d.get("loop"): errors.append("missing 'loop': say how the last line returns to the first (same words, or the same idea flipped)")
     pillar = d.get("pillar", "").lower()
     if "history" in pillar and not os.path.exists(os.path.join(os.path.dirname(a.path), "sources.md")):
         errors.append("history script without sources.md")
@@ -97,6 +98,7 @@ def main():
               f"**Pillar:** {d.get('pillar', '')}  ",
               f"**Length:** {total} words, ~{t:.0f} s at {a.wps} words/s (target {WORDS_MIN}-{WORDS_MAX} words, {SEC_MIN}-{SEC_MAX} s)  ",
               f"**Voice:** Eleven v4, voice ID `{d.get('voiceId', '')}`  ", ""]
+        if d.get("loop"): md += [f"**Loop:** {d['loop']}", ""]
         if d.get("facts"): md += ["## Facts", ""] + [f"- {f}" for f in d["facts"]] + [""]
         md += ["## Script", "", "Narration column = what the voice reads (tags included). `*word*` = rust-orange caption key word.", "",
                "| # | Time | Narration (spoken) | Scene / gag | Camera | On-screen |", "|---|---|---|---|---|---|"]
