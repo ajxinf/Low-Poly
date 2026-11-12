@@ -1,0 +1,54 @@
+{
+  "slug": "_pipeline-test",
+  "title": "What if your toast always landed butter-side down? (15 s pipeline smoke test, not for posting)",
+  "pillar": "Scenario",
+  "formula": "Scaled for 15 s: Hook -> Snap (impact) -> 'You see,' real-world turn -> punchline callback. Time markers, deadpan double and mystery beat dropped for length.",
+  "voiceId": "zfc8CJQpe8Kqyl0vvCzo",
+  "model": "eleven_v4",
+  "facts": [
+    "Toast falling off a normal-height table only has time for about half a turn, so it usually lands butter-side down (R. A. J. Matthews, 'Tumbling toast, Murphy's Law and the fundamental constants', Eur. J. Phys. 16 (1995) 172, doi:10.1088/0143-0807/16/4/005).",
+    "A table about 10 feet (3 m) tall would give it time for a full turn and a butter-side-up landing (Matthews 1995, as summarised by Wikipedia 'Buttered toast phenomenon')."
+  ],
+  "lines": [
+    {
+      "narration": "Your toast lands butter-side down. Not bad luck, *physics*.",
+      "spoken": "Your toast lands butter-side down. Not bad luck, physics.",
+      "audioTag": "fast-paced, energetic storyteller",
+      "scene": "Cold open on a sunny café terrace: a slice of buttered toast hangs mid-tumble, butter-side down, above the paving. You walk in behind it carrying an empty plate, neutral lidded face.",
+      "camera": "S1: over-the-shoulder ('you' shot), slow push-in toward the toast",
+      "onScreenText": "",
+      "gag": "",
+      "expressions": "you: neutral"
+    },
+    {
+      "narration": "Your table's too short for a full *somersault*... *Splat*.",
+      "spoken": "Your table's too short for a full somersault... [gasps] SPLAT.",
+      "audioTag": "",
+      "scene": "The toast tumbles off the café table, half a turn, and slaps butter-down on the paving. Your face snaps to shocked on 'Splat'. Your friend at the next table holds up a judge's score card reading '½'.",
+      "camera": "S2: lateral truck along the table edge following the fall; one small impact kick on 'Splat'",
+      "onScreenText": "",
+      "gag": "Friend scores the toast's half-somersault with a '½' judge card",
+      "expressions": "you: shocked on 'Splat'; friend: deadpan"
+    },
+    {
+      "narration": "You see, from 10 feet up, it lands butter-side *up*.",
+      "spoken": "You see, from ten feet up, it lands butter-side up.",
+      "audioTag": "",
+      "scene": "A fresh slice drops from high up and completes a full flip, landing butter-side up.",
+      "camera": "S3 start: crane up following the toast's path in reverse, revealing the height",
+      "onScreenText": "",
+      "gag": "",
+      "expressions": "you: shocked, fading to curious"
+    },
+    {
+      "narration": "So you buy a 10-foot table. Your friend needs a *ladder*.",
+      "spoken": "So you buy a ten-foot table. [laughs] Your friend needs a ladder.",
+      "audioTag": "",
+      "scene": "Reveal: you sit at a comically tall café table, smug, toast butter-up on your plate. Your friend climbs a ladder against the table leg.",
+      "camera": "S3 continued: crane rises into a slow orbit around the tall table",
+      "onScreenText": "",
+      "gag": "The 10-foot café table, friend on a ladder",
+      "expressions": "you: smug on 'table'; friend: worried on 'ladder'"
+    }
+  ]
+}

@@ -11,7 +11,8 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "noUnusedLocals": true
+    "noUnusedLocals": true,
+    "resolveJsonModule": true
   },
-  "exclude": ["remotion.config.ts", "vendor"]
+  "exclude": ["remotion.config.ts", "vendor", "scripts"]
 }

@@ -1,0 +1,38 @@
+{
+ "cuts": [],
+ "xfade": [
+  [
+   110,
+   120
+  ],
+  [
+   232,
+   242
+  ]
+ ],
+ "flash": [],
+ "kicks": [
+  [
+   206,
+   213
+  ]
+ ],
+ "whips": [],
+ "shots": [
+  {
+   "id": "_pipeline-test/S1-pushin",
+   "from": 0,
+   "frames": 120
+  },
+  {
+   "id": "_pipeline-test/S2-truck",
+   "from": 110,
+   "frames": 132
+  },
+  {
+   "id": "_pipeline-test/S3-crane-orbit",
+   "from": 232,
+   "frames": 218
+  }
+ ]
+}

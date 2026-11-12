@@ -1,0 +1,10 @@
+{
+ "integrated_lufs": -14.29,
+ "true_peak_dbtp": -1.3,
+ "samples": 720000,
+ "seconds": 15.0,
+ "premaster": {
+  "lufs": -18.64,
+  "dbtp": -0.82
+ }
+}

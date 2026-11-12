@@ -1,0 +1,70 @@
+{
+ "fps": 30,
+ "frames": 450,
+ "events": [
+  {
+   "f": 21,
+   "sfx": "step",
+   "note": "you: footfall (walk)"
+  },
+  {
+   "f": 42,
+   "sfx": "step",
+   "note": "you: footfall (walk)"
+  },
+  {
+   "f": 63,
+   "sfx": "step",
+   "note": "you: footfall (walk)"
+  },
+  {
+   "f": 83,
+   "sfx": "step",
+   "note": "you: footfall (walk)"
+  },
+  {
+   "f": 115,
+   "sfx": "whoosh",
+   "note": "S1->S2 dissolve (mid)"
+  },
+  {
+   "f": 188,
+   "sfx": "swish",
+   "note": "toast tips off the table"
+  },
+  {
+   "f": 206,
+   "sfx": "splat",
+   "note": "toast lands butter-down on 'Splat' (impact kick)"
+  },
+  {
+   "f": 212,
+   "sfx": "pop",
+   "note": "friend's '1/2' card up"
+  },
+  {
+   "f": 237,
+   "sfx": "whoosh",
+   "note": "S2->S3 dissolve (mid)"
+  },
+  {
+   "f": 312,
+   "sfx": "pat",
+   "note": "second toast lands butter-up on 'up'"
+  },
+  {
+   "f": 428,
+   "sfx": "sting",
+   "note": "UI pop sting on the punchline 'ladder'"
+  }
+ ],
+ "music": {
+  "bpm": 120,
+  "stop": [
+   205,
+   228
+  ],
+  "button": 428,
+  "frames": 450
+ }
+}
