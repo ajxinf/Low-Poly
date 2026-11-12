@@ -11,12 +11,13 @@ import { Dust } from "../../../kit/toon/dust";
 import { QAPlan, ShotCamera } from "../../../kit/toon/guard";
 import { LIGHTS } from "../../../kit/toon/lights";
 import { ToonWorld } from "../../../kit/toon/world";
-import { OPTS_CAFE, OPTS_TALL, at, scoreCard, toastMesh } from "./build";
+import { OPTS_CAFE, OPTS_REVEAL, OPTS_TALL, at, scoreCard, toastMesh } from "./build";
 import { CARD_UP, words } from "./roles";
 import { CARD_POS, PLAN, SHOTS, SUN, XF, toastCafe, toastTall } from "./story";
 
-// _pipeline-test: 15 s pipeline smoke test (not for posting). Each shot is its own Sequence + canvas; S2 and S3
-// dissolve in over 10 frames on top of the shot before.
+// _pipeline-test: 15 s pipeline smoke test (not for posting). Each shot is its own Sequence + canvas. A shot that
+// starts before the previous one ends dissolves in over 10 frames on top of it; one that starts after it is a cut.
+const OPTS = { cafe: OPTS_CAFE, tall: OPTS_TALL, reveal: OPTS_REVEAL };
 const SHADOW = { center: at(16, 0.3), size: 16 };
 const DUST = { center: at(16, 0.5, 1.6), size: new Vector3(7, 3.2, 8) };
 
@@ -46,10 +47,10 @@ const ShotView: React.FC<{ i: number }> = ({ i }) => {
     <ThreeCanvas width={width} height={height}>
       <ShotCamera {...s} />
       <ToonWorld preset={LIGHTS.day} sunDir={SUN} shadow={SHADOW} />
-      <Street preset={PRESETS.victorian_town} light={LIGHTS.day} opts={s.tall ? OPTS_TALL : OPTS_CAFE} />
+      <Street preset={PRESETS.victorian_town} light={LIGHTS.day} opts={OPTS[s.set]} />
       <Dust center={DUST.center} size={DUST.size} color="#fff4dc" strength={1.2} count={500} />
-      <Toast f={f} tall={s.tall} />
-      {s.cast?.some((c) => c.name === "friend") && !s.tall && <Card f={f} cam={cam} />}
+      <Toast f={f} tall={s.set !== "cafe"} />
+      {s.cast?.some((c) => c.name === "friend") && s.set === "cafe" && <Card f={f} cam={cam} />}
       {s.cast?.map((c) => <Character key={c.name} position={c.at(lf)} state={c.state(lf)} look={c.look} />)}
       <Composer dof={s.dof} />
     </ThreeCanvas>
@@ -66,7 +67,7 @@ export const PipelineTest: React.FC = () => (
     <QAPlan plan={PLAN} />
     {SHOTS.map((s, i) => (
       <Sequence key={s.id} from={s.from} durationInFrames={s.frames}>
-        {i === 0 ? <ShotView i={0} /> : <Dissolve><ShotView i={i} /></Dissolve>}
+        {i > 0 && s.from < SHOTS[i - 1].from + SHOTS[i - 1].frames ? <Dissolve><ShotView i={i} /></Dissolve> : <ShotView i={i} />}
       </Sequence>
     ))}
     <Captions words={words} />

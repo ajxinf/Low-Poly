@@ -117,12 +117,13 @@ const baseOpts: StreetOpts = {
 };
 /** Shots 1-2: the café table. */
 export const OPTS_CAFE: StreetOpts = { ...baseOpts, extra: () => [named(cafeTable(), "cafe table", at(CAFE.s, CAFE.x))] };
-/** Shot 3: the 10-foot table, your stool, the friend's ladder. */
+/** S3a-c: the 10-foot table and your stool. No ladder: it must not be readable before "Your friend". */
 export const OPTS_TALL: StreetOpts = {
   ...baseOpts,
-  extra: () => [
-    named(tallTable(), "tall table", at(TALL.s, TALL.x)),
-    named(stool(), "stool", at(STOOL.s, STOOL.x)),
-    named(ladder(), "ladder", at(TALL.s + TALL.half + LEAN, LADDER_X)),
-  ],
+  extra: () => [named(tallTable(), "tall table", at(TALL.s, TALL.x)), named(stool(), "stool", at(STOOL.s, STOOL.x))],
+};
+/** S3d (the reveal on "Your friend"): the same set plus the friend's ladder. */
+export const OPTS_REVEAL: StreetOpts = {
+  ...baseOpts,
+  extra: () => [...OPTS_TALL.extra!(SP), named(ladder(), "ladder", at(TALL.s + TALL.half + LEAN, LADDER_X))],
 };

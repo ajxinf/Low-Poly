@@ -45,12 +45,32 @@
   {
    "f": 237,
    "sfx": "whoosh",
-   "note": "S2->S3 dissolve (mid)"
+   "note": "S2->S3a dissolve (mid)"
+  },
+  {
+   "f": 262,
+   "sfx": "swish",
+   "note": "S3 toast slides off the 10-foot tabletop"
+  },
+  {
+   "f": 292,
+   "sfx": "swish",
+   "note": "hard cut into the insert: the toast falls into frame"
   },
   {
    "f": 312,
    "sfx": "pat",
    "note": "second toast lands butter-up on 'up'"
+  },
+  {
+   "f": 335,
+   "sfx": "whoosh",
+   "note": "S3b->S3c dissolve (mid)"
+  },
+  {
+   "f": 406,
+   "sfx": "whoosh",
+   "note": "S3c->S3d reveal dissolve (mid), 'Your friend'"
   },
   {
    "f": 428,

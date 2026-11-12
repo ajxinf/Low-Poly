@@ -15,6 +15,7 @@ const wordAt = (t: string, n = 0) => {
   return Math.round(w.start * FPS);
 };
 export const BEAT = {
+  yourFriend: wordAt("your", 2), // "Your friend needs a ladder": the ladder and friend are revealed here
   splat: wordAt("splat"), // toast lands, impact kick, you: shocked
   up: wordAt("*up*"), // second toast lands butter-side up
   table: wordAt("table.", 0), // you: smug
@@ -77,7 +78,7 @@ export const castCafe = (from: number, withFriend: boolean): CastSpec[] => [
   { name: "you", at: (lf) => youGround(lf + from), state: (lf) => youCafe(lf + from) },
   ...(withFriend ? [{ name: "friend", look: friendLook, at: () => FRIEND_CAFE, state: (lf: number) => friendCafe(lf + from) }] : []),
 ];
-export const castTall = (from: number): CastSpec[] => [
+export const castTall = (from: number, withFriend: boolean): CastSpec[] => [
   { name: "you", at: () => at(STOOL.s, STOOL.x, STOOL.h), state: (lf) => youTall(lf + from) },
-  { name: "friend", look: friendLook, at: () => TREAD, state: (lf) => friendLadder(lf + from) },
+  ...(withFriend ? [{ name: "friend", look: friendLook, at: () => TREAD, state: (lf: number) => friendLadder(lf + from) }] : []),
 ];
