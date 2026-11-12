@@ -46,7 +46,7 @@ stories, characters, jokes or shots, never name their channels. Once our pilot i
     into a look-ahead true-peak limiter (ceiling -1.3 dBTP). Loudnorm alone falls back to dynamic mode.
   - End the mix on the last word. A musical button may land on the last word and must decay before the last frame;
     no outro sting after it, no end card.
-- Final export 2K vertical 1440x2560 (`--scale 1.3333`). If a final render on the laptop takes more than 30 min,
+- Final export 2K vertical 1440x2560: scale `4/3` (`1.3333` gives 2559.936 px and Remotion refuses it). If a final render on the laptop takes more than 30 min,
   export 1080x1920 instead and note it in `docs/STYLE.md`.
 - A fresh verifier agent (Opus, max effort) checks every look step and the final video.
 - Commit after every step (`git add -A; git commit -m "<video>: <step>"`). Push at the end of each session.
@@ -69,8 +69,9 @@ kit/toon/          shared look: lights.ts shade.ts paint.ts world.tsx ink.ts cam
 kit/toon/build/    world library: building.ts props.ts ground.ts street.tsx presets.ts (era presets)
 src/videos/<slug>/ per video: story.ts (shots, cameras), build.ts (world layout), roles.ts (who is where), Video.tsx
 videos/<slug>/     SCRIPT.md, script.json, sources.md, voice/ (voice.wav, words.json), audio/ (mix.wav, stems, cues.md)
-templates/base/    clean copy of a finished video folder to start new ones from (made after the pilot)
-scripts/           stills.mjs, sbs_sheet.py, short_qa.py, tts.ts, audio/ (timeline.py sfx_gen.py music.py mix.py ...)
+templates/base/    clean copy of a finished video folder to start new ones from (made after the pilot; until then
+                   copy src/videos/_pipeline-test/)
+scripts/           stills.mjs, render.mjs, measure.py, video_qa.py, tts.ts, audio/ (sfx_gen.py music.py mix.py)
 docs/STYLE.md      our style bible: the look values below + approved frames in docs/style/frames/
 videos/BACKLOG.md  topic backlog (20+), videos/TIMELOG.md minutes per step per video
 ```
@@ -124,12 +125,14 @@ overlays (hat, coat, uniform) that always keep the quiff and a rust-orange `#c85
    - **Literal gags**: every line's `gag` becomes a picture (a face "goes purple" -> it fills purple).
    - Scenario pillar: show time jumps with the "DAY 3" stamp card (upper third, thump SFX); history uses the
      year card the same way.
-   - At least one POV / over-the-shoulder "you" shot per video.
+   - At least one POV "you" shot per video. POV only until a back-view card exists (cards always face the
+     camera, so an over-the-shoulder shot shows your face); the back view is in `videos/BACKLOG.md`.
    - Captions change 2.2-3 times per second; end on the last word, no outro.
-3. **Voice.** `npx tsx scripts/tts.ts videos/<slug>` -> `voice/voice.wav` + `voice/words.json` (character
+3. **Voice.** `node scripts/tts.ts videos/<slug>` (Node 22.6+ runs TypeScript directly; `--new` regenerates,
+   otherwise the saved `voice/tts_response.json` is reused so credits are not spent twice) -> `voice/voice.wav` + `voice/words.json` (character
    alignment converted to word times). Hand-check the word times; everything is timed to `words.json`.
-4. **Shot plan** in `src/videos/<slug>/story.ts` (copy `templates/base/`, register the composition in
-   `src/Root.tsx`):
+4. **Shot plan** in `src/videos/<slug>/story.ts` (copy `templates/base/`, or until the pilot
+   `src/videos/_pipeline-test/`; register the composition in `src/Root.tsx`):
    - `SHOTS`: id, a/b frames, light day/golden, crowd mode, `tau` story time.
    - `XFADE` crossfades at place/time changes; `FLASH_AT` white flash after the hook.
    - `CAMS`: per-shot keys `{f, dur?, cut?, s: f => {pos, look, fov, roll}}`; `KICKS` impact flip-shakes;
@@ -140,15 +143,23 @@ overlays (hat, coat, uniform) that always keep the quiff and a rust-orange `#c85
    clear of facades and props (no culler yet).
 6. **Cast**: roles, costumes, expressions and walks in `roles.ts`.
 7. **Captions** on, from `words.json`.
-8. **Sound** (`scripts/audio/`): lock picture timing first. Event table -> synthesized SFX + original score ducked
-   under the voice -> `mix.wav` (48 kHz, exact length), stems, `cues.md`. Any later timing change means re-running sound.
+8. **Sound** (`scripts/audio/`): lock picture timing first. Any later timing change means re-running sound.
+   - Event table `videos/<slug>/audio/events.json`, every frame taken from `words.json` or a motion formula:
+     `{"fps": 30, "frames": N, "events": [{"f": 206, "sfx": "splat", "note": "why"}],
+     "music": {"bpm": 120, "frames": N, "button": <frame of the last word>, "stop": [f0, f1]}}`.
+     Sounds: step, whoosh (centred on its frame, for dissolves), swish, splat, pat, pop, sting.
+   - `python scripts/audio/sfx_gen.py videos/<slug>` -> `sfx.wav`.
+   - `python scripts/audio/music.py videos/<slug>` -> `music.wav` (bed) + `button.wav`.
+   - `python scripts/audio/mix.py videos/<slug>` -> `mix.wav` (48 kHz, exact length), `loudness.json` (LUFS, true
+     peak, voice-vs-music gap), and `public/<slug>/mix.wav`, which `Video.tsx` mounts with `<Audio>` in Studio only.
+   - Write `cues.md` (frame, time, sound, what it is synced to).
 9. **Look checks**: `node scripts/stills.mjs <Comp> out/<slug>/x_ 100,400 0.5` (QA layer 1 first: every check of the
    video-qa skill on every frame of every shot; a failure stops with the shot id, frame and object); side-by-sides against
    `docs/style/frames/` (and, until the pilot is approved, frames grabbed from `references/`) with
    `python scripts/sbs_sheet.py out.jpg --ours ... --ref ...`; a verifier gives a <=200-word
    verdict, scores (colour, lighting, ink, textures, characters, depth, composition) and a numbered fix list.
 10. **Final render**:
-    `node scripts/render.mjs <Comp> out/<slug>/video.mp4 1.3333` (QA layer 1 + `out/<slug>/plan.json`, then h264 crf 16, angle, concurrency 2),
+    `node scripts/render.mjs <Comp> out/<slug>/video.mp4 4/3 [--concurrency 1|2]` (QA layer 1 + `out/<slug>/plan.json`, then h264 crf 16, angle; prints the total time),
     mux with `npx remotion ffmpeg -i out/<slug>/video.mp4 -i videos/<slug>/audio/mix.wav -map 0:v:0 -map 1:a:0 -c:v copy -c:a aac -b:a 320k out/<slug>/final.mp4`.
     QA: run the **video-qa** skill (scene checks before rendering, `scripts/video_qa.py` + `short_qa.py` +
     `measure.py` on the final, then a fresh reviewer agent). Fix everything, then a final verifier audit.
@@ -199,7 +210,7 @@ R3/R4) with the **saturated daylight colour** of R2. No near-realistic PBR world
     with motion blur when faster than 40 px/f.
   - impact kicks: flip sign every frame, decay over 7 f.
   - a new shot every 3-5 s; foreground framing props in ~1/3 of shots; low angles for authority, top-down for maps
-    and graves, over-the-shoulder for "you".
+    and graves, POV for "you".
 - **Transitions** (`XFADE`):
   - default: a 10 f crossfade between two moving shots; the caption switches on its word mid-dissolve.
   - hard cut: punch close-ups, reaction inserts, object close-ups.

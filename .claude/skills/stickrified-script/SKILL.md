@@ -45,7 +45,8 @@ Writes the script for one Stickrified Short: `videos/<slug>/script.json` (single
   - Our own worlds only: never adapt a book, film, show, game or another channel's story.
 - Every script: hook = a paradox stated as fact in sentence 1 (~10-16 words, no setup); the first frame shows the
   most absurd image; one mystery beat ("Wait...?"); a "You see," pivot into the real mechanism or rule logic; at
-  least one POV / over-the-shoulder "you" shot; end on the last word (no outro, no "subscribe").
+  least one POV "you" shot (POV only until a back-view card exists: cards always face the camera, so an
+  over-the-shoulder shot would show your face); end on the last word (no outro, no "subscribe").
 - Too big for 90 s: Part 1 / Part 2. Part 1 stops mid-sentence on the cliffhanger; Part 2 opens by replaying it.
 
 ## Entertainment rules
@@ -83,6 +84,10 @@ Goal: the most entertaining 61-90 s possible. A swipe-away means a line was bori
   you..."). Full stops and colons add pauses: keep them for the deliberate stop before a punchline. `...` = a
   beat. No `<break>` (v4 ignores SSML); exact gaps get added in the edit.
 - **Emphasis**: at most one CAPS word per sentence, in `spoken` only.
+- **Non-verbal tags** (`[gasps]`, `[laughs]`, `[sighs]`, `[chuckles]`) are performed as sounds and cost time:
+  ~0.5-0.6 s each (measured on `_pipeline-test`; `check_script.py` adds it to the length). Use them only on beats.
+  With two of them, a 39-word script ran 14.9 s, i.e. 2.6 words/s, not 3.1. Listen to them before you approve
+  the voice: a tag can come out read aloud as a word.
 - **No sound-effect tags** (`[footsteps]`, `[thunder]`...): our SFX are synthesized. If a delivery tag comes out as a
   sound, describe the voice instead ("[low, dry voice]").
 - **Numbers, dates, names**: written out in `spoken` ("seventy-four", "eighteen thirty-one"); captions keep numerals.

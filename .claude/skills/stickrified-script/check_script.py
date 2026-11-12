@@ -11,6 +11,8 @@ Exit code 1 if any hard rule fails (length, missing fields, banned markup, histo
 import json, re, sys, os, argparse
 
 WPS_DEFAULT = 3.1          # measured on voice zfc8CJQpe8Kqyl0vvCzo, Eleven v4, stability 0.3 (2026-11-12)
+# Non-verbal tags are performed as sounds and take time (measured on _pipeline-test: [gasps] 0.52 s, [laughs] 0.60 s).
+NONVERBAL = {"gasps": 0.5, "laughs": 0.6, "sighs": 0.5, "chuckles": 0.5, "giggles": 0.5, "exhales": 0.4, "inhales": 0.4, "clears throat": 0.5}
 WORDS_MIN, WORDS_MAX = 200, 270
 SEC_MIN, SEC_MAX = 61, 90
 MAX_GAG_GAP = 8.0
@@ -37,6 +39,7 @@ def main():
         sp = spoken_of(ln); n = words(sp); total += n
         starts.append(t); t += n / a.wps
         tags = re.findall(r"\[([^\]]*)\]", sp) + ([ln["audioTag"]] if ln.get("audioTag") else [])
+        t += sum(v for tg in tags for k, v in NONVERBAL.items() if k in tg.lower())
         if tags: tagged += 1
         for tg in tags:
             if any(s in tg.lower() for s in SFX_TAGS): errors.append(f"line {i}: sound-effect tag [{tg}] (our SFX are synthesized)")

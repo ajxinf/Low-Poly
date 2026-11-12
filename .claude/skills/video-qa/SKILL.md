@@ -25,8 +25,9 @@ Read the scene graph and the shot plan directly: `kit/toon/guard.tsx`, run by `s
 | Card penetration | a character card's footprint (width x 0.3 m) never overlaps walls, shelves or props; two cards never closer than 0.25 m in depth when they overlap on screen (z-fighting) |
 | Props through props | no two prop boxes intersect at setup (beyond 1 cm), nothing floats above its support by > 2 cm |
 | Camera curve | from the camera keys, per frame: screen speed of the look point <= 25 px/f at 1080 outside planned whips; acceleration <= 20 px/f per frame; zoom change <= 2.2 %/f per frame; no 3-frame snaps; every hold creeps (no run >= 12 f where the median motion of what rays through `measure.py`'s 7x4 block centres hit is < 0.5 px/f) |
-| Subject in frame | the speaking/reacting character's head fully inside the frame and inside the 0.08-0.92 horizontal safe area |
+| Subject in frame | the speaking/reacting character's head fully inside the frame and inside the 0.08-0.92 horizontal safe area (from the shot's `subjectFrom` frame, if it enters later) |
 | Caption vs face | while a caption is visible, no character head box overlaps the caption band (y 0.64-0.76 H) |
+| Caption width | every caption group fits in 2 lines inside 0.84 W (the captions wrap there), and no single word is wider than 0.84 W |
 | Reaction timing | expression swaps and gag effects land 0-3 frames before their word in `words.json` |
 | Light continuity | all shots marked with the same scene/time-of-day use the same light preset, sun direction within 10 deg, exposure within 5 % |
 | Shadows | sun shadows enabled in day/golden presets; every character has a contact blob |
@@ -39,7 +40,8 @@ Export the plan for layer 2 at the same time: `out/<slug>/plan.json` with
    JERK, SHAKE, FLICKER, LIGHTJUMP, CRUSH, CLIP, EDGEPOP. Writes `out/qa/<name>/report.md`, `flags.json` and a
    before/flag/after strip per flag. Thresholds are calibrated on 4 correct reference shorts (just above their
    p99.5), so a clean video should give almost no flags. Without a plan it skips transitions and reports them as info.
-2. `python vendor/cartoon-3d-short/templates/scripts/short_qa.py out/<slug>/final.mp4 out/<slug>/qa plan.json`:
+2. `python vendor/cartoon-3d-short/templates/scripts/short_qa.py out/<slug>/final.mp4 out/<slug>/qa out/<slug>/shots.json`
+   (`shots.json`, not `plan.json`: `guardPass` writes it in short_qa's own format):
    specs, loudness, silences, black/white/frozen frames, 2 s contact sheets.
 3. `python scripts/measure.py out/<slug>/final.mp4 --light <day|dusk|golden|night|interior>`: colour numbers
    against LOOK_SPEC (vignette range by lighting) and camera motion numbers.

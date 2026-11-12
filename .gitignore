@@ -13,3 +13,5 @@ __pycache__/
 graphify-out/
 assets/references/frames/
 references/
+# preview copies written by scripts/audio/mix.py (the source of truth is videos/<slug>/audio/mix.wav)
+public/*/mix.wav

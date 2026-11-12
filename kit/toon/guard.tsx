@@ -5,6 +5,7 @@ import { Box3, DirectionalLight, Matrix3, Matrix4, Mesh, Object3D, PerspectiveCa
 import { OBB } from "three/examples/jsm/math/OBB.js";
 import { CamPose, applyCam } from "./camera";
 import { CONTACT_Y } from "./cast";
+import { CAPTION, CAPTION_FONT, captionPages } from "./Captions";
 import type { CaptionWord } from "./Captions";
 import { layout } from "./figure";
 import type { CharState, Look } from "./figure";
@@ -32,7 +33,7 @@ const SAFE_X: [number, number] = [0.08, 0.92], CAPTION_Y: [number, number] = [0.
 
 export const CHECKS = [
   "Camera clearance", "Feet on the ground", "Card penetration", "Props through props", "Camera curve",
-  "Subject in frame", "Caption vs face", "Reaction timing", "Light continuity", "Shadows",
+  "Subject in frame", "Caption vs face", "Caption width", "Reaction timing", "Light continuity", "Shadows",
 ] as const;
 export type Check = (typeof CHECKS)[number];
 export type Span = [number, number];
@@ -48,6 +49,8 @@ export type Shot = {
   cast?: CastSpec[];
   /** The speaking/reacting character: head stays fully in frame and inside the horizontal safe area. */
   subject?: string;
+  /** Shot-local frame from which the subject must be in frame (a subject that enters, or a crane that reveals it). */
+  subjectFrom?: number;
   /** Scene + time of day: shots with the same tag must share the light. */
   scene?: string;
   light?: keyof typeof LIGHTS;
@@ -374,6 +377,7 @@ const planChecks = (plan: Plan, fps: number, aspect: number) => {
     if (subj) {
       r.ran.add("Subject in frame");
       cams.forEach((cam, f) => {
+        if (f < (shot.subjectFrom ?? 0)) return;
         const b = headBox(subj, f, cam);
         if (!b.front || b.x0 < SAFE_X[0] || b.x1 > SAFE_X[1] || b.y0 < 0 || b.y1 > 1)
           r.add("Subject in frame", shot, f, `"${subj.name}" head`, `head box x ${b.x0.toFixed(2)}-${b.x1.toFixed(2)}, y ${b.y0.toFixed(2)}-${b.y1.toFixed(2)} (needs x in ${SAFE_X.join("-")}, y in 0-1)`);
@@ -412,6 +416,27 @@ const planChecks = (plan: Plan, fps: number, aspect: number) => {
       }
     }
   }
+
+  // Caption width: every caption group fits in CAPTION.maxLines lines inside CAPTION.maxWidth (no word wider than a
+  // line: it could not wrap and would run off-frame). Measured with the drawn font, outline included.
+  if (plan.words?.length) {
+    r.ran.add("Caption width");
+    const ctx = document.createElement("canvas").getContext("2d")!;
+    const size = CAPTION.size * 1080, max = CAPTION.maxWidth * 1080, pad = CAPTION.stroke * 1080;
+    ctx.font = `900 ${size}px ${CAPTION_FONT}`;
+    const at = (ms: number) => plan.shots.find((s) => (ms / 1000) * fps < (s.from ?? 0) + s.frames) ?? plan.shots[0];
+    for (const p of captionPages(plan.words)) {
+      const words = p.tokens.map((t) => t.text.replace(/\*/g, "").trim());
+      let lines = 1, line = 0;
+      for (const w of words) {
+        const ww = ctx.measureText(w).width + pad, space = ctx.measureText(" ").width;
+        if (ww > max) r.add("Caption width", at(p.startMs), 0, `caption "${w}"`, `word is ${(ww / 1080).toFixed(2)} W wide (max ${CAPTION.maxWidth} W): cannot wrap`);
+        if (line && line + space + ww > max) (lines++, (line = ww));
+        else line += (line ? space : 0) + ww;
+      }
+      if (lines > CAPTION.maxLines) r.add("Caption width", at(p.startMs), 0, `caption "${words.join(" ")}"`, `wraps to ${lines} lines (max ${CAPTION.maxLines})`);
+    }
+  } else r.na["Caption width"] = "no words.json (no captions)";
 
   // Light continuity across shots with the same scene tag.
   r.ran.add("Light continuity");

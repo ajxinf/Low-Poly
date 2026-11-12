@@ -1,6 +1,6 @@
 import { ThreeCanvas } from "@remotion/three";
 import { useMemo } from "react";
-import { AbsoluteFill, Easing, Sequence, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, Audio, Easing, Sequence, getRemotionEnvironment, interpolate, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { Vector3 } from "three";
 import { PRESETS } from "../../../kit/toon/build/presets";
 import { Street } from "../../../kit/toon/build/street";
@@ -71,5 +71,7 @@ export const PipelineTest: React.FC = () => (
       </Sequence>
     ))}
     <Captions words={words} />
+    {/* Studio preview only (renders stay silent; the mux maps audio/mix.wav). mix.py writes public/<slug>/mix.wav. */}
+    {getRemotionEnvironment().isStudio && <Audio src={staticFile("_pipeline-test/mix.wav")} />}
   </AbsoluteFill>
 );

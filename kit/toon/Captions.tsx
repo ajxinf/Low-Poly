@@ -11,26 +11,28 @@ import { AbsoluteFill, useCurrentFrame, useVideoConfig } from "remotion";
 export type CaptionWord = { text: string; start: number; end: number };
 
 // shortcut: system fonts until Nunito Black (OFL) is bundled in public/ and recorded in assets/CREDITS.md.
-const FONT = '"Nunito Black", "Segoe UI Black", "Arial Rounded MT Bold", "Arial Black", sans-serif';
+export const CAPTION_FONT = '"Nunito Black", "Segoe UI Black", "Arial Rounded MT Bold", "Arial Black", sans-serif';
+/** Sizes as fractions of the frame width: font, outline, max line width (longer groups wrap; the guard checks). */
+export const CAPTION = { size: 0.055, stroke: 0.012, maxWidth: 0.84, maxLines: 2 };
 export const KEY_COLOR = "#ff8a3d";
 const KEY = /\*([^*]+)\*/;
+
+/** Caption groups (1-2 words) exactly as drawn: shared with the QA guard's "Caption width" check. */
+export const captionPages = (words: CaptionWord[]) =>
+  createTikTokStyleCaptions({
+    captions: words.map((w) => ({ text: ` ${w.text}`, startMs: w.start * 1000, endMs: w.end * 1000, timestampMs: null, confidence: null })),
+    combineTokensWithinMilliseconds: 350,
+  }).pages;
 
 export const Captions: React.FC<{ words: CaptionWord[] }> = ({ words }) => {
   const frame = useCurrentFrame();
   const { fps, width } = useVideoConfig();
-  const pages = useMemo(
-    () =>
-      createTikTokStyleCaptions({
-        captions: words.map((w) => ({ text: ` ${w.text}`, startMs: w.start * 1000, endMs: w.end * 1000, timestampMs: null, confidence: null })),
-        combineTokensWithinMilliseconds: 350,
-      }).pages,
-    [words],
-  );
+  const pages = useMemo(() => captionPages(words), [words]);
   const ms = (frame / fps) * 1000;
   const i = pages.filter((p) => p.startMs <= ms).length - 1; // pages are in time order
   const page = pages[i];
   if (!page || (i === pages.length - 1 && ms > page.startMs + page.durationMs + 300)) return null;
-  const size = 0.055 * width;
+  const size = CAPTION.size * width;
   return (
     <AbsoluteFill style={{ justifyContent: "flex-start", alignItems: "center" }}>
       <div
@@ -38,15 +40,16 @@ export const Captions: React.FC<{ words: CaptionWord[] }> = ({ words }) => {
           position: "absolute",
           top: "70%",
           transform: "translateY(-50%)",
-          fontFamily: FONT,
+          fontFamily: CAPTION_FONT,
           fontWeight: 900,
           fontSize: size,
           lineHeight: 1.1,
           color: "#ffffff",
-          WebkitTextStroke: `${0.012 * width}px #141014`,
+          WebkitTextStroke: `${CAPTION.stroke * width}px #141014`,
           paintOrder: "stroke fill",
           filter: `drop-shadow(0 ${0.003 * width}px ${0.003 * width}px rgba(0,0,0,0.6))`,
-          whiteSpace: "pre",
+          maxWidth: CAPTION.maxWidth * width, // wraps inside the safe area instead of running off-frame
+          whiteSpace: "normal",
           textAlign: "center",
         }}
       >
