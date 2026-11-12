@@ -17,12 +17,21 @@ export const CAPTION = { size: 0.055, stroke: 0.012, maxWidth: 0.84, maxLines: 2
 export const KEY_COLOR = "#ff8a3d";
 const KEY = /\*([^*]+)\*/;
 
-/** Caption groups (1-2 words) exactly as drawn: shared with the QA guard's "Caption width" check. */
+/**
+ * Caption groups (1-2 words) exactly as drawn: shared with the QA guard's "Caption width" check. A key word
+ * (`*word*`, the punchline) always starts its own group, so it never shows before it is spoken.
+ */
 export const captionPages = (words: CaptionWord[]) =>
   createTikTokStyleCaptions({
     captions: words.map((w) => ({ text: ` ${w.text}`, startMs: w.start * 1000, endMs: w.end * 1000, timestampMs: null, confidence: null })),
     combineTokensWithinMilliseconds: 350,
-  }).pages;
+  }).pages.flatMap((p) => {
+    const k = p.tokens.findIndex((t, i) => i > 0 && KEY.test(t.text));
+    if (k < 0) return [p];
+    const end = p.startMs + p.durationMs, split = p.tokens[k].fromMs;
+    const page = (tokens: typeof p.tokens, startMs: number, endMs: number) => ({ ...p, tokens, startMs, durationMs: endMs - startMs, text: tokens.map((t) => t.text).join("") });
+    return [page(p.tokens.slice(0, k), p.startMs, split), page(p.tokens.slice(k), split, end)];
+  });
 
 export const Captions: React.FC<{ words: CaptionWord[] }> = ({ words }) => {
   const frame = useCurrentFrame();

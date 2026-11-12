@@ -1,5 +1,7 @@
 {
- "cuts": [],
+ "cuts": [
+  292
+ ],
  "xfade": [
   [
    110,
@@ -8,6 +10,14 @@
   [
    232,
    242
+  ],
+  [
+   330,
+   340
+  ],
+  [
+   401,
+   411
   ]
  ],
  "flash": [],
@@ -30,9 +40,24 @@
    "frames": 132
   },
   {
-   "id": "_pipeline-test/S3-crane-orbit",
+   "id": "_pipeline-test/S3a-tabletop",
    "from": 232,
-   "frames": 218
+   "frames": 60
+  },
+  {
+   "id": "_pipeline-test/S3b-insert",
+   "from": 292,
+   "frames": 48
+  },
+  {
+   "id": "_pipeline-test/S3c-low-angle",
+   "from": 330,
+   "frames": 81
+  },
+  {
+   "id": "_pipeline-test/S3d-reveal",
+   "from": 401,
+   "frames": 49
   }
  ]
 }
