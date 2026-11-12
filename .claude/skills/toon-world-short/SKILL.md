@@ -1,14 +1,16 @@
 ---
 name: toon-world-short
-description: Make a Stickrified vertical Short (61-90 s) in the "2D stickman cartoon characters in a painted 3D world" style - flat round-head stickman cards with thick ink outlines, hand-inked painted 3D world, saturated colour script, lit cards, an always-moving camera, 10-frame dissolves, literal visual gags, second-person ElevenLabs narration, synthesized SFX and an original score - rendered with three.js inside Remotion. Use for any new Stickrified video, "make the next short", a what-if scenario or strange-true-history short, building the toon kit, or "use the toon world skill".
+description: Make a Stickrified vertical Short (61-90 s) in the "2D stickman cartoon characters in a painted 3D world" style - flat round-head stickman cards with thick ink outlines, hand-inked painted 3D world, saturated colour script, lit cards, an always-moving camera, 10-frame dissolves, literal visual gags, second-person ElevenLabs narration, synthesized SFX and an original score - rendered with three.js inside Remotion. Use for any new Stickrified video, "make the next short", a what-if scenario, strange-true-history or "In this world..." fiction short, writing or punching up a script, building the toon kit, or "use the toon world skill".
 ---
 
 # Toon-world short (three.js + Remotion)
 
 Stickrified Shorts: flat 2D stickman cartoon **cards** (characters) living in a **painted 3D world** with black ink lines.
-Two pillars, both narrated in **second person ("you")**:
+Three pillars, all narrated in **second person ("you")**, all built to be as entertaining as possible:
 - **Scenario**: "What if you were trapped in a supermarket for 30 days during a zombie apocalypse?"
 - **Strange true history**: "You're one of 74 soldiers about to knock down an iron bridge just by walking across it."
+- **"In this world..." fiction**: an invented world with one changed rule, and you're stuck living in it.
+  "In this world, everyone's lies float above their head as a number. Yours says 4,000."
 
 **Look authority: `docs/style/LOOK_SPEC.md`** (craft numbers we adopt + the Stickrified identity layer + the
 current gap list). It merges the MIT-licensed 20-video study in `vendor/cartoon-3d-short/reports/` (with code
@@ -21,9 +23,10 @@ stories, characters, jokes or shots, never name their channels. Once our pilot i
 `docs/style/frames/` become the main reference and `docs/STYLE.md` holds our final values.
 
 ## House rules
-- English only. Narration in second person. One narrator voice (ElevenLabs Eleven v4, same voice ID every video),
-  steady delivery; audio tags only on beats (`[deadpan]`, `[whispers]`, `[nervous]`), at most one per two lines.
-- Surprising lines and jokes are researched real facts (history) or real-world logic (scenarios).
+- English only. Narration in second person. One narrator voice (ElevenLabs Eleven v4, voice ID
+  `zfc8CJQpe8Kqyl0vvCzo`, every video): a fast, energetic storyteller, deadpan only on single punchlines.
+- **Scripts: follow the `stickrified-script` skill** (`.claude/skills/stickrified-script/SKILL.md`): pillars,
+  formulas, entertainment and exaggeration rules, Eleven v4 tags, length (200-270 words), `script.json` format.
 - Captions (measured + identity): the one key word per sentence (number, twist, punchline) is rust-orange
   `#ff8a3d` and scales up 8 % for 4 frames; mark it with `*word*` in `script.json`. Otherwise: 1-2 words at a time from `words.json`, white `#ffffff` bold rounded sans (e.g. Nunito Black or
   Poppins ExtraBold, bundled locally), dark outline `#141014` ~0.006 W plus a soft drop shadow (offset 0.003 W, blur
@@ -102,25 +105,16 @@ overlays (hat, coat, uniform) that always keep the quiff and a rust-orange `#c85
 ## Pipeline per video (hands-on target <= 2 h; renders run unattended)
 1. **Topic and facts.** Pick from `videos/BACKLOG.md`. It must be visual: a physical cause and effect, plus one
    everyday analogy that explains it. Facts with sources at the top of `SCRIPT.md`; history also gets `sources.md`.
-2. **Script.** 61-90 s at ~3.7 words/s = 225-330 words. Write `SCRIPT.md` and `script.json` (each line: `narration`,
-   `audioTag`, `scene`, `camera`, `onScreenText`). The user edits; once approved, "just do it".
-   - **Scenario formula:** Hook (premise + stakes in one line) -> time markers ("Day 3...") escalating over 4-6 beats
-     -> Snap (the worst moment) -> deadpan double "Luckily... / Unluckily..." -> Turn (the real-world fact that saves
-     or dooms you) -> Callback ending that loops into the hook.
-   - **History formula:** Hook (the absurd fact, in "you") -> Setting (year, place, pride) -> Action escalating over
-     3-4 beats -> Snap -> deadpan double -> Explanation (one idea through an everyday analogy) -> Consequence (the
-     rule or change it caused) -> Callback twist that loops.
-   - Never describe on screen what the viewer already sees.
+   Fiction instead needs one impossible rule that is instantly drawable and has obvious everyday fallout.
+2. **Script.** Run the `stickrified-script` skill: it writes `script.json`, `SCRIPT.md` and (history)
+   `sources.md`, checks them with its `check_script.py`, and hands `SCRIPT.md` to the user. The user edits; once
+   approved, "just do it". Visual rules that come from the script:
    - **Cold open**: the first frame already shows the most absurd image of the story, on the first word.
-   - **Literal gags**: every metaphor or key phrase becomes a picture (a face "goes purple" -> it fills purple;
-     "like climbing a mountain" -> a staircase up a mountain). Mark each one in `script.json` as `gag`.
-   - **Two-part option**: a story too big for 90 s becomes Part 1 / Part 2. Part 1 stops mid-sentence on the
-     cliffhanger; Part 2 opens by replaying Part 1's last line over its last shot.
-   - Hook = a paradox stated as fact in sentence 1, no setup (~10-16 words). One mystery beat ("Wait...?") and a
-     "You see," pivot into the real mechanism, usually through an everyday analogy (vendor STYLE_BIBLE.md).
-   - Scenario pillar: show time jumps with the "DAY 3" stamp card (upper third, thump SFX).
+   - **Literal gags**: every line's `gag` becomes a picture (a face "goes purple" -> it fills purple).
+   - Scenario pillar: show time jumps with the "DAY 3" stamp card (upper third, thump SFX); history uses the
+     year card the same way.
    - At least one POV / over-the-shoulder "you" shot per video.
-   - Narration pace ~3.5-4 words/s (captions change 2.2-3 times per second); end on the last word, no outro.
+   - Captions change 2.2-3 times per second; end on the last word, no outro.
 3. **Voice.** `npx tsx scripts/tts.ts videos/<slug>` -> `voice/voice.wav` + `voice/words.json` (character
    alignment converted to word times). Hand-check the word times; everything is timed to `words.json`.
 4. **Shot plan** in `src/videos/<slug>/story.ts` (copy `templates/base/`, register the composition in

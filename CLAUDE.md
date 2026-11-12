@@ -1,8 +1,8 @@
 # Stickrified — project instructions
 
-Faceless channel **Stickrified** (YouTube Shorts, TikTok, Facebook Reels; long-form later). **Style: flat 2D cartoon characters in a painted, ink-lined 3D world.** Two pillars: survival "what if" scenarios and strange true history. All narration in **second person ("you")**. Audience: US/UK/Canada, Gen Z + Millennials. English only.
+Faceless channel **Stickrified** (YouTube Shorts, TikTok, Facebook Reels; long-form later). **Style: flat 2D cartoon characters in a painted, ink-lined 3D world.** Three pillars: survival "what if" scenarios, strange true history, and fictional "In this world..." stories. Entertainment first: comic exaggeration is welcome, but real facts in history videos stay true (see the skill's "Entertainment rules"). All narration in **second person ("you")**. Audience: US/UK/Canada, Gen Z + Millennials. English only.
 
-**How to make a video: follow `.claude/skills/toon-world-short/SKILL.md`.** It holds the pipeline, story formulas, look values, protagonist spec and gotchas. This file only holds the project-wide rules.
+**How to make a video: follow `.claude/skills/toon-world-short/SKILL.md`.** It holds the pipeline, look values, protagonist spec and gotchas. **Scripts (formulas, jokes, Eleven v4 tags, length): follow `.claude/skills/stickrified-script/SKILL.md`.** This file only holds the project-wide rules.
 
 ## Machine
 Windows 11 laptop: i5-11400H, RTX 3050 4 GB VRAM, 16 GB RAM. Commands must work in PowerShell. Render with `--gl=angle` and `--concurrency=1` or `2` (raise only if stable). Set `$env:TEMP`/`$env:TMP` to `C:\remotion-tmp` before rendering.

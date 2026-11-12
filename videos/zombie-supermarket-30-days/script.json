@@ -1,0 +1,180 @@
+{
+  "slug": "zombie-supermarket-30-days",
+  "title": "What if you were trapped in a supermarket for 30 days during a zombie apocalypse?",
+  "pillar": "Scenario",
+  "formula": "Hook -> time markers -> snap -> Luckily/Unluckily -> real-world turn -> callback loop",
+  "voiceId": "zfc8CJQpe8Kqyl0vvCzo",
+  "model": "eleven_v4",
+  "facts": [
+    "A closed, full freezer holds food frozen for about 48 hours without power (USDA food safety guidance; verify wording before voice).",
+    "Battery-powered toys work without mains power (real-world logic, no source needed).",
+    "Zombies hunting by sound: genre convention, played straight as the world's rule."
+  ],
+  "lines": [
+    {
+      "narration": "You're locked inside a supermarket for 30 days. Outside, zombies, inside, you and 11 rotisserie *chickens*!",
+      "audioTag": "fast-paced, energetic storyteller",
+      "scene": "Cold open: you on top of a checkout belt hugging a rotisserie chicken; zombie silhouettes press on the glass doors behind.",
+      "camera": "Slow push-in, low angle",
+      "onScreenText": "",
+      "gag": "",
+      "spoken": "You're locked inside a supermarket for thirty days. Outside, zombies, inside, you and eleven rotisserie chickens!"
+    },
+    {
+      "narration": "Day 1, you barricade the doors with shopping carts, a pallet of water, and a cardboard man who really loves *yogurt*.",
+      "audioTag": "",
+      "scene": "You wedge carts and a water pallet against the doors; last, a grinning life-size cardboard yogurt cutout.",
+      "camera": "Lateral glide along the barricade",
+      "onScreenText": "DAY 1",
+      "gag": "Cutout's grin is huge and unsettling",
+      "spoken": "Day one, you barricade the doors with shopping carts, a pallet of water, and a cardboard man who REALLY loves yogurt."
+    },
+    {
+      "narration": "He's your only friend now. You name him *Greg*.",
+      "audioTag": "playful",
+      "scene": "You pat the cutout on the shoulder. Name tag 'GREG' slaps onto him.",
+      "camera": "Push-in on Greg's face",
+      "onScreenText": "",
+      "gag": "Name tag pops on with a thump",
+      "spoken": "He's your only friend now. [deadpan] You name him Greg."
+    },
+    {
+      "narration": "Day 3, the power's still on, so you live like royalty: sushi for breakfast, cake for lunch, a whole chicken, eaten *standing up*!",
+      "audioTag": "excited",
+      "scene": "Three quick inserts: sushi tray, whole cake, you upright gnawing a chicken in the deli light, paper crown from the party aisle.",
+      "camera": "Hard cuts on each food, final arc around you",
+      "onScreenText": "DAY 3",
+      "gag": "Paper crown",
+      "spoken": "Day three, the power's still on, so you live like royalty: sushi for breakfast, cake for lunch, a whole chicken, eaten standing up!"
+    },
+    {
+      "narration": "Day 7... the power goes *out*.",
+      "audioTag": "sudden, nervous",
+      "scene": "Aisle lights shut off row by row toward camera; you stop chewing.",
+      "camera": "Fast pull-out down the main aisle",
+      "onScreenText": "DAY 7",
+      "gag": "Lights die in sequence, last one over your head",
+      "spoken": "Day seven... the power goes out."
+    },
+    {
+      "narration": "A closed freezer stays frozen for about two days, and the clock just *started*.",
+      "audioTag": "quick, urgent",
+      "scene": "Freezer wall, frost dripping; a giant cartoon stopwatch card appears above it and starts ticking.",
+      "camera": "Slow dolly along freezers",
+      "onScreenText": "48 HOURS",
+      "gag": "Stopwatch over the freezers"
+    },
+    {
+      "narration": "Day 10, the seafood counter develops a *personality*.",
+      "audioTag": "playful, grossed out",
+      "scene": "Night interior, blue window light. A thawed fish on ice slowly turns to look at you. Green stink lines.",
+      "camera": "Creeping push-in on the fish",
+      "onScreenText": "DAY 10",
+      "gag": "The fish looks at you",
+      "spoken": "Day ten, the seafood counter develops a personality."
+    },
+    {
+      "narration": "Day 14, you build a fort out of 400 rolls of toilet paper. It's perfect. Greg does not *approve*.",
+      "audioTag": "proud, fast",
+      "scene": "Toilet-paper castle with turrets; Greg 'standing guard' at the gate, same grin.",
+      "camera": "Crane up to reveal the fort",
+      "onScreenText": "DAY 14",
+      "gag": "TP castle with a drawbridge",
+      "spoken": "Day fourteen, you build a fort out of four hundred rolls of toilet paper. It's perfect. [deadpan] Greg does NOT approve."
+    },
+    {
+      "narration": "Day 25, you open your final bag of chips... and outside, every zombie goes completely *silent*.",
+      "audioTag": "tense, hushed",
+      "scene": "Inside the fort you crinkle open chips. Cut outside: every zombie head snaps toward the store at once.",
+      "camera": "Hard cut to wide exterior, then slow push",
+      "onScreenText": "DAY 25",
+      "gag": "200 heads turn in sync",
+      "spoken": "Day twenty-five, you open your final bag of chips... and outside, every zombie goes completely silent."
+    },
+    {
+      "narration": "Wait... can they *hear* that?",
+      "audioTag": "whispers",
+      "scene": "Extreme close-up: you mid-crunch, eyes sliding sideways.",
+      "camera": "Punch close-up, hard cut",
+      "onScreenText": "",
+      "gag": "Sweat drop"
+    },
+    {
+      "narration": "The front glass explodes, your fort collapses, and Greg goes *down*!",
+      "audioTag": "panicked, fast",
+      "scene": "Glass bursts (white flash), TP fort topples like dominoes, Greg falls flat on his face.",
+      "camera": "Impact kick, whip pan to Greg",
+      "onScreenText": "",
+      "gag": "Greg faceplants in slow motion"
+    },
+    {
+      "narration": "You see, zombies hunt by *sound*, and nothing in this building is louder than your *chewing*.",
+      "audioTag": "urgent",
+      "scene": "POV over your shoulder: the horde shuffling between aisles; you frozen with a chip in your mouth.",
+      "camera": "Over-the-shoulder, slow drift",
+      "onScreenText": "",
+      "gag": "Giant 'CRUNCH' sound-wave card from your mouth"
+    },
+    {
+      "narration": "Luckily, the loudest thing in the store is in aisle *9*.",
+      "audioTag": "excited",
+      "scene": "Map-style top-down of the store; aisle 9 glows.",
+      "camera": "Top-down, push toward aisle 9",
+      "onScreenText": "AISLE 9",
+      "gag": "Aisle 9 has a heavenly spotlight and a choir card",
+      "spoken": "Luckily, the loudest thing in the store is in aisle nine."
+    },
+    {
+      "narration": "Unluckily, it's right behind the *zombies*.",
+      "audioTag": "deadpan",
+      "scene": "Same top-down: a solid wall of zombie dots between you and aisle 9.",
+      "camera": "Hold with creep-in",
+      "onScreenText": "",
+      "gag": "Zombie dots fill the map"
+    },
+    {
+      "narration": "Aisle 9 is toys, and every toy runs on *batteries*!",
+      "audioTag": "quick, building excitement",
+      "scene": "Shelves of toys in the dark, their little lights blinking.",
+      "camera": "Glide down the toy aisle",
+      "onScreenText": "",
+      "gag": "Every toy is staring at you",
+      "spoken": "Aisle nine is toys, and every toy runs on batteries!"
+    },
+    {
+      "narration": "So you sprint the aisle smacking every button: 200 singing plastic fish, 40 talking dolls, and one very confident toy *drum*!",
+      "audioTag": "rushed, excited",
+      "scene": "You run, slapping boxes; fish sing, dolls talk, a drum rolls itself into the aisle.",
+      "camera": "Fast follow, motion blur",
+      "onScreenText": "",
+      "gag": "Drum keeps playing on its own",
+      "spoken": "So you sprint the aisle smacking every button: two hundred singing plastic fish, forty talking dolls, and one very confident toy drum!"
+    },
+    {
+      "narration": "Every zombie turns toward the noise, and you tiptoe out the front door with Greg under your *arm*.",
+      "audioTag": "sneaky, quick",
+      "scene": "The horde shambles into aisle 9; you sneak out the broken doors carrying Greg like a surfboard.",
+      "camera": "Wide, slow pull-out",
+      "onScreenText": "",
+      "gag": "Greg's grin, now dented"
+    },
+    {
+      "narration": "Day 30, rescue finally arrives, and they ask if you're ready to *leave*.",
+      "audioTag": "relieved",
+      "scene": "Golden dawn, army truck, a soldier offers a hand. You and Greg at the curb.",
+      "camera": "Arc around you",
+      "onScreenText": "DAY 30",
+      "gag": "Greg is wearing a tiny paper crown now",
+      "spoken": "Day thirty, rescue finally arrives, and they ask if you're ready to leave."
+    },
+    {
+      "narration": "You look at Greg. You ask for 30 more *days*.",
+      "audioTag": "deadpan",
+      "scene": "You glance at Greg; Greg grins. You turn back to the soldier, dead serious.",
+      "camera": "Push-in on your face, end on the word",
+      "onScreenText": "",
+      "gag": "Greg winks (he can't)",
+      "spoken": "You look at Greg. [pause] You ask for thirty more days."
+    }
+  ]
+}

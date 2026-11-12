@@ -1,0 +1,163 @@
+{
+  "slug": "lie-counter",
+  "title": "In this world, every lie you've ever told floats above your head.",
+  "pillar": "'In this world...' fiction",
+  "formula": "Rule -> you're the exception -> everyday fallout x3 -> snap -> deadpan double -> rule's own logic -> callback loop",
+  "voiceId": "zfc8CJQpe8Kqyl0vvCzo",
+  "model": "eleven_v4",
+  "facts": [
+    "Fiction: no sources needed. Rule: a glowing number above each person's head counts every lie they have ever told, and goes up the moment they lie."
+  ],
+  "lines": [
+    {
+      "narration": "In this world, every lie you've ever told floats above your head as a number. Yours says *4,000*.",
+      "audioTag": "fast-paced, energetic storyteller",
+      "scene": "Cold open: busy street, everyone has small glowing numbers; yours is a huge flashing 4,000 and a pigeon is staring at it.",
+      "camera": "Crane down onto you",
+      "onScreenText": "",
+      "gag": "Pigeon side-eye",
+      "spoken": "In this world, every lie you've ever told floats above your head as a number. Yours says four thousand."
+    },
+    {
+      "narration": "Most people are around 40, your grandma's at 2, and the baby next door is already at *11*.",
+      "audioTag": "playful, quick",
+      "scene": "Quick inserts: average person '40', sweet grandma '2', a smug baby '11'.",
+      "camera": "Hard cuts, each with a creep-in",
+      "onScreenText": "",
+      "gag": "Smug baby with sunglasses",
+      "spoken": "Most people are around forty, your grandma's at two, and the baby next door is already at eleven."
+    },
+    {
+      "narration": "You were a very creative *child*.",
+      "audioTag": "deadpan",
+      "scene": "Flashback card: tiny you blaming a broken vase on the cat; your counter ticks up.",
+      "camera": "Slow push",
+      "onScreenText": "",
+      "gag": "The cat's face: betrayed"
+    },
+    {
+      "narration": "Job interview. 'What's your biggest weakness?' You say you work too hard. 4,000 and *1*.",
+      "audioTag": "upbeat",
+      "scene": "Office. Your counter ticks 4,000 -> 4,001 with a 'ding'. The interviewer looks up at it.",
+      "camera": "Over-the-shoulder from interviewer",
+      "onScreenText": "4,001",
+      "gag": "The ding is as loud as a church bell",
+      "spoken": "Job interview. 'What's your biggest weakness?' You say you work too hard. [pause] Four thousand and one."
+    },
+    {
+      "narration": "The interviewer just quietly writes 'no' on a sticky *note*.",
+      "audioTag": "amused",
+      "scene": "Close-up: sticky note 'NO', placed on your forehead.",
+      "camera": "Insert close-up, hard cut",
+      "onScreenText": "",
+      "gag": "Sticky note on your forehead"
+    },
+    {
+      "narration": "First date, she looks at your number, she looks at you, and she orders the most expensive thing on the *menu*.",
+      "audioTag": "playful",
+      "scene": "Candle-lit restaurant; she glances up, then down, then points at the giant lobster on the menu.",
+      "camera": "Slow arc around the table",
+      "onScreenText": "",
+      "gag": "The lobster arrives on a cart, enormous"
+    },
+    {
+      "narration": "Your mom knits you a sweater with your face on it. Upside down. You say you love it. 4,000 and *2*.",
+      "audioTag": "",
+      "scene": "Living room; mom proud; sweater with your upside-down face; counter dings.",
+      "camera": "Push-in on the sweater",
+      "onScreenText": "4,002",
+      "gag": "Sweater face also looks unhappy",
+      "spoken": "Your mom knits you a sweater with your face on it, upside down. You say you love it. [sighs] Four thousand and two."
+    },
+    {
+      "narration": "Then you meet someone whose number is a perfect *zero*.",
+      "audioTag": "dreamy",
+      "scene": "Golden evening at a gig venue; she steps into a spotlight; '0' above her like a halo.",
+      "camera": "Dolly in, shallow focus",
+      "onScreenText": "0",
+      "gag": "Angelic choir card"
+    },
+    {
+      "narration": "And she asks the question you've been dreading. 'So... do you like my *band*?'",
+      "audioTag": "nervous",
+      "scene": "Behind her, a band poster: four stickmen with kazoos.",
+      "camera": "Over-the-shoulder, push to the poster",
+      "onScreenText": "",
+      "gag": "Kazoo band poster"
+    },
+    {
+      "narration": "Luckily, you're the most experienced liar on the *planet*.",
+      "audioTag": "confident",
+      "scene": "Montage card: you on a podium with a gold medal labeled 'LYING'.",
+      "camera": "Low angle push",
+      "onScreenText": "",
+      "gag": "Gold medal"
+    },
+    {
+      "narration": "Unluckily, everyone can *see* that.",
+      "audioTag": "deadpan",
+      "scene": "Back to her; she's looking up at your 4,002.",
+      "camera": "Hold with creep-in on her eyes",
+      "onScreenText": "",
+      "gag": "Her eyes reflect a giant 4,002"
+    },
+    {
+      "narration": "Wait... the number only goes up when you *lie*.",
+      "audioTag": "realizing, excited",
+      "scene": "Your eyes widen; the 4,002 hums.",
+      "camera": "Punch close-up, hard cut",
+      "onScreenText": "",
+      "gag": "Light-bulb pop"
+    },
+    {
+      "narration": "Every lie you know is begging you to say 'I love it'. All 4,002 of them are *chanting*.",
+      "audioTag": "tense, building",
+      "scene": "Tiny ghost versions of your past lies swirl around your head, all holding 'SAY IT' signs.",
+      "camera": "Slow orbit around you",
+      "onScreenText": "",
+      "gag": "Lie ghosts with protest signs",
+      "spoken": "Every lie you know is begging you to say 'I love it'. All four thousand and two of them are chanting."
+    },
+    {
+      "narration": "So for the first time in your life, you tell the truth. 'Your band is *terrible*.'",
+      "audioTag": "flatly",
+      "scene": "You, calm and sincere. Silence. A cricket card in the corner.",
+      "camera": "Push-in on you",
+      "onScreenText": "",
+      "gag": "Cricket chirps"
+    },
+    {
+      "narration": "The number doesn't move. Neither does her *face*.",
+      "audioTag": "stunned",
+      "scene": "Extreme close-up on 4,002. It flickers... and stays.",
+      "camera": "Static-free creep on the digits",
+      "onScreenText": "4,002",
+      "gag": "The digits sweat"
+    },
+    {
+      "narration": "She stares at it for a long time. Then she says it's the most romantic thing anyone has ever *said* to her.",
+      "audioTag": "warm",
+      "scene": "She grabs your hands; tiny heart cards pop between you.",
+      "camera": "Arc around both of you",
+      "onScreenText": "",
+      "gag": "Hearts pop"
+    },
+    {
+      "narration": "50 years later, your number still says 4,002. Hers says *1*.",
+      "audioTag": "nostalgic",
+      "scene": "Old you and old her on a porch, matching kazoos. Counters '4,002' and '1'.",
+      "camera": "Slow pull-out, golden dusk",
+      "onScreenText": "",
+      "gag": "Your 4,002 has a cobweb on it",
+      "spoken": "Fifty years later, your number still says four thousand and two. [pause] Hers says one."
+    },
+    {
+      "narration": "She never told you which *one*.",
+      "audioTag": "whispers",
+      "scene": "She smiles at camera. You look up at her '1', suspicious.",
+      "camera": "Push-in on her smile, end on the word",
+      "onScreenText": "",
+      "gag": "Her 1 blinks, guilty"
+    }
+  ]
+}

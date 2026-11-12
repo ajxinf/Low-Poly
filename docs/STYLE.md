@@ -136,3 +136,9 @@ side-by-side with the references in `out/char/sbs_refs2.jpg`. Old approved frame
 ## CharacterTest numbers (`out/char/charactertest.mp4`)
 luma .471, p5 .170, C* p90 67.0, sat .620 (above .58: sunlit orange cobbles fill much of the frame). 240 frames at
 1080x1920, `--concurrency=2`: ~57 s.
+
+## Narrator voice (Eleven v4)
+- Voice ID: `zfc8CJQpe8Kqyl0vvCzo` (production narrator, every video). Model `eleven_v4`.
+- Settings: Stability 0.3, Similarity 0.75 (0.5 sounded flat; 0.3 approved 2026-11-12). Lock after the pilot.
+- Measured rate: ~3.1 words/s (96 words in 31 s), so scripts are 200-270 words.
+- Delivery: fast, energetic storyteller; deadpan only on single punchlines (see the `stickrified-script` skill).
