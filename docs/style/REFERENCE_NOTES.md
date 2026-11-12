@@ -102,6 +102,15 @@ person beat a problem" stories: a siege weapon, a roller-coaster loop, an insura
    little box was a camera.
 10. **Last line 4-8 words, ending on the punch word**, over the winner's smug face. No moral, no outro.
 
+## Where the peak lands (measured by word position)
+| | R5 | R6 | R7 | our 2nd drafts |
+|---|---|---|---|---|
+| Climax starts | 73 % (lights the rope) | 58 % (ride starts), resolved at ~95 % | 86 % (points to the box) | 43-55 % |
+| After the climax | the chain reaction itself, then 1 line | the explanation told mid-ride, then the rival's crash | 2 lines | aftermath, lecture, epilogue |
+
+The references explain *during* the danger (R6 explains loop physics while the cart is climbing), and each has a
+late reversal (sabotage that saves him, the victim's camera). Rules: "The back half" in the stickrified-script skill.
+
 ## Language
 - Plain spoken English: almost every word one or two syllables; contractions everywhere (he's, can't, it's).
 - Physical verbs carry the story: drill, bolt, slap, rip, race, bend, crank, beat, slam, smash, limp, clutch.

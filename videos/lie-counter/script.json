@@ -2,7 +2,7 @@
   "slug": "lie-counter",
   "title": "In this world, every lie you've ever told floats above your head.",
   "pillar": "'In this world...' fiction",
-  "formula": "Strange act (3 weeks of silence) -> why (the rule + your goal) -> plan to beat the rule, rule taken literally against you (a nod counts) -> the big test (her band) -> turn (the truth doesn't move the number) -> twist ending that loops into the rule",
+  "formula": "Strange act (3 weeks of silence) -> why (the rule + your goal) -> plan, rule taken literally against you (a nod counts) -> big test (her band) -> reversal: the truth raises the number (it counts what's true, and you secretly love the kazoos) -> she wins -> twist ending that loops into the rule",
   "voiceId": "zfc8CJQpe8Kqyl0vvCzo",
   "model": "eleven_v4",
   "facts": [
@@ -110,7 +110,7 @@
       "gag": "A single sad note floats out of a kazoo"
     },
     {
-      "narration": "The whole restaurant goes quiet. Every head turns, and looks up at your *number*.",
+      "narration": "The whole restaurant goes quiet. Every head turns to look at your *number*.",
       "audioTag": "tense, hushed",
       "scene": "Diners, waiters, the chef in the kitchen window all stop and stare up at your 4,001.",
       "camera": "Slow orbit around the table as heads turn",
@@ -118,12 +118,12 @@
       "gag": "Even the lobster in the tank turns to look"
     },
     {
-      "narration": "Every lie you've ever told is screaming at you to say you *love* it.",
-      "audioTag": "building",
-      "scene": "Tiny ghost versions of your old lies swirl around your head holding 'SAY IT' signs.",
-      "camera": "Slow push-in through the swirl",
+      "narration": "One lie, and she'll *see* it.",
+      "audioTag": "tense, hushed",
+      "scene": "Close-up on her eyes reflecting your glowing 4,001; behind you, the diners lean in.",
+      "camera": "Slow push-in on her eyes",
       "onScreenText": "",
-      "gag": "Lie ghosts with protest signs"
+      "gag": "Even the lobster in the tank leans against the glass to look"
     },
     {
       "narration": "So for the first time in your life, you tell the truth: \"It's *terrible*.\"",
@@ -135,36 +135,61 @@
       "gag": "A cricket chirps"
     },
     {
-      "narration": "She stares at your number. It doesn't *move*.",
-      "audioTag": "",
-      "scene": "Extreme close-up on 4,001. It flickers... and stays.",
-      "camera": "Creep in on the digits",
-      "onScreenText": "4,001",
-      "gag": "The digits sweat"
+      "narration": "*Ding*.",
+      "audioTag": "deadpan",
+      "scene": "Your number rolls over like an old scoreboard, loud as a church bell.",
+      "camera": "Whip up to the number",
+      "onScreenText": "",
+      "gag": "Every glass in the restaurant rattles"
     },
     {
-      "narration": "Then she grabs your hand and says that's the most romantic thing anyone's ever *said* to her.",
+      "narration": "*4,002*.",
+      "spoken": "Four thousand and two.",
+      "audioTag": "",
+      "scene": "Extreme close-up: 4,002 glowing. Your face drops, ring-eyed shock.",
+      "camera": "Punch close-up, hard cut",
+      "onScreenText": "4,002",
+      "gag": "Your eyes go to white rings"
+    },
+    {
+      "narration": "You see, that number doesn't count what you say. It counts what's *true*.",
+      "audioTag": "realizing, quick",
+      "scene": "The digits of your counter flicker and show a tiny glowing kazoo icon behind them, like an X-ray.",
+      "camera": "Slow orbit around your head",
+      "onScreenText": "",
+      "gag": "An X-ray of your heart shows a little kazoo inside"
+    },
+    {
+      "narration": "And deep down, you *love* those kazoos.",
+      "audioTag": "amused",
+      "scene": "Flash insert: you, alone in your bedroom at night, secretly playing her band's song on a kazoo, eyes closed, swaying.",
+      "camera": "Hard cut insert, creep-in",
+      "onScreenText": "",
+      "gag": "You're wearing a band T-shirt in the flashback"
+    },
+    {
+      "narration": "She looks at your number, then at you, and grins. \"You *love* it.\"",
       "audioTag": "warm",
-      "scene": "She takes both your hands across the table; tiny heart cards pop between you; the diners exhale and go back to eating.",
+      "scene": "She leans back, triumphant; the diners exhale and go back to eating; tiny heart cards pop between you.",
       "camera": "Arc around both of you",
       "onScreenText": "",
-      "gag": "Hearts pop"
+      "gag": "She pulls a kazoo out of her bag and hands it to you"
     },
     {
-      "narration": "50 years later, your number still says 4,001. Hers says *1*.",
-      "spoken": "[nostalgic] Fifty years later, your number still says four thousand and one. Hers says one.",
-      "audioTag": "",
-      "scene": "Golden dusk porch: old you and old her in rocking chairs, a kazoo on the table. Counters '4,001' and '1'.",
+      "narration": "50 years later, you've been to every one of her shows. Your number says 4,002. Hers says *1*.",
+      "spoken": "Fifty years later, you've been to every one of her shows. Your number says four thousand and two. Hers says one.",
+      "audioTag": "nostalgic",
+      "scene": "Golden dusk, a tiny stage: old her on kazoo, old you in the front row in a faded band T-shirt. Counters '4,002' and '1'.",
       "camera": "Slow pull-out",
       "onScreenText": "",
-      "gag": "Your 4,001 has a cobweb on it"
+      "gag": "You're the only person in the audience, and you're on your feet"
     },
     {
       "narration": "She never told you *which* one.",
       "spoken": "[whispers] She never told you which one.",
       "audioTag": "",
-      "scene": "Close-up: she smiles at camera, sly. Beside her, you look up at her '1', suspicious.",
-      "camera": "Push-in on her smile, end on the word",
+      "scene": "Close-up: she winks at camera mid-kazoo. Beside her, you look up at her '1', suspicious.",
+      "camera": "Push-in on her face, end on the word",
       "onScreenText": "",
       "gag": "Her 1 blinks, guilty"
     }

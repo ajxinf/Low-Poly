@@ -18,7 +18,10 @@
 - "73 other soldiers" = the 74 of the detachment minus "you".
 - "Before anyone can stop, an iron column falls": sources give the sound, then the column falling, with no gap
   described; the line claims no more than that.
-- "Every step, it swings a little higher": the sources say the men stepped to humour the vibration before the
+- "Every step, that bolt pulls a little harder": framing for the mechanism (rhythmic load on the badly forged bolt),
+  not a recorded observation. The bolt is real (investigation); the script never says anyone knew about it.
+- "and nobody dies": true (no deaths; 20 injured, not spoken in this draft).
+- "Every step, the bridge swings higher": the sources say the men stepped to humour the vibration before the
   collapse; growing motion is the mechanism the swing analogy explains, not a quoted observation.
 - "A bridge in London still has that sign": Albert Bridge (built 1873) carries a break-step notice; the script
   does not claim the sign dates from 1831.

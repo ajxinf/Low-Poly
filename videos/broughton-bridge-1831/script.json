@@ -2,7 +2,7 @@
   "slug": "broughton-bridge-1831",
   "title": "You're one of 74 soldiers about to destroy a bridge... by walking.",
   "pillar": "Strange true history",
-  "formula": "Strange act (stomping on purpose) -> why (it bounces, it's funny) -> escalation chain (whistle, stomp on the beat) -> the snap -> consequence -> You see + swing analogy -> what changed -> callback punch",
+  "formula": "Strange act (stomping on purpose) -> why (it bounces, it's funny) -> ticking bomb (one bad bolt) -> escalation (whistle, stomp on the beat) -> You see + swing analogy while it's bouncing -> tension stretch (every step, the bolt) -> the snap at ~80% -> Luckily/Unluckily landing -> one-line consequence",
   "voiceId": "zfc8CJQpe8Kqyl0vvCzo",
   "model": "eleven_v4",
   "facts": [
@@ -42,6 +42,14 @@
       "gag": "A townsman polishing a chain link with his sleeve"
     },
     {
+      "narration": "But somewhere in those chains, there's one badly made *bolt*.",
+      "audioTag": "tense, hushed",
+      "scene": "The camera dives along a chain to one bolt, darker than the rest, a hairline crack glowing faintly.",
+      "camera": "Fast push along the chain, macro stop on the bolt",
+      "onScreenText": "",
+      "gag": "The bolt has a nervous little face and a sweat drop"
+    },
+    {
       "narration": "You're the 60th Rifles, marching home from drills, four abreast, in perfect *step*.",
       "spoken": "You're the Sixtieth Rifles, marching home from drills, four abreast, in perfect step.",
       "audioTag": "",
@@ -68,43 +76,60 @@
       "gag": "A duck on the river bobs up and down in time with the bridge"
     },
     {
-      "narration": "And every step, it swings a little *higher*.",
-      "audioTag": "building excitement",
-      "scene": "A glowing wave runs along the deck from boot to boot, bigger on each beat; the chains sway.",
-      "camera": "Slow tilt up as the wave grows",
+      "narration": "You see, a bridge is like a kid on a *swing*.",
+      "audioTag": "curious, explaining fast",
+      "scene": "Quick cutaway to a sunny park: you push a small kid on a swing (two ropes, wide plank, clear frame). The bouncing bridge stays faintly visible behind, dissolving.",
+      "camera": "Dissolve in, arc around the swing",
       "onScreenText": "",
-      "gag": "The bridge grows a sweat drop"
+      "gag": "The kid on the swing is wearing a tiny soldier's cap"
+    },
+    {
+      "narration": "Push at random, nothing happens. Push at the right moment, every time, and it goes higher, and *higher*.",
+      "audioTag": "building excitement",
+      "scene": "Your pushes land on the beat; a glowing arc traces each swing, bigger every time.",
+      "camera": "Follow the swing up, tilt to the sky",
+      "onScreenText": "",
+      "gag": "The swing loops right over the top bar"
+    },
+    {
+      "narration": "And 74 soldiers on the beat is the best-timed push a bridge has ever *felt*.",
+      "spoken": "And seventy-four soldiers on the beat is the best-timed push a bridge has ever felt.",
+      "audioTag": "excited",
+      "scene": "Match cut: the swing becomes the bridge, the marching column becomes the push; a glowing wave runs along the deck, bigger each beat.",
+      "camera": "Match cut from swing to bridge, push-in",
+      "onScreenText": "",
+      "gag": "The bridge, with a face, looks up at the column in horror"
+    },
+    {
+      "narration": "Every step, the bridge swings higher. Every step, that bolt pulls a little *harder*.",
+      "audioTag": "tense, building",
+      "scene": "Intercut on the beat: boots land, the deck lifts, the bolt stretches; boots, deck, bolt, faster each time.",
+      "camera": "Hard cuts on every beat, each shot closer than the last",
+      "onScreenText": "",
+      "gag": "The bolt's face goes from nervous to terrified"
     },
     {
       "narration": "Then, near the far end, there's a crack like somebody firing *guns*.",
       "audioTag": "suddenly worried",
-      "scene": "Smiles freeze mid-step. At the far tower, little spark lines flash around an iron column.",
-      "camera": "Hard cut to a punch close-up on your face, then whip to the column",
+      "scene": "Smiles freeze mid-step. At the far tower, spark lines flash around an iron column.",
+      "camera": "Punch close-up on your face, then whip to the column",
       "onScreenText": "",
       "gag": "A '!' pops over every head in the column at once"
     },
     {
-      "narration": "Before anyone can stop, an iron column *falls*.",
-      "audioTag": "urgent",
-      "scene": "The column tips over in slow motion (cut away before it lands).",
-      "camera": "Fast tilt down following the column",
-      "onScreenText": "",
-      "gag": ""
-    },
-    {
-      "narration": "And the whole corner of the bridge drops 16 feet into the *river*.",
-      "spoken": "And the whole corner of the bridge drops sixteen feet into the river.",
-      "audioTag": "panicked, fast",
-      "scene": "The deck corner swings down like a slide; soldiers slide off in a row into a wall of splash.",
-      "camera": "Impact kick on the splash",
+      "narration": "Before anyone can stop, an iron column falls, and the whole corner of the bridge drops 16 feet into the *river*.",
+      "spoken": "[panicked, fast] Before anyone can stop, an iron column falls, and the whole corner of the bridge drops sixteen feet into the river.",
+      "audioTag": "",
+      "scene": "The column tips (cut away before it lands); the deck corner swings down like a slide; soldiers slide off in a row into a wall of splash.",
+      "camera": "Fast tilt down with the fall, impact kick on the splash",
       "onScreenText": "",
       "gag": "Soldiers slide off the deck like kids on a water slide"
     },
     {
-      "narration": "Luckily, the river is only 2 feet *deep*.",
-      "spoken": "[relieved] Luckily, the river is only two feet deep.",
+      "narration": "Luckily, the river is only 2 feet deep, and nobody *dies*.",
+      "spoken": "[relieved] Luckily, the river is only two feet deep, and nobody dies.",
       "audioTag": "",
-      "scene": "You standing in the river, water at your knees, cap floating past.",
+      "scene": "You standing in the river, water at your knees, cap floating past; soldiers sitting up all around, dazed, bandages appearing.",
       "camera": "Slow pull-out",
       "onScreenText": "",
       "gag": "You look down at the tiny water level, relieved"
@@ -119,68 +144,10 @@
       "gag": "Same shot repeated, worse"
     },
     {
-      "narration": "About 40 of you go in, 20 get hurt, and somehow, nobody *dies*.",
-      "spoken": "[amazed] About forty of you go in, twenty get hurt, and somehow, nobody dies.",
+      "narration": "Nearly 200 years later, a bridge in London still has a *sign*,",
+      "spoken": "[amused] Nearly two hundred years later, a bridge in London still has a sign,",
       "audioTag": "",
-      "scene": "Soldiers sitting in the shallow river, bandaged, a few arm slings; townsfolk wading in to help.",
-      "camera": "Wide drift along the river",
-      "onScreenText": "",
-      "gag": "One townsman brings a single towel for forty men"
-    },
-    {
-      "narration": "You see, a bridge is like a kid on a *swing*.",
-      "audioTag": "curious, explaining fast",
-      "scene": "Analogy mini-scene in a sunny park: you push a small kid on a swing (two ropes, wide plank, clear frame).",
-      "camera": "Arc around the swing",
-      "onScreenText": "",
-      "gag": "The kid on the swing is wearing a tiny soldier's cap"
-    },
-    {
-      "narration": "Push at random, and nothing happens. Push at the right moment, every time, and it goes higher, and *higher*.",
-      "audioTag": "building excitement",
-      "scene": "Your pushes land on the beat; a glowing arc traces each swing, bigger every time.",
-      "camera": "Follow the swing up, tilt to the sky",
-      "onScreenText": "",
-      "gag": "The swing loops right over the top bar"
-    },
-    {
-      "narration": "74 soldiers on the beat is the best-timed push a bridge has ever *felt*.",
-      "spoken": "Seventy-four soldiers on the beat is the best-timed push a bridge has ever felt.",
-      "audioTag": "excited",
-      "scene": "Match cut: the swing becomes the bridge, the marching column becomes the push.",
-      "camera": "Match cut from swing to bridge, push-in",
-      "onScreenText": "",
-      "gag": "The bridge, with a face, looks up at the column in horror"
-    },
-    {
-      "narration": "To be fair, one bolt was badly made, and it would have snapped *eventually*.",
-      "audioTag": "playful",
-      "scene": "Macro insert: an investigator's magnifying glass on a tiny cracked bolt in a chain link.",
-      "camera": "Macro push-in on the bolt",
-      "onScreenText": "",
-      "gag": "The bolt gives a sad little shrug"
-    },
-    {
-      "narration": "You just made eventually happen *today*.",
-      "audioTag": "deadpan",
-      "scene": "Back to you in the river, soaked, cap dripping, one sheepish grin.",
-      "camera": "Push-in on your face",
-      "onScreenText": "",
-      "gag": ""
-    },
-    {
-      "narration": "So the army makes a new rule: when soldiers cross a bridge, they break *step*.",
-      "audioTag": "confident",
-      "scene": "An officer nails a painted sign to a bridge post: 'TROOPS MUST BREAK STEP'. Each hammer blow makes the sign bounce.",
-      "camera": "Low angle push on the sign",
-      "onScreenText": "",
-      "gag": "The sign bounces in time with the hammer"
-    },
-    {
-      "narration": "Nearly 200 years later, a bridge in London still has that *sign*,",
-      "spoken": "[amused] Nearly two hundred years later, a bridge in London still has that sign,",
-      "audioTag": "",
-      "scene": "Dissolve: the same sign, old and weathered, on a painted modern London bridge with traffic.",
+      "scene": "Dissolve: an old painted sign, 'TROOPS MUST BREAK STEP', on a modern London bridge with traffic.",
       "camera": "Fast pull-out from the sign with motion-blur streaks",
       "onScreenText": "TODAY",
       "gag": "A jogger crosses the modern bridge perfectly in step; the sign shakes"

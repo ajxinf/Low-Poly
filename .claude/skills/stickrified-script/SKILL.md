@@ -53,6 +53,22 @@ breaks, it is a list: rewrite it.
    plan backfires.
 9. **End in 3-8 words on the punch word**, over a close-up of a face (smug, guilty, stunned). No moral, no outro.
 
+### The back half (where our first drafts died)
+Our second drafts peaked at 43-55 % of the words and then wound down into aftermath and explanation. The
+references peak at 73-86 %. The second half must be the best half.
+- **Peak at 75-90 % of the words.** Everything before it builds toward it; after it, at most 2-3 short lines.
+- **A reversal in the last act**: the plan fails at the worst moment (the cart jams on a bean can), or works in a
+  way nobody expected (the truth raises the lie counter). A plan that simply works is a let-down.
+- **Explain while the danger is live**, never after. "You see," and the analogy go in the middle of the action
+  (mid-bounce, mid-roll), never in a flashback or once it's over. In history, plant the cause early as a ticking
+  bomb ("somewhere in those chains, one badly made bolt") so the explanation is suspense, not a lecture.
+- **No wind-down**: no casualty counts, investigations or "years later" summaries after the peak except one
+  kicker line. Facts that must be said go before the peak or into the kicker.
+- **The stakes never drop.** No turn to sweet or sentimental unless it is itself the twist.
+- **Pay off the doubter**: the side character's early line or object (Dave's duck) decides the climax.
+- **Test**: read only the last 30 % aloud. If it would not hold a viewer on its own, rewrite it before anything
+  else.
+
 ## Plain words (how the references talk)
 - Spoken, simple English: nearly every word one or two syllables; contractions everywhere. The checker warns when
   more than 7 % of words have 8+ letters (references: 1.7-6.8 %).
