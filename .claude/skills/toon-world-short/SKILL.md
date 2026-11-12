@@ -33,8 +33,19 @@ stories, characters, jokes or shots, never name their channels. Once our pilot i
   0.006 W, 60 % black), centred horizontally at y = 0.70 H, font size 0.055 W (~60 px at 1080 wide), punctuation kept,
   no pop or bounce: each group appears instantly on its first word and holds until the next (median 10 f). Never over
   a face: nudge the shot, not the caption.
-- Mix: music +3 dB, SFX -6 dB, voice unchanged; master to -14 LUFS integrated, true peak -1 dBTP (the louder
-  references measure -14.2 LUFS / -0.8 dBTP). End the mix on the last word: no outro sting, no end card.
+- Mix (`scripts/audio/mix.py`), gains relative to these stem reference levels: music bed RMS -20 dBFS
+  (`music.py`), every SFX peaking at -3 dBFS (`sfx_gen.py`), voice as ElevenLabs delivers it.
+  - Voice 0 dB.
+  - Music bed -3 dB, ducked a further 16 dB while the voice speaks (30 ms attack, 250 ms release).
+  - Button (final hit, its own `button.wav`) -3 dB, not ducked: above the bed, below the voice.
+  - SFX -6 dB.
+  - **Check (FAIL below 15 dB):** voice over music in the speech band (200-4000 Hz) during the words of
+    `words.json`, and the button below the voice on the last word. `mix.py` prints both and writes them to
+    `audio/loudness.json`. Never fix a failed gap by raising the music; lower it.
+  - Master to -14 LUFS integrated, true peak -1 dBTP (the louder references measure -14.2 LUFS / -0.8 dBTP): gain
+    into a look-ahead true-peak limiter (ceiling -1.3 dBTP). Loudnorm alone falls back to dynamic mode.
+  - End the mix on the last word. A musical button may land on the last word and must decay before the last frame;
+    no outro sting after it, no end card.
 - Final export 2K vertical 1440x2560 (`--scale 1.3333`). If a final render on the laptop takes more than 30 min,
   export 1080x1920 instead and note it in `docs/STYLE.md`.
 - A fresh verifier agent (Opus, max effort) checks every look step and the final video.

@@ -3,7 +3,8 @@
 Usage: python scripts/audio/music.py videos/<slug>
 Reads  videos/<slug>/audio/events.json  "music": {"bpm", "frames", "button" (frame of the final hit), "stop": [f0, f1]
        (optional comic drop-out, e.g. on an impact)}
-Writes videos/<slug>/audio/music.wav (48 kHz mono float, exact length, RMS ~ -20 dBFS before the mix).
+Writes videos/<slug>/audio/music.wav (the bed: 48 kHz mono float, exact length, RMS -20 dBFS) and button.wav (the
+final hit alone, same scale as the bed) so the mix can duck the bed without burying the button.
 Everything after the button is the chord's natural decay: no hard cut.
 """
 import json
@@ -75,12 +76,15 @@ def main(d):
     # decay 0.12 s: below -45 dB 0.65 s later, so the button rings out before the last frame (no cut).
     stab = sum(pluck(m, 1.0, bright=1.2, decay=0.12) for m in [48, 60, 64, 67, 72]) * 0.38
     stab += np.sin(2 * np.pi * np.cumsum(np.geomspace(120, 50, SR)) / SR) * np.exp(-np.arange(SR) / SR / 0.08) * 0.5
-    out[a:a + len(stab)] += stab
-    out = out[:n]
-    out *= np.minimum(1, (n - np.arange(n)) / (0.05 * SR))  # 50 ms safety fade on the last samples
-    out *= 10 ** (-20 / 20) / np.sqrt(np.mean(out[: a] ** 2))
-    wavfile.write(f"{d}/audio/music.wav", SR, out.astype(np.float32))
-    print(f"music.wav: {n / SR:.3f} s, button at {button:.2f} s, tail level {20 * np.log10(np.abs(out[-int(0.06 * SR):-int(0.05 * SR)]).max() + 1e-9):.1f} dBFS before the fade")
+    hit = np.zeros(len(out))
+    hit[a:a + len(stab)] += stab[: len(out) - a]
+    fade = np.minimum(1, (n - np.arange(n)) / (0.05 * SR))  # 50 ms safety fade on the last samples
+    out, hit = out[:n] * fade, hit[:n] * fade
+    k = 10 ** (-20 / 20) / np.sqrt(np.mean(out[:a] ** 2))  # bed RMS -20 dBFS; the button keeps the same scale
+    wavfile.write(f"{d}/audio/music.wav", SR, (out * k).astype(np.float32))
+    wavfile.write(f"{d}/audio/button.wav", SR, (hit * k).astype(np.float32))
+    tail = 20 * np.log10(np.abs((out + hit)[-int(0.06 * SR):-int(0.05 * SR)] * k).max() + 1e-9)
+    print(f"music.wav + button.wav: {n / SR:.3f} s, button at {button:.2f} s, tail level {tail:.1f} dBFS before the fade")
 
 
 if __name__ == "__main__":
