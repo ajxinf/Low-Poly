@@ -1,0 +1,184 @@
+{
+  "slug": "ice-house-mountain",
+  "title": "What if you were stranded on a frozen mountain with an influencer?",
+  "pillar": "Scenario",
+  "formula": "Contradiction hook (escaping the cold inside ice, mocked as a freezer) -> why (crash, forty below, a week to rescue) -> rival with the 'perfect' version (heated tent, live stream) -> weird prep with measured progress (hour stamps, roof hole, sunken door) -> the mocker's comfort vs yours -> blizzard setback for him -> status flip at ~80% -> hidden plan explained mid-storm -> knock -> loop: room in the freezer",
+  "loop": "Line 1: the only other survivor calls your ice house a freezer. Last: he asks, very quietly, if there's room in the freezer (same word, the mocker now begging).",
+  "voiceId": "zfc8CJQpe8Kqyl0vvCzo",
+  "model": "eleven_v4",
+  "facts": [
+    "Snow is mostly trapped air and insulates well; an igloo warmed by body heat alone can sit between about -7 C and +16 C inside while it is far colder outside (Wikipedia 'Igloo'; verify wording before voice). 'Almost forty degrees warmer' is within that range against -40 outside.",
+    "Igloos have a small vent hole in the roof, and a sunken entrance (a cold trap) because cold air sinks and stays below the sleeping level (Wikipedia 'Igloo'; verify before voice).",
+    "Forty below is the same in Celsius and Fahrenheit.",
+    "Tent poles snapping in a long blizzard and a battery heater dying: scenario logic, exaggerated for comedy."
+  ],
+  "lines": [
+    {
+      "narration": "You're building a house out of ice, and the only other survivor calls it a *freezer*.",
+      "audioTag": "fast-paced, energetic storyteller",
+      "scene": "Cold open, white mountain ridge at golden hour: you in your rust jacket, sliding a snow block onto a half-built dome. Ten metres away, a glowing orange high-tech tent; Brock points his phone at you, laughing.",
+      "camera": "Low angle push-in past the half dome to you, rack focus to Brock",
+      "onScreenText": "",
+      "gag": "Brock's phone has a ring light clipped to it"
+    },
+    {
+      "narration": "Because your plane is stuck on a mountain, it's forty below, and rescue is a week *away*.",
+      "audioTag": "",
+      "scene": "Pull back over the ridge: a small plane nose-down in a snowdrift, unharmed but stuck, its propeller bent like a pretzel; endless peaks, no roads.",
+      "camera": "Fast pull-out with motion-blur streaks to an extreme wide",
+      "onScreenText": "-40°",
+      "gag": "The bent propeller slowly droops"
+    },
+    {
+      "narration": "The other survivor is Brock. He has a $3,000 heated tent, and he's live *streaming*.",
+      "spoken": "The other survivor is Brock. He has a three-thousand-dollar heated tent, and he's live streaming.",
+      "audioTag": "playful",
+      "scene": "Brock: puffy neon jacket, frosted tips, sunglasses on his head, phone on a selfie stick. His tent glows orange, a battery heater humming inside, a sign on the flap: 'BROCK HQ'.",
+      "camera": "Glide around the tent to Brock posing",
+      "onScreenText": "",
+      "gag": "The tent has a doormat that says 'BROCK HQ'"
+    },
+    {
+      "narration": "\"Bro's building a freezer,\" he tells 40,000 followers, and they *love* it.",
+      "spoken": "\"Bro's building a freezer,\" he tells forty thousand followers, and they love it.",
+      "audioTag": "",
+      "scene": "Phone screen POV: Brock's selfie with you small in the background; laughing emojis flood up the screen; a live counter reads 40,000.",
+      "camera": "Push into the phone screen",
+      "onScreenText": "",
+      "gag": "Laughing emojis flood the stream"
+    },
+    {
+      "narration": "But you keep cutting snow blocks. Hour 1, ten. Hour 3, forty. By sunset, a *dome*.",
+      "spoken": "But you keep cutting snow blocks. Hour one, ten. Hour three, forty. By sunset, a dome.",
+      "audioTag": "",
+      "scene": "Three dissolves on the same framing as the sun drops: a ring of ten blocks, a waist-high spiral, a finished dome glowing pink in the dusk.",
+      "camera": "Locked framing with a slow creep-in across three dissolves",
+      "onScreenText": "HOUR 1",
+      "gag": "Each dissolve, Brock in the background has a new snack"
+    },
+    {
+      "narration": "Then it gets weirder. You poke a hole in the roof, on *purpose*.",
+      "audioTag": "mischievous",
+      "scene": "You on top of the dome jabbing a stick through the roof; a little puff of snow pops out.",
+      "camera": "Low angle on you against the dusk sky",
+      "onScreenText": "",
+      "gag": "The puff of snow lands on Brock's sunglasses"
+    },
+    {
+      "narration": "And you dig the door lower than the floor, like a little *ditch*.",
+      "audioTag": "",
+      "scene": "Cross-section cut-away of the igloo: the sleeping shelf high inside, the tunnel entrance dug down below it like a ditch.",
+      "camera": "Side-on cut-away, slow push along the tunnel",
+      "onScreenText": "",
+      "gag": "You slide down the ditch on your belly like a penguin"
+    },
+    {
+      "narration": "Brock zooms in. \"Now his freezer has a *basement*.\"",
+      "audioTag": "",
+      "scene": "Phone POV zooming on your boots disappearing into the tunnel; more laughing emojis.",
+      "camera": "Fast digital zoom inside the phone frame",
+      "onScreenText": "",
+      "gag": "The chat spams 'BASEMENT' with skull emojis"
+    },
+    {
+      "narration": "That night, Brock sleeps in his *shorts*.",
+      "audioTag": "",
+      "scene": "Night, deep blue snow under stars: Brock's tent glows warm orange; through the fabric, his silhouette in shorts, fanning himself.",
+      "camera": "Slow push toward the glowing tent",
+      "onScreenText": "",
+      "gag": "His silhouette is fanning himself"
+    },
+    {
+      "narration": "You sleep in your jacket, next to one tiny *candle*.",
+      "audioTag": "",
+      "scene": "Inside the dome: blue ice walls, you curled up on the shelf in your jacket, one candle flame making the walls glow gold.",
+      "camera": "Slow pull-out from the candle flame to you",
+      "onScreenText": "",
+      "gag": "Your breath makes little clouds"
+    },
+    {
+      "narration": "Then, on day 3, a blizzard hits, and it doesn't *stop*.",
+      "spoken": "[tense] Then, on day three, a blizzard hits, and it doesn't stop.",
+      "audioTag": "",
+      "scene": "White-out: snow blasting sideways across the ridge, the plane half buried, the two shelters barely visible.",
+      "camera": "Wide, camera rocked by gusts, impact kicks on each gust",
+      "onScreenText": "DAY 3",
+      "gag": "The plane's bent propeller spins the wrong way in the wind"
+    },
+    {
+      "narration": "The wind howls for two days. His tent poles bend, then snap. One. Two. *Three*.",
+      "audioTag": "tense, building",
+      "scene": "Brock's tent bowing in the wind; one pole snaps, then another, then a third, the glow flickering.",
+      "camera": "Hard cuts closer on each snap",
+      "onScreenText": "",
+      "gag": "Each snap makes Brock's frosted tips stand straight up"
+    },
+    {
+      "narration": "His heater dies, and his fancy tent wraps around him like a *burrito*.",
+      "audioTag": "",
+      "scene": "The tent goes dark and collapses onto Brock, folding around him until only his face sticks out of a fabric roll.",
+      "camera": "Tilt down with the collapsing tent, push-in on his face",
+      "onScreenText": "",
+      "gag": "Brock rolled up in his tent like a burrito, sunglasses still on his head"
+    },
+    {
+      "narration": "Meanwhile, inside your house of ice, you just took off your *jacket*.",
+      "audioTag": "amused",
+      "scene": "Inside the igloo: calm, golden candlelight, you in your striped tee sipping melted snow from a mug, jacket folded beside you. Muffled storm outside.",
+      "camera": "Slow arc around you",
+      "onScreenText": "",
+      "gag": "You're reading the plane's safety card like a magazine"
+    },
+    {
+      "narration": "You see, snow is mostly trapped air, and trapped air works like a giant puffy *blanket*.",
+      "audioTag": "curious, explaining fast",
+      "scene": "Macro on a snow block: a glowing cut-away shows tiny air pockets between the crystals, like a sponge.",
+      "camera": "Macro push into the snow block",
+      "onScreenText": "",
+      "gag": "The air pockets are drawn as tiny sleeping faces"
+    },
+    {
+      "narration": "The roof hole lets old air out, and the ditch traps the cold, because cold air *sinks*.",
+      "audioTag": "",
+      "scene": "Cross-section again: a soft warm-orange glow fills the dome and drifts out of the roof hole; blue cold air pours into the ditch and pools there like water.",
+      "camera": "Side-on cut-away, tilt from the roof hole down to the ditch",
+      "onScreenText": "",
+      "gag": "The cold air pools in the ditch like a blue puddle"
+    },
+    {
+      "narration": "So one candle and your body heat make it almost forty degrees warmer in *here*.",
+      "audioTag": "",
+      "scene": "Split by the ice wall: inside golden and calm, outside white and screaming; a little thermometer on each side.",
+      "camera": "Slow lateral glide through the wall from inside to outside",
+      "onScreenText": "",
+      "gag": "The outside thermometer is frozen solid"
+    },
+    {
+      "narration": "Then, something knocks on your *wall*.",
+      "spoken": "[tense, hushed] Then, something knocks on your wall.",
+      "audioTag": "",
+      "scene": "Inside: three soft thumps; snow dust falls from the ceiling; you freeze mid-sip.",
+      "camera": "Punch close-up on you, hard cut",
+      "onScreenText": "",
+      "gag": "Snow dust sprinkles into your mug"
+    },
+    {
+      "narration": "It's Brock, still in the burrito, phone at 1%. His chat is one word, over and *over*.",
+      "spoken": "It's Brock, still in the burrito, phone at one percent. His chat is one word, over and over.",
+      "audioTag": "",
+      "scene": "POV from inside the tunnel: Brock's face at the entrance, rolled in his tent, ice in his eyebrows, phone held up. On the screen the chat scrolls: 'FREEZER FREEZER FREEZER'.",
+      "camera": "POV from the tunnel, push into the phone screen",
+      "onScreenText": "",
+      "gag": "The chat scrolls 'FREEZER' forever"
+    },
+    {
+      "narration": "He asks, very quietly, if there's room in the *freezer*.",
+      "spoken": "[deadpan] He asks, very quietly, if there's room in the freezer.",
+      "audioTag": "",
+      "scene": "Close-up on Brock: chattering teeth, icicle on his nose, puppy eyes. Same framing as the cold open's laugh, now begging. Behind him, the storm.",
+      "camera": "Push-in on Brock's face, end on the word",
+      "onScreenText": "",
+      "gag": "An icicle hangs off Brock's nose"
+    }
+  ]
+}
