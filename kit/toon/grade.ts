@@ -29,7 +29,8 @@ export type GradeName = "day" | "golden" | "night" | "interior";
  */
 const S_CURVE = { y: [0.045, 0.095, 0.19, 0.47, 0.83, 0.96, 1], m: [0.45, 0.55, 1.1, 1.65, 1.0, 0.5, 0.3] };
 export const GRADE: Record<GradeName, Grade> = {
-  day: { ...S_CURVE, exposure: 1.15, sat: [1.3, 1.5, 1.3], tint: { s: [8, 0, 2], m: [0, 0, 4], h: [0, 0, 2] }, vig: [0.06, 0.45], amount: 1 },
+  // vig .06 -> .14 (2026-11-12, _pipeline-test): day corners read flat; day exteriors have their own measure.py range.
+  day: { ...S_CURVE, exposure: 1.15, sat: [1.3, 1.5, 1.3], tint: { s: [8, 0, 2], m: [0, 0, 4], h: [0, 0, 2] }, vig: [0.14, 0.45], amount: 1 },
   golden: { ...S_CURVE, exposure: 1.95, sat: [1.35, 1.6, 1.4], tint: { s: [8, -1, 6], m: [2, 0, 2], h: [3, 0, -4] }, vig: [0.28, 0.4], amount: 1 },
   night: { ...S_CURVE, sat: [1.3, 1.45, 1.3], tint: { s: [6, -1, 10], m: [2, -1, 6], h: [0, 0, 0] }, vig: [0.35, 0.3], amount: 1 },
   interior: { ...S_CURVE, sat: [1.25, 1.5, 1.35], tint: { s: [8, 0, 2], m: [-2, 0, 6], h: [-2, 0, 4] }, vig: [0.18, 0.4], amount: 1 },

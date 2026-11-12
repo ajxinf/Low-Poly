@@ -172,7 +172,10 @@ R3/R4) with the **saturated daylight colour** of R2. No near-realistic PBR world
 - **Light**: key light + one practical per scene; volumetric light shafts through windows and doors (additive
   cones, 15-25 % opacity, slow drifting dust); bloom threshold 1.0, intensity .6 only on emissives; particles
   (snow, dust, embers, rain) in most outdoor shots.
-- **Vignette**: corner/centre luma .85 by default, .60 at night or in dark interiors.
+- **Vignette**: corner/centre luma .85 by default, .60 at night or in dark interiors. `measure.py` checks the
+  corner/centre ratio by lighting (`--light`): dusk, golden, night and interior 0.8-0.9; **day exteriors 1.1-1.4**
+  (mean over the sampled frames). Sky and sunlit ground fill a day frame's corners, so the ratio stays above 1
+  whatever the vignette does. Measured on `_pipeline-test` with the day grade vignette at .14.
 - **Ink** (`ink.ts`): near-black brown `#1c1210`, 4 px near -> 2.5 px far at 1080x1920, on silhouettes, depth
   jumps and creases from 30 deg, including major wall/floor edges (the inked look draws them). Character cards are
   on `NOINK` and carry their own outline.

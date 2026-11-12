@@ -41,7 +41,13 @@ Export the plan for layer 2 at the same time: `out/<slug>/plan.json` with
    p99.5), so a clean video should give almost no flags. Without a plan it skips transitions and reports them as info.
 2. `python vendor/cartoon-3d-short/templates/scripts/short_qa.py out/<slug>/final.mp4 out/<slug>/qa plan.json`:
    specs, loudness, silences, black/white/frozen frames, 2 s contact sheets.
-3. `python scripts/measure.py out/<slug>/final.mp4`: colour and motion numbers against LOOK_SPEC.
+3. `python scripts/measure.py out/<slug>/final.mp4 --light <day|dusk|golden|night|interior>`: colour numbers
+   against LOOK_SPEC (vignette range by lighting) and camera motion numbers.
+   - **The camera-motion numbers are reference only.** Whether the camera moves is decided by layer 1 "Camera
+     curve", which works from the scene geometry.
+   - Optical flow under-reads flat sky, blurred backgrounds and far objects during push-ins. `measure.py` skips
+     untextured blocks and frames with fewer than 8 trackable blocks.
+   - A "low (info)" still run that layer 1 passes is not a defect.
 
 ## Layer 3: eyes, a fresh reviewer agent
 Spawn a fresh agent (it has not seen the work) with: the contact sheets, every flag strip from layer 2, 6 stills

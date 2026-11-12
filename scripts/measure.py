@@ -1,22 +1,28 @@
 """Colour numbers for a still or a video (frames sampled evenly), compared against the dusk look targets.
 
-usage: python scripts/measure.py <image-or-video> [more ...] [--frames N]
+usage: python scripts/measure.py <image-or-video> [more ...] [--frames N] [--light dusk|day|golden|night|interior]
 
 luma     median Rec.709 luma of the sRGB frame (0-1)
 std      tonal spread: standard deviation of luma
 p5       5th percentile luma of non-ink pixels (ink = luma < .08)
 C*p90    90th percentile CIELAB chroma
 sat      mean HSV saturation
-vignette mean luma of the outer corners (ellipse r > .9) / centre (r < .3); content-dependent, read as a trend
+vignette mean luma of the outer corners (ellipse r > .9) / centre (r < .3); content-dependent, read as a trend.
+         Target by --light: dusk, golden, night, interior 0.8-0.9; day exteriors DAY_VIGNETTE (sky and sunlit
+         ground fill the corners, so the ratio sits above 1 whatever the vignette does)
 dark L*  2nd percentile CIELAB L* outside the ink (ink = luma < .15, grown by 1 px): darks stay >= 19 (LOOK_SPEC)
 dark C*  median chroma of the darkest 10 % outside the ink: coloured darks, never grey (>= 10)
 dark hue hue of those darks (deg): brown (40-80) is out
 
-Videos also get camera motion (every frame, block phase correlation on a 4x7 grid, px per frame at 1080 wide):
-drift p50   median per-frame motion over textured blocks (flat sky is skipped) (target >= 2.5)
+Videos also get camera motion (every frame, block phase correlation on a 4x7 grid, px per frame at 1080 wide).
+REFERENCE ONLY: whether the camera moves is decided by QA layer 1 ("Camera curve" in kit/toon/guard.tsx, from the
+scene geometry). Optical flow under-reads flat sky, blurred backgrounds and far objects during push-ins.
+Blocks without texture (mean gradient < 1 grey level/px at 540 wide: flat sky, blank walls) are skipped; frames with
+fewer than 8 of 28 textured blocks are "untracked" and left out of the numbers below.
+drift p50   median per-frame motion over textured blocks (reference >= 2.5)
 drift p95   95th percentile (moves: <= 25)
-still %     frames moving < 0.5 px/f (target <= 5 %)
-still run   longest run of still frames (target < 12)
+still %     tracked frames moving < 0.5 px/f (reference <= 5 %)
+still run   longest run of still tracked frames (reference < 12)
 """
 import os
 import subprocess
@@ -28,6 +34,10 @@ from PIL import Image
 
 TARGETS = {"luma": (0.43, 0.57), "std": (0.21, 0.29), "sat": (0.38, 0.65), "C*p90": (55, 68), "vignette": (0.8, 0.9),
            "dark L*": (19, 100), "dark C*": (10, 200)}
+# Day exteriors (mean over the sampled frames): _pipeline-test, day street, grade vig .14, measured 1.26 (single
+# frames 0.92-1.75). See videos/_pipeline-test/TEST-REPORT.md.
+DAY_VIGNETTE = (1.1, 1.4)
+MIN_TRACKED, TEXTURE = 8, 1.0
 
 
 def lab(rgb):
@@ -119,10 +129,18 @@ def motion(path):
     xs = np.linspace(bs // 4, w - bs - bs // 4, 4).astype(int)
     scale = 1080 / w
     per = []
+    untracked = 0
     for a, b in zip(grey, grey[1:]):
         # Flat blocks (clear sky, blank walls) have nothing to track: they would read as "still", so skip them.
-        blocks = [(y, x) for y in ys for x in xs if a[y:y + bs, x:x + bs].std() > 4]
-        per.append(float(np.median([shift(a[y:y + bs, x:x + bs], b[y:y + bs, x:x + bs]) for y, x in blocks] or [0])) * scale)
+        # Mean gradient, not std: a smooth sky gradient has std > 4 but no edges to correlate.
+        blocks = [(y, x) for y in ys for x in xs if np.hypot(*np.gradient(a[y:y + bs, x:x + bs])).mean() > TEXTURE]
+        if len(blocks) < MIN_TRACKED:
+            untracked += 1
+            continue
+        per.append(float(np.median([shift(a[y:y + bs, x:x + bs], b[y:y + bs, x:x + bs]) for y, x in blocks])) * scale)
+    print(f"  tracked frames {len(per)} of {len(grey) - 1} (untracked: fewer than {MIN_TRACKED} textured blocks)")
+    if not per:
+        return {}
     per = np.array(per)
     still = per < 0.5
     run = best = 0
@@ -136,7 +154,7 @@ def motion(path):
         elif not s_ and start is not None:
             runs.append((start, i - 1))
             start = None
-    print("  still frames " + (", ".join(f"{a}-{b}" if b > a else str(a) for a, b in runs) or "none"))
+    print("  still frames (tracked-frame index) " + (", ".join(f"{a}-{b}" if b > a else str(a) for a, b in runs) or "none"))
     return {"drift p50": float(np.median(per)), "drift p95": float(np.percentile(per, 95)), "still %": float(still.mean() * 100), "still run": best}
 
 
@@ -150,10 +168,16 @@ def main():
         i = args.index("--frames")
         n = int(args[i + 1])
         del args[i : i + 2]
+    light = "dusk"
+    if "--light" in args:
+        i = args.index("--light")
+        light = args[i + 1]
+        del args[i : i + 2]
+    targets = {**TARGETS, "vignette": DAY_VIGNETTE if light == "day" else TARGETS["vignette"]}
     for path in args:
         ms = [measure(im) for im in frames(path, n)]
-        print(path)
-        for k, (lo, hi) in TARGETS.items():
+        print(f"{path} (light: {light})")
+        for k, (lo, hi) in targets.items():
             v = float(np.mean([m[k] for m in ms]))
             ok = "ok" if (lo - 0.02 * max(hi, 1) <= v <= hi + 0.02 * max(hi, 1) if lo == hi else lo <= v <= hi) else "OFF"
             tgt = f"{lo}" if lo == hi else f"{lo}-{hi}"
@@ -161,9 +185,10 @@ def main():
         hue = float(np.mean([m["dark hue"] for m in ms]))
         print(f"  dark hue  {hue:7.1f}   target not 40-80 {'OFF (brown)' if 40 <= hue <= 80 else 'ok'}")
         if not path.lower().endswith((".png", ".jpg", ".jpeg")):
+            print("  camera motion (reference only: QA layer 1 'Camera curve' decides)")
             for k, v in motion(path).items():
                 lo, hi = MOTION_TARGETS[k]
-                ok = "ok" if (lo is None or v >= lo) and (hi is None or v <= hi) else "OFF"
+                ok = "ok" if (lo is None or v >= lo) and (hi is None or v <= hi) else "low (info)"
                 tgt = f">= {lo}" if lo is not None else f"<= {hi}"
                 print(f"  {k:9s} {v:7.2f}   target {tgt:10s} {ok}")
 
