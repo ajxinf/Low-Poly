@@ -26,6 +26,32 @@ def spoken_of(line):
 def words(text):
     return len(re.sub(r"\[[^\]]*\]", " ", text).split())
 
+# Story-engine limits, measured on three reference shorts (docs/style/REFERENCE_NOTES.md, "Story study").
+HOOK_MAX, SENT_MAX, SENT_MEAN_MAX, LONG_WORD_MAX, DAY_STAMPS_MAX, LINKS_MIN = 12, 25, 15, 0.07, 3, 4
+SETUP = ["so basically", "let's", "now,", "imagine this", "in today's video", "did you know"]
+
+def story_warns(text):
+    """Warnings for the story engine and plain words, on the whole spoken text (tags stripped)."""
+    text = re.sub(r"\[[^\]]*\]", " ", text)
+    sents = [s.split() for s in re.split(r"(?<=[.!?])\s+", text.strip()) if s.split()]
+    ws = re.findall(r"[A-Za-z']+", text)
+    out = []
+    hook = len(re.split(r"[,.!?:;]", text.strip())[0].split())  # the references run on after a short first clause
+    if hook > HOOK_MAX: out.append(f"hook clause is {hook} words (max {HOOK_MAX}): open on a strange action")
+    long_s = [" ".join(s[:6]) + "..." for s in sents if len(s) > SENT_MAX]
+    if len(long_s) > 2: out.append(f"{len(long_s)} sentences over {SENT_MAX} words (max 2 deliberate run-ons): {long_s}")
+    mean = sum(map(len, sents)) / len(sents)
+    if mean > SENT_MEAN_MAX: out.append(f"mean sentence {mean:.1f} words (max {SENT_MEAN_MAX})")
+    share = sum(len(w.strip("'")) >= 8 for w in ws) / max(len(ws), 1)
+    if share > LONG_WORD_MAX: out.append(f"{share:.0%} words of 8+ letters (max {LONG_WORD_MAX:.0%}): use plain words")
+    low = text.lower()
+    out += [f"setup words '{p}'" for p in SETUP if any(" ".join(s).lower().startswith(p) for s in sents)]
+    days = len(re.findall(r"\bday [a-z0-9-]+\b", low))
+    if days > DAY_STAMPS_MAX: out.append(f"{days} 'Day N' markers (max {DAY_STAMPS_MAX}): a diary is a list, chain the beats instead")
+    links = len(re.findall(r"\b(but|so|then|until|because)\b", low))
+    if links < LINKS_MIN: out.append(f"only {links} but/so/then/until/because: beats may not be causally chained")
+    return out
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("path"); ap.add_argument("--md", action="store_true"); ap.add_argument("--wps", type=float, default=WPS_DEFAULT)
@@ -57,6 +83,7 @@ def main():
     if gaps and max(gaps) > MAX_GAG_GAP: warns.append(f"longest gap between visual gags {max(gaps):.1f} s (max {MAX_GAG_GAP})")
     if not lines[0].get("audioTag"): warns.append("line 1 has no audioTag: set the energetic base delivery on the hook")
     if tagged < len(lines) * 0.3: warns.append(f"only {tagged}/{len(lines)} lines tagged: delivery may go flat")
+    for w in story_warns(" ".join(spoken_of(ln) for ln in lines)): warns.append(w)
     pillar = d.get("pillar", "").lower()
     if "history" in pillar and not os.path.exists(os.path.join(os.path.dirname(a.path), "sources.md")):
         errors.append("history script without sources.md")

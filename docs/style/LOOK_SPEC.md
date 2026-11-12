@@ -112,7 +112,10 @@ section of the vendored report and port it into `kit/toon/`; do not copy their c
 
 ## 4. Acceptance checks
 - `python scripts/measure.py <render>`: camera and colour numbers inside section 1.
-- Side-by-side against reference frames from `references/frames/` (private, git-ignored).
+- Side-by-side against reference frames from `assets/references/frames/` (private, git-ignored).
+- Story check (R5-R7 study, `REFERENCE_NOTES.md`): every speaking role recognisable in silhouette, text in the
+  world rather than on cards (except DAY/year stamps), the payoff mechanism shown step by step, the last word on a
+  face close-up. Full rules: "Visual storytelling" in the toon-world-short skill.
 - Character check: total height / head height = 3.4-3.6 for adults on the expression sheet; head H/W 0.90-0.98;
   outline thick/thin ratio >= 2.5.
 - Identity check: protagonist recognisable in silhouette at 120 px tall; rust accent present; key-word caption working.

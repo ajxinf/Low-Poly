@@ -2,7 +2,7 @@
   "slug": "broughton-bridge-1831",
   "title": "You're one of 74 soldiers about to destroy a bridge... by walking.",
   "pillar": "Strange true history",
-  "formula": "Hook -> setting -> escalation -> snap -> deadpan double -> analogy -> consequence -> callback twist",
+  "formula": "Strange act (stomping on purpose) -> why (it bounces, it's funny) -> escalation chain (whistle, stomp on the beat) -> the snap -> consequence -> You see + swing analogy -> what changed -> callback punch",
   "voiceId": "zfc8CJQpe8Kqyl0vvCzo",
   "model": "eleven_v4",
   "facts": [
@@ -17,168 +17,181 @@
   ],
   "lines": [
     {
-      "narration": "You're one of 74 soldiers about to destroy a bridge... by *walking*.",
+      "narration": "You're stomping across a bridge on purpose, with 73 other *soldiers*.",
+      "spoken": "You're stomping across a bridge on purpose, with seventy-three other soldiers.",
       "audioTag": "fast-paced, energetic storyteller",
-      "scene": "Cold open: the bridge deck mid-bounce, bent like a wave, 74 stickmen in red coats stepping in perfect sync.",
-      "camera": "Low angle, slow push-in",
-      "onScreenText": "",
-      "gag": "The bridge is visibly wobbling like jelly",
-      "spoken": "You're one of seventy-four soldiers about to destroy a bridge... by walking."
-    },
-    {
-      "narration": "It's 1831, near Manchester, suspension bridges are the new wonder of the age, and this one is the town's *pride*.",
-      "audioTag": "upbeat",
-      "scene": "Golden afternoon over the river; locals in top hats admire the chain bridge; a tiny sign: BROUGHTON BRIDGE.",
-      "camera": "Crane down from sky to the bridge",
+      "scene": "Cold open: a chain suspension bridge mid-bounce, the deck bent like a wave; a column of stickmen in dark rifle-green jackets and tall caps stamping in sync, you in the front row with a rust-orange sash.",
+      "camera": "Low angle from the riverbank, slow push-in",
       "onScreenText": "1831",
-      "gag": "A man polishing the chains",
-      "spoken": "It's eighteen thirty-one, near Manchester, suspension bridges are the new wonder of the age, and this one is the town's pride."
+      "gag": "The bridge wobbles like jelly under the boots"
     },
     {
-      "narration": "You're in the 60th Rifles, marching home from drills, four abreast. Left. Right. Left. *Right*.",
-      "audioTag": "energetic, marching rhythm",
-      "scene": "Column of soldiers reaches the bridge; you in the front row, rust trim on your uniform.",
-      "camera": "Over-the-shoulder, tracking with the column",
-      "onScreenText": "",
-      "gag": "Boots hit the deck with comic weight",
-      "spoken": "You're in the Sixtieth Rifles, marching home from drills, four abreast. Left. Right. Left. Right."
-    },
-    {
-      "narration": "Halfway across, the bridge starts bouncing in time with your *feet*.",
+      "narration": "Because the bridge is bouncing in time with your feet, and all of you think it's *hilarious*.",
       "audioTag": "amused",
-      "scene": "The deck rises and falls under each step; your hat bobs.",
-      "camera": "Side view, camera bobs with the deck",
+      "scene": "Faces down the column: grins, a soldier bobbing up and down with his cheeks puffed, caps bouncing.",
+      "camera": "Lateral glide along the grinning faces",
       "onScreenText": "",
-      "gag": "Everyone bobs in unison like a music video"
+      "gag": "Every cap bobs in perfect unison"
     },
     {
-      "narration": "A normal person would stop walking. 74 soldiers think it's *hilarious*.",
+      "narration": "It's the town's pride, a bridge hanging from iron chains, the wonder of the *age*.",
       "audioTag": "",
-      "scene": "Soldiers grinning at each other mid-bounce.",
-      "camera": "Glide along their faces",
-      "onScreenText": "",
-      "gag": "",
-      "spoken": "A normal person would stop walking. [deadpan] Seventy-four soldiers think it's hilarious."
+      "scene": "Wide: the bridge hanging between two stone towers over a brown river; townsfolk in top hats on the bank, one admiring the chains through a monocle.",
+      "camera": "Crane down from the sky past the chains",
+      "onScreenText": "BROUGHTON BRIDGE",
+      "gag": "A townsman polishing a chain link with his sleeve"
     },
     {
-      "narration": "So some of you start whistling a marching tune... and stomp along on *purpose*.",
+      "narration": "You're the 60th Rifles, marching home from drills, four abreast, in perfect *step*.",
+      "spoken": "You're the Sixtieth Rifles, marching home from drills, four abreast, in perfect step.",
+      "audioTag": "",
+      "scene": "Ground level: rows of four boots land together on the planks; dust jumps on each beat.",
+      "camera": "Boot-level track with the column",
+      "onScreenText": "",
+      "gag": "Dust puffs jump off the planks on every beat"
+    },
+    {
+      "narration": "So somebody starts whistling a marching tune, and all 74 of you stomp right on the *beat*.",
+      "spoken": "So somebody starts whistling a marching tune, and all seventy-four of you stomp right on the beat.",
       "audioTag": "mischievous",
-      "scene": "Two soldiers whistle (music-note cards); everyone stomps harder.",
-      "camera": "Push-in on the whistlers",
+      "scene": "A soldier whistles; music-note cards float out; the whole column lifts its knees and stamps harder.",
+      "camera": "Push-in on the whistler, then pull out to the column",
       "onScreenText": "",
-      "gag": "Music notes bounce on the beat"
+      "gag": "Music notes bounce on the beat with the deck"
     },
     {
-      "narration": "The bridge bounces higher, and higher, it's basically a trampoline with a *river* under it!",
-      "audioTag": "excited",
-      "scene": "Soldiers bounce into the air in sync, coat tails flying.",
-      "camera": "Tilt up following a soldier into the sky",
+      "narration": "Up goes the bridge. Down it comes. Up. *Down*.",
+      "audioTag": "playful",
+      "scene": "Side view: the deck rises and falls under the column like a skipping rope; the river below sloshes with it.",
+      "camera": "Side-on, the camera bobs with the deck",
       "onScreenText": "",
-      "gag": "Literal trampoline: soldiers airborne",
-      "spoken": "The bridge bounces higher, and HIGHER, it's basically a trampoline with a river under it!"
+      "gag": "A duck on the river bobs up and down in time with the bridge"
     },
     {
-      "narration": "Wait... why does it sound like someone's firing *guns*?",
+      "narration": "And every step, it swings a little *higher*.",
+      "audioTag": "building excitement",
+      "scene": "A glowing wave runs along the deck from boot to boot, bigger on each beat; the chains sway.",
+      "camera": "Slow tilt up as the wave grows",
+      "onScreenText": "",
+      "gag": "The bridge grows a sweat drop"
+    },
+    {
+      "narration": "Then, near the far end, there's a crack like somebody firing *guns*.",
       "audioTag": "suddenly worried",
-      "scene": "Smiles freeze; little crack lines spark at the far pier.",
-      "camera": "Punch close-up on your face, hard cut",
+      "scene": "Smiles freeze mid-step. At the far tower, little spark lines flash around an iron column.",
+      "camera": "Hard cut to a punch close-up on your face, then whip to the column",
       "onScreenText": "",
-      "gag": "'!' pop over your head"
+      "gag": "A '!' pops over every head in the column at once"
     },
     {
-      "narration": "An iron column snaps, and the whole corner drops 16 feet into the *river*.",
-      "audioTag": "panicked, fast",
-      "scene": "The column topples (cut away before impact); the deck corner swings down; splash wall.",
-      "camera": "Impact kick, fast tilt down with the fall",
+      "narration": "Before anyone can stop, an iron column *falls*.",
+      "audioTag": "urgent",
+      "scene": "The column tips over in slow motion (cut away before it lands).",
+      "camera": "Fast tilt down following the column",
       "onScreenText": "",
-      "gag": "",
-      "spoken": "An iron column snaps, and the whole corner drops sixteen feet into the river."
+      "gag": ""
+    },
+    {
+      "narration": "And the whole corner of the bridge drops 16 feet into the *river*.",
+      "spoken": "And the whole corner of the bridge drops sixteen feet into the river.",
+      "audioTag": "panicked, fast",
+      "scene": "The deck corner swings down like a slide; soldiers slide off in a row into a wall of splash.",
+      "camera": "Impact kick on the splash",
+      "onScreenText": "",
+      "gag": "Soldiers slide off the deck like kids on a water slide"
     },
     {
       "narration": "Luckily, the river is only 2 feet *deep*.",
-      "audioTag": "relieved",
-      "scene": "You standing in the river, water at your knees, hat floating.",
+      "spoken": "[relieved] Luckily, the river is only two feet deep.",
+      "audioTag": "",
+      "scene": "You standing in the river, water at your knees, cap floating past.",
       "camera": "Slow pull-out",
       "onScreenText": "",
-      "gag": "You look down at the tiny water level, relieved",
-      "spoken": "Luckily, the river is only two feet deep."
+      "gag": "You look down at the tiny water level, relieved"
     },
     {
       "narration": "Unluckily, the river is only 2 feet *deep*.",
-      "audioTag": "deadpan",
-      "scene": "Same shot; a second soldier lands next to you, bum first. Ow-stars.",
+      "spoken": "[deadpan] Unluckily, the river is only two feet deep.",
+      "audioTag": "",
+      "scene": "Same shot: a second soldier lands next to you bum-first. Ow-stars circle his head.",
       "camera": "Same framing, hard cut",
       "onScreenText": "",
-      "gag": "Same shot repeated, worse",
-      "spoken": "Unluckily... the river is only two feet deep."
+      "gag": "Same shot repeated, worse"
     },
     {
-      "narration": "About 40 of you go in, 20 get hurt, and incredibly, nobody *dies*.",
-      "audioTag": "amazed",
-      "scene": "Soldiers sitting in the shallow river, bandaged, a few with arm slings; townsfolk rushing to help.",
-      "camera": "Wide drift",
+      "narration": "About 40 of you go in, 20 get hurt, and somehow, nobody *dies*.",
+      "spoken": "[amazed] About forty of you go in, twenty get hurt, and somehow, nobody dies.",
+      "audioTag": "",
+      "scene": "Soldiers sitting in the shallow river, bandaged, a few arm slings; townsfolk wading in to help.",
+      "camera": "Wide drift along the river",
       "onScreenText": "",
-      "gag": "One townsman brings a single towel for forty men",
-      "spoken": "About forty of you go in, twenty get hurt, and incredibly, nobody dies."
+      "gag": "One townsman brings a single towel for forty men"
     },
     {
-      "narration": "You see, a bridge bounces like a kid on a *swing*.",
+      "narration": "You see, a bridge is like a kid on a *swing*.",
       "audioTag": "curious, explaining fast",
-      "scene": "Analogy card world: you push a kid on a swing; the swing arcs bigger each push.",
+      "scene": "Analogy mini-scene in a sunny park: you push a small kid on a swing (two ropes, wide plank, clear frame).",
       "camera": "Arc around the swing",
       "onScreenText": "",
-      "gag": "The kid on the swing is a tiny bridge with a face"
+      "gag": "The kid on the swing is wearing a tiny soldier's cap"
     },
     {
-      "narration": "Push at just the right moment, every time, and it goes higher... and *higher*.",
+      "narration": "Push at random, and nothing happens. Push at the right moment, every time, and it goes higher, and *higher*.",
       "audioTag": "building excitement",
-      "scene": "You push the swing; each arc is bigger.",
-      "camera": "Follow the swing up, tilt to sky",
+      "scene": "Your pushes land on the beat; a glowing arc traces each swing, bigger every time.",
+      "camera": "Follow the swing up, tilt to the sky",
       "onScreenText": "",
-      "gag": "Swing loops all the way over the top",
-      "spoken": "Push at just the right moment, every time, and it goes higher... and HIGHER."
+      "gag": "The swing loops right over the top bar"
     },
     {
-      "narration": "74 pairs of boots in perfect rhythm? That's the best-timed push a bridge has ever *felt*.",
+      "narration": "74 soldiers on the beat is the best-timed push a bridge has ever *felt*.",
+      "spoken": "Seventy-four soldiers on the beat is the best-timed push a bridge has ever felt.",
       "audioTag": "excited",
-      "scene": "Swing replaced by the bridge, the column of boots as the 'push'.",
-      "camera": "Match cut from swing to bridge",
+      "scene": "Match cut: the swing becomes the bridge, the marching column becomes the push.",
+      "camera": "Match cut from swing to bridge, push-in",
       "onScreenText": "",
-      "gag": "Bridge with a sweat drop",
-      "spoken": "Seventy-four pairs of boots in perfect rhythm? That's the best-timed push a bridge has ever felt."
+      "gag": "The bridge, with a face, looks up at the column in horror"
     },
     {
-      "narration": "To be fair, investigators found one badly made bolt that would have failed *eventually*. You just made 'eventually' happen *early*.",
+      "narration": "To be fair, one bolt was badly made, and it would have snapped *eventually*.",
       "audioTag": "playful",
-      "scene": "Investigator with a magnifying glass on a tiny cracked bolt; it gives a sad shrug.",
-      "camera": "Push-in on the bolt",
+      "scene": "Macro insert: an investigator's magnifying glass on a tiny cracked bolt in a chain link.",
+      "camera": "Macro push-in on the bolt",
       "onScreenText": "",
-      "gag": "The bolt shrugs"
+      "gag": "The bolt gives a sad little shrug"
     },
     {
-      "narration": "So the British Army made a new rule: soldiers must break step when crossing a *bridge*.",
+      "narration": "You just made eventually happen *today*.",
+      "audioTag": "deadpan",
+      "scene": "Back to you in the river, soaked, cap dripping, one sheepish grin.",
+      "camera": "Push-in on your face",
+      "onScreenText": "",
+      "gag": ""
+    },
+    {
+      "narration": "So the army makes a new rule: when soldiers cross a bridge, they break *step*.",
       "audioTag": "confident",
-      "scene": "Officer nailing up a sign: 'TROOPS MUST BREAK STEP'.",
+      "scene": "An officer nails a painted sign to a bridge post: 'TROOPS MUST BREAK STEP'. Each hammer blow makes the sign bounce.",
       "camera": "Low angle push on the sign",
-      "onScreenText": "BREAK STEP",
-      "gag": "The officer's hammer strokes make the sign bounce"
+      "onScreenText": "",
+      "gag": "The sign bounces in time with the hammer"
     },
     {
-      "narration": "Nearly 200 years later, some bridges still carry that *sign*.",
-      "audioTag": "amused",
-      "scene": "Same sign, now old and weathered, on a modern bridge with traffic.",
-      "camera": "Dissolve with a fast pull-out",
-      "onScreenText": "",
-      "gag": "A jogger in headphones crosses perfectly in rhythm; the sign shakes",
-      "spoken": "Nearly two hundred years later, some bridges still carry that sign."
+      "narration": "Nearly 200 years later, a bridge in London still has that *sign*,",
+      "spoken": "[amused] Nearly two hundred years later, a bridge in London still has that sign,",
+      "audioTag": "",
+      "scene": "Dissolve: the same sign, old and weathered, on a painted modern London bridge with traffic.",
+      "camera": "Fast pull-out from the sign with motion-blur streaks",
+      "onScreenText": "TODAY",
+      "gag": "A jogger crosses the modern bridge perfectly in step; the sign shakes"
     },
     {
-      "narration": "Because the one thing an army can never do on a bridge... is *march*.",
-      "audioTag": "whispers",
-      "scene": "Back to the cold-open bridge in sync; you mid-step, look at camera.",
-      "camera": "Push-in on you, end on the word",
+      "narration": "telling soldiers not to do what *you* did.",
+      "audioTag": "",
+      "scene": "Dissolve back to 1831: you in the river, soaked, holding up your floating cap, smug grin on 'you'.",
+      "camera": "Push-in on your face, end on the word",
       "onScreenText": "",
-      "gag": "The bridge starts wobbling again"
+      "gag": "Your cap pours out a stream of river water"
     }
   ]
 }

@@ -17,8 +17,9 @@ current gap list). It merges the MIT-licensed 20-video study in `vendor/cartoon-
 recipes for ink, lens blur, two-tone shading, card shading, grade and faces) and our own 4-video study. When this
 file and LOOK_SPEC disagree, LOOK_SPEC wins.
 
-Everything (story, characters, world, music) is our own. Our own frame-by-frame study of four reference shorts: numbers in `docs/style/REFERENCE_NOTES.md`, the videos themselves in `references/` on the laptop
-(git-ignored). Those videos are **private study material**: never upload, publish or send them, never copy their
+Everything (story, characters, world, music) is our own. Our own frame-by-frame study of seven reference shorts
+(R1-R4 look and motion, R5-R7 story and visual storytelling): numbers in `docs/style/REFERENCE_NOTES.md`, the
+videos themselves in `assets/references/` on the laptop (git-ignored). Those videos are **private study material**: never upload, publish or send them, never copy their
 stories, characters, jokes or shots, never name their channels. Once our pilot is approved, our own frames in
 `docs/style/frames/` become the main reference and `docs/STYLE.md` holds our final values.
 
@@ -123,8 +124,8 @@ overlays (hat, coat, uniform) that always keep the quiff and a rust-orange `#c85
    approved, "just do it". Visual rules that come from the script:
    - **Cold open**: the first frame already shows the most absurd image of the story, on the first word.
    - **Literal gags**: every line's `gag` becomes a picture (a face "goes purple" -> it fills purple).
-   - Scenario pillar: show time jumps with the "DAY 3" stamp card (upper third, thump SFX); history uses the
-     year card the same way.
+   - Scenario pillar: show the 2-3 big time jumps with the "DAY 3" stamp card (upper third, thump SFX); history
+     uses the year card the same way. Every other bit of text lives in the world (see "Visual storytelling").
    - At least one POV "you" shot per video. POV only until a back-view card exists (cards always face the
      camera, so an over-the-shoulder shot shows your face); the back view is in `videos/BACKLOG.md`.
    - Captions change 2.2-3 times per second; end on the last word, no outro.
@@ -155,7 +156,7 @@ overlays (hat, coat, uniform) that always keep the quiff and a rust-orange `#c85
    - Write `cues.md` (frame, time, sound, what it is synced to).
 9. **Look checks**: `node scripts/stills.mjs <Comp> out/<slug>/x_ 100,400 0.5` (QA layer 1 first: every check of the
    video-qa skill on every frame of every shot; a failure stops with the shot id, frame and object); side-by-sides against
-   `docs/style/frames/` (and, until the pilot is approved, frames grabbed from `references/`) with
+   `docs/style/frames/` (and, until the pilot is approved, frames grabbed from `assets/references/`) with
    `python scripts/sbs_sheet.py out.jpg --ours ... --ref ...`; a verifier gives a <=200-word
    verdict, scores (colour, lighting, ink, textures, characters, depth, composition) and a numbered fix list.
 10. **Final render**:
@@ -165,6 +166,32 @@ overlays (hat, coat, uniform) that always keep the quiff and a rust-orange `#c85
     `measure.py` on the final, then a fresh reviewer agent). Fix everything, then a final verifier audit.
 11. **Deliver**: SendUserFile `final.mp4`; 3 title options; description with "Narration: AI voice" (+ sources for
     history); add minutes per step to `videos/TIMELOG.md`; mark the topic done in `BACKLOG.md`; commit and push.
+
+## Visual storytelling (from the R5-R7 study)
+The look values below make a frame pretty; these rules make the frames tell the story. Plan them in the shot plan.
+- **Cast by silhouette.** Every speaking role gets a costume that reads in pure silhouette at 120 px: a hat, a
+  hairdo or a prop (helmet with plume, cap, beanie, slick hair, name-tag vest, braces, sunglasses on the head).
+  "You" keeps the quiff and rust accent under any costume; the opponent or rival gets the opposite silhouette and
+  colour (tall vs short, cool vs warm). Crowds of extras share one costume family so the leads pop.
+- **Faces carry the jokes.** Pick the expression per word: smug half-lids, gritted-teeth grin, ring-eyed shock,
+  sweat drop, colour fill. A reaction close-up after every turn in the story.
+- **Words live in the world.** Signs, labels, banners, name tags, calendars, screens and placards carry text
+  (a "DO NOT PUSH" sign, a "SHAKE ME!" box, a scoreboard number rolling over). Floating cards only for the
+  identity stamps (DAY N, year) and effect cards. Sign faces use an unlit material (Readability traps).
+- **The mechanism is the star.** When the payoff explains how something works, show it as 2-4 macro inserts, one
+  per step, in the order the narration says them, and trace the path that matters with a glowing streak (a sound
+  trail behind the cart, a wave running along the deck, the arc of a swing).
+- **The analogy gets its own mini-set** (a park swing, a road with a hairpin): its own light and palette, a fast
+  pull-out or dissolve in and a match cut back to the story.
+- **Time of day follows the story**, not the clock: bright day for the setup, blue night or rain for the scheme or
+  setback (warm practicals), a clean bright morning or golden light for the payoff. Change it on a dissolve.
+- **Exaggerate literally.** A big number becomes a big picture: 400 heads turning at once, a cart bristling with
+  212 toys, a crowd that fills the frame edge to edge (instanced extras).
+- **Object POVs**: besides "your" POV, ride on the thing that matters (the cart down the ramp, the bridge deck,
+  the swing). They count as the video's POV shot.
+- **End on a face**: the last word lands on a close-up (smug, guilty, sly) with the payoff blurred behind it.
+- **Rough stills before the build**: block each shot as a quick still (`scripts/stills.mjs`) and check it reads
+  with the sound off: who wants what, and what just changed.
 
 ## Look values (measured from the references; tune in Phase 0, then record finals in docs/STYLE.md)
 Full measurements: `docs/style/REFERENCE_NOTES.md`. The house look is the **hand-inked painted world** (references
@@ -209,8 +236,8 @@ R3/R4) with the **saturated daylight colour** of R2. No near-realistic PBR world
   - fast moves are continuous follows (tilt down with a falling object, tilt up to reveal sky), smootherstep eased,
     with motion blur when faster than 40 px/f.
   - impact kicks: flip sign every frame, decay over 7 f.
-  - a new shot every 3-5 s; foreground framing props in ~1/3 of shots; low angles for authority, top-down for maps
-    and graves, POV for "you".
+  - a new shot every 2-5 s (R5-R7 run ~2-3 s in their builds and payoffs, R1-R4 3-5 s); foreground framing props
+    in ~1/3 of shots; low angles for authority, top-down for maps and graves, POV for "you".
 - **Transitions** (`XFADE`):
   - default: a 10 f crossfade between two moving shots; the caption switches on its word mid-dissolve.
   - hard cut: punch close-ups, reaction inserts, object close-ups.
