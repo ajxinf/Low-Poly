@@ -6,7 +6,7 @@ import { CAPTION_FONT } from "./Captions";
  * Lands on its word frame `at` with a 4-frame thump (scale 1.35 -> 1, matching the thump SFX), holds, fades over 6 f.
  * Sizes are fractions of the frame width so stills (0.5) and 2K finals match.
  */
-export const Stamp: React.FC<{ text: string; at: number; hold?: number; tilt?: number }> = ({ text, at, hold = 45, tilt = -5 }) => {
+export const Stamp: React.FC<{ text: string; at: number; hold?: number; tilt?: number; top?: string }> = ({ text, at, hold = 45, tilt = -5, top = "18%" }) => {
   const f = useCurrentFrame() - at;
   const { width } = useVideoConfig();
   if (f < 0 || f >= hold + 6) return null;
@@ -14,7 +14,7 @@ export const Stamp: React.FC<{ text: string; at: number; hold?: number; tilt?: n
   const opacity = f < hold ? 1 : interpolate(f, [hold, hold + 6], [1, 0]);
   const u = width / 100;
   return (
-    <AbsoluteFill style={{ alignItems: "center", top: "18%", pointerEvents: "none" }}>
+    <AbsoluteFill style={{ alignItems: "center", top, pointerEvents: "none" }}>
       <div
         style={{
           transform: `rotate(${tilt}deg) scale(${scale})`,

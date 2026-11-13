@@ -51,6 +51,8 @@ export type StreetOpts = {
   extraLights?: { pos: Vector3; kind: PracticalKind }[];
   /** Override the preset's utility poles and wires (off when a shot needs open sky, e.g. a light gag). */
   wires?: boolean;
+  /** Lots kept free of row buildings (side -1 left / 1 right, s0..s1): the video's own buildings go there (`extra`). */
+  reserve?: { side: number; s0: number; s1: number }[];
 };
 
 type Light = { pos: Vector3; kind: PracticalKind };
@@ -176,6 +178,11 @@ export const buildStreet = (p: EraPreset, light: LightPreset, o: StreetOpts = {}
       // Detached rows: room for the roof overhang (0.3 m) plus the lean's sideways shift at the ridge on each side.
       const m = terraced ? 0 : 0.3 + Math.tan((Math.abs(spec.lean) * Math.PI) / 180) * (b.height + 3);
       if (s + 2 * m + w > L + 9.5 - REACH) break; // the closing row's fronts (and porches) start at L + 10
+      const lot = o.reserve?.find((q) => q.side === side && s < q.s1 && s + 2 * m + w > q.s0);
+      if (lot) {
+        s = lot.s1;
+        continue;
+      }
       s += m;
       const sc = s + w / 2;
       place(b.group, at(sc, side * (FRONT + spec.d / 2)), yaw(right(sc).multiplyScalar(-side)), `building at s ${sc.toFixed(1)} ${side < 0 ? "left" : "right"}${spec.shop ? ` (${spec.shop.sign})` : ""}`);
@@ -224,13 +231,15 @@ export const buildStreet = (p: EraPreset, light: LightPreset, o: StreetOpts = {}
   for (let i = 0; i < nProps; i++) {
     const kind = pickN(r, p.props), side = i % 2 ? 1 : -1, s = 2 + r() * (L - 4);
     if (lampSpots.some(([ls]) => Math.abs(ls - s) < 1.6) || taken[side].some((t) => Math.abs(t - s) < 2.2)) continue;
+    // Utility poles stand every 13 m from s 1 on the right (2 m later when a lamp is there): keep clear of them.
+    if (side === 1 && (o.wires ?? p.wires) && [1, 3].some((s0) => Math.abs(((s - s0 + 130) % 13) - 6.5) > 5.3)) continue;
     taken[side].push(s);
     let x = side * (p.layout === "detached" ? WALK - 0.85 : FRONT - REACH - 0.6), ry = yaw(right(s).multiplyScalar(-side)) + (r() - 0.5) * 0.5;
     if (kind === "car") [x, ry] = [side * (ROAD - 1.1), yaw(tangent(s)) - Math.PI / 2];
     if (kind === "cart") x = side * (Math.abs(x) - 0.5); // 1.3 m deep with its shafts
     if (extraBoxes.some((b) => b.distanceToPoint(at(s, x)) < 1)) continue;
     if (kind === "hedge" || kind === "fence") [x, ry] = [side * (WALK + 0.3), yaw(tangent(s)) + Math.PI / 2];
-    if (kind === "mailbox" || kind === "trashBin") x = side * (WALK + 0.2); // on the verge, never in the road
+    if ((kind === "mailbox" || kind === "trashBin") && p.layout === "detached") x = side * (WALK + 0.2); // on the verge, never in the road (terraces: on the walk)
     if (kind === "pine" || kind === "campfire") x = side * (WALK + 1.5 + r() * 2.5);
     const obj = place(PROP[kind](r), at(s, x), ry, `${kind} at s ${s.toFixed(1)}`);
     if (kind === "pine" || kind === "campfire") {

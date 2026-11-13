@@ -235,7 +235,9 @@ export const buildSupermarket = (p: EraPreset, light: LightPreset, o: { seed?: n
     for (const x of [-HW + 0.3, -8.2, -4.6, -1.6, 1.6, 4.6, 8.2, HW - 0.3]) k.box(fw, 0.6, 2.7, 0.3, x, 0.9 + 1.35, z);
     k.box(fw, 3.2, 1.0, 0.3, 0, 3.1, z); // over the doors
     // Window panes glow with what is outside: daylight, or a pale moonlit sky when the power is out.
-    const glass = M(`shopGlass${power}`, () => toonMaterial({ map: storeGlass(!power), emissive: power ? ["#dfe8f0", 1.0] : ["#9a92e0", 0.9] }));
+    // Power off by day (sunInterior): the panes are bright warm daylight, not moonlight.
+    const day = !power && light.grade !== "night";
+    const glass = M(`shopGlass${power}${day}`, () => toonMaterial({ map: storeGlass(!power && !day), emissive: power ? ["#dfe8f0", 1.0] : day ? ["#ffe8c8", 1.05] : ["#9a92e0", 0.9] }));
     for (const [x0, x1] of [[-HW + 0.6, -8.5], [-7.9, -4.9], [-4.3, -1.9], [1.9, 4.3], [4.9, 7.9], [8.5, HW - 0.6]] as const)
       k.box(glass, x1 - x0, 2.7, 0.04, (x0 + x1) / 2, 0.9 + 1.35, z, false);
     const fg = k.build();

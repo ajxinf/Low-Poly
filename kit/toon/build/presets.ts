@@ -53,7 +53,7 @@ export type EraPreset = {
   backdrop?: { color: string; shape: "hills" | "mesas" | "mountains"; trees?: string };
 };
 
-export type PresetName = "victorian_town" | "wild_west" | "modern_suburb" | "supermarket_interior" | "supermarket_abandoned" | "snowy_village";
+export type PresetName = "victorian_town" | "wild_west" | "modern_suburb" | "modern_main_street" | "supermarket_interior" | "supermarket_abandoned" | "supermarket_dark_day" | "snowy_village";
 
 /** Supermarket, lit and open; `supermarket_abandoned` is the same store at night with the power off. */
 const SUPERMARKET: EraPreset = {
@@ -209,7 +209,58 @@ export const PRESETS: Record<PresetName, EraPreset> = {
     smoke: "#e8e8ee",
     backdrop: { color: "#6a9a5a", shape: "hills", trees: "#3e6a3a" },
   },
+  // Small-town main street after the outbreak (zombie pilot, 2026-11-13): terraced brick and plaster shops with flat
+  // roofs, boarded and broken windows, abandoned cars, litter. No rust-orange walls (reserved for "you").
+  modern_main_street: {
+    name: "Modern main street (abandoned)",
+    light: "day",
+    layout: "terrace",
+    road: { kind: "asphalt", base: "#4e4858", contrast: 0.5 },
+    walk: { kind: "slabs", base: "#bdb4a8", contrast: 0.45 },
+    walls: [
+      { kind: "brick", colors: ["#9a5a4a", "#7a4a4a", "#a8786a"] },
+      { kind: "plaster", colors: ["#d8ccb4", "#a8b8c4", "#c4b48a", "#8aa494"] },
+    ],
+    roofs: { types: ["flat", "flat", "falseFront"], colors: ["#5a5460", "#6a5a50"] },
+    trims: ["#efe8dc", "#3a3a44", "#2e5a6a"],
+    doors: ["#2e4a6a", "#3e5a3a", "#5a3a3a"],
+    shutters: ["#3a3a44", "#2e4a5a"],
+    curtains: ["#d8c8a8", "#8a9ab0"],
+    shops: {
+      chance: 0.7,
+      frames: ["#2e4a5a", "#3a3a44", "#5a3a3a"],
+      signs: ["PHARMACY", "DINER", "LAUNDRY", "BOOKS", "PIZZA", "VIDEO", "BAKERY"],
+      awnings: [["#2e7a6a", "#efe8dc"], ["#3a5a9a", "#efe8dc"], ["#8a3a4a", "#efe8dc"]],
+    },
+    floors: [2, 3],
+    width: [6, 9],
+    gap: [0, 0],
+    windowStyles: [["sash", "boarded"], ["sash", "broken"], ["sash"]],
+    lit: 0,
+    porch: 0,
+    chimneys: [0, 0],
+    posters: 3,
+    props: ["car", "trashBin", "bench", "car", "crate", "bollard"],
+    debris: ["#8a8478", "#a09a8e", "#6a6460"],
+    scraps: ["#e8e0d0", "#d84a3a", "#c8b890", "#4a7ad8"],
+    puddles: 2,
+    puddleRim: "#3a3444",
+    birds: 5,
+    flags: [],
+    wires: true,
+    washing: false,
+    smoke: "#8a8490",
+    backdrop: { color: "#6a8a6a", shape: "hills", trees: "#3e5a3e" },
+  },
   supermarket_interior: SUPERMARKET,
+  // Power off by day: daylight through the front windows, nothing else (zombie pilot).
+  supermarket_dark_day: {
+    ...SUPERMARKET,
+    name: "Supermarket (abandoned, day, no power)",
+    light: "sunInterior",
+    interior: { power: false, abandoned: true },
+    road: { ...SUPERMARKET.road, grime: 1 },
+  },
   supermarket_abandoned: {
     ...SUPERMARKET,
     name: "Supermarket (abandoned, night)",

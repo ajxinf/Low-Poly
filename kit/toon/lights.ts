@@ -182,6 +182,27 @@ export const LIGHTS = {
     contactInk: 0,
     grade: "night",
   },
+  // Store by day with the power off (zombie pilot): warm daylight through the front windows from behind the lens, deep
+  // cool shade toward the back; the windows are the practical. Same structure as moonInterior.
+  sunInterior: {
+    az: 180,
+    el: 26,
+    lit: [1.3, 1.18, 0.96],
+    shade: [0.4, 0.37, 0.46], // first draft .24/.24/.36 read as night (the camera mostly sees the shade side)
+    lift: [0.02, 0.02, 0.04],
+    litMax: 4,
+    litTint: "#ffe6c0",
+    skyTop: "#8fb4e0",
+    skyHorizon: "#e8eef2",
+    fog: "#5a5068",
+    fogNear: 22,
+    fogFar: 90,
+    sat: 1.05,
+    haze: { color: "#6a6078", start: 16, amount: 0.25 },
+    char: { tint: [1.0, 0.95, 0.9], shade: 0.88 },
+    contactInk: 0,
+    grade: "interior",
+  },
 } satisfies Record<string, LightPreset>;
 
 /** World-space direction toward the sun, relative to the shot's opening camera (frozen per shot). */
