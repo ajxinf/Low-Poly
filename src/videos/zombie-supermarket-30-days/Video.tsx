@@ -38,7 +38,7 @@ const ShotView: React.FC<{ s: S }> = ({ s }) => {
   const W = WORLD[s.w], preset = PRESETS[W.preset], light = LIGHTS[W.light];
   const ext = s.w.startsWith("ext");
   const moving = useMemo(() => propsFor(s), [s]);
-  const extras = useMemo(() => (ext ? [] : INT_EXTRAS()), [ext]);
+  const extras = useMemo(() => (ext ? [] : INT_EXTRAS(s.w === "int-night")), [ext, s.w]);
   const shotWithProps = useMemo(() => ({ ...s, moving }), [s, moving]);
   return (
     <ThreeCanvas width={width} height={height}>
@@ -62,24 +62,46 @@ const Dissolve: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 /** Insert art (100 x 178 units): a toy duck x-ray; the motion switch's ball rattles and lights the speaker. */
+/**
+ * Insert art (100 x 178 units): x-ray of a rubber duck (critique: a thin outline read as a different show). Glowing
+ * filled body with its bones of plastic: the battery pack, a circuit board with chips, the motion switch whose ball
+ * rattles, wires to a speaker cone that pulses and throws sound waves. Labels name the parts.
+ */
 const ToyXRay: React.FC = () => {
   const f = useCurrentFrame();
   const shake = Math.sin(f * 1.7) * 3.2, on = Math.abs(Math.sin(f * 1.7)) > 0.6;
-  const line = { stroke: "#cfefff", strokeWidth: 1.6, fill: "none", strokeLinejoin: "round" as const };
+  const line = { stroke: "#cfefff", strokeWidth: 1.4, fill: "none", strokeLinejoin: "round" as const };
+  const label = { fontSize: 3.6, fill: "#9fe4ff", fontWeight: 800, letterSpacing: 0.3 };
   return (
     <g transform={`translate(${shake * 0.5} 0)`}>
-      <ellipse cx={50} cy={110} rx={28} ry={22} {...line} fill="#7fd4ff18" />
-      <circle cx={62} cy={78} r={14} {...line} fill="#7fd4ff18" />
-      <path d="M74 76 l12 3 l-12 4" {...line} />
-      <rect x={34} y={104} width={20} height={9} rx={2} {...line} />
-      <text x={44} y={111} fontSize={5} fill="#cfefff" textAnchor="middle" fontWeight={800}>AA</text>
-      <rect x={56} y={100} width={14} height={6} rx={3} {...line} />
-      <circle cx={63 + shake * 0.6} cy={103} r={2.4} fill="#ffd36a" />
-      <path d="M54 108 C 58 116, 66 118, 70 112" {...line} strokeDasharray="2 1.5" />
-      <circle cx={70} cy={120} r={6} {...line} fill={on ? "#ff8a5a88" : "none"} />
-      {on && [0, 1, 2].map((i) => <path key={i} d={`M${80 + i * 5} ${112 - i * 2} q4 8 0 16`} stroke="#ffd36a" strokeWidth={1.4} fill="none" />)}
-      <text x={50} y={150} fontSize={6.5} fill="#cfefff" textAnchor="middle" fontWeight={800}>MOTION SWITCH</text>
-      <text x={50} y={158} fontSize={4.6} fill="#7fd4ff" textAnchor="middle">shake = sound</text>
+      <defs>
+        <radialGradient id="duckBody" cx="45%" cy="40%" r="65%">
+          <stop offset="0%" stopColor="#7fd4ff" stopOpacity="0.35" />
+          <stop offset="100%" stopColor="#1a5a9a" stopOpacity="0.15" />
+        </radialGradient>
+      </defs>
+      <path d="M22 112 C 20 92, 40 86, 56 92 C 60 84, 52 66, 62 62 C 76 58, 80 72, 74 80 L 88 82 L 76 88 C 82 96, 84 116, 70 126 C 56 136, 28 132, 22 112 Z" {...line} fill="url(#duckBody)" strokeWidth={1.8} />
+      <circle cx={67} cy={70} r={2.4} fill="#cfefff" />
+      <path d="M30 108 q8 -10 18 -2" {...line} strokeDasharray="1.5 1.5" />
+      <rect x={30} y={110} width={22} height={10} rx={2} {...line} fill="#7fd4ff22" />
+      <rect x={30} y={110} width={10} height={10} rx={1.5} {...line} />
+      <text x={41} y={117.5} fontSize={4.6} fill="#e8f8ff" textAnchor="middle" fontWeight={900}>AA</text>
+      <rect x={52} y={98} width={18} height={10} rx={1} {...line} fill="#2a8a5a44" />
+      {[0, 1, 2].map((k) => <rect key={k} x={54 + k * 5.4} y={100} width={3.6} height={3} fill="#cfefff" />)}
+      <path d="M53 106 h16 M55 104 v2 M61 104 v2 M67 104 v2" stroke="#9fe4ff" strokeWidth={0.6} />
+      <rect x={44} y={92} width={14} height={5} rx={2.5} {...line} />
+      <circle cx={51 + shake * 0.7} cy={94.5} r={2} fill="#ffd36a" />
+      <path d="M52 110 C 54 116, 62 120, 66 122" stroke="#ff8a5a" strokeWidth={1} fill="none" />
+      <path d="M58 108 C 62 114, 68 116, 70 118" stroke="#ffd36a" strokeWidth={1} fill="none" />
+      <circle cx={70} cy={122} r={6.5} {...line} fill={on ? "#ff8a5a66" : "#7fd4ff18"} />
+      <circle cx={70} cy={122} r={3 + (on ? 0.8 : 0)} {...line} />
+      {on && [0, 1, 2].map((k) => <path key={k} d={`M${80 + k * 5} ${113 - k * 2} q5 9 0 18`} stroke="#ffd36a" strokeWidth={1.4} fill="none" />)}
+      <path d="M40 130 l-3 8 h8 M58 132 l-2 8 h8" {...line} />
+      <text x={22} y={146} {...label}>BATTERY</text>
+      <text x={60} y={90} {...label}>MOTION SWITCH</text>
+      <text x={58} y={140} {...label}>SPEAKER</text>
+      <path d="M30 143 L 36 121 M70 88 L 52 94 M66 136 L 70 129" stroke="#9fe4ff" strokeWidth={0.5} />
+      <text x={50} y={158} fontSize={6.5} fill="#cfefff" textAnchor="middle" fontWeight={800}>SHAKE = SOUND</text>
     </g>
   );
 };

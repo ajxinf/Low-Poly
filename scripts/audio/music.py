@@ -2,7 +2,8 @@
 
 Usage: python scripts/audio/music.py videos/<slug>
 Reads  videos/<slug>/audio/events.json  "music": {"bpm", "frames", "button" (frame of the final hit), "stop": [f0, f1]
-       (optional comic drop-out, e.g. on an impact)}
+       (optional comic drop-out, e.g. on an impact), "build" (optional frame: from here to the button the loop builds
+       into the climax: kick on every beat, hats on the eighths, the bass doubled an octave up)}
 Writes videos/<slug>/audio/music.wav (the bed: 48 kHz mono float, exact length, RMS -20 dBFS) and button.wav (the
 final hit alone, same scale as the bed) so the mix can duck the bed without burying the button.
 Everything after the button is the chord's natural decay: no hard cut.
@@ -46,8 +47,20 @@ def main(d):
     chord_tones = {48: [60, 64, 67], 45: [57, 60, 64], 41: [57, 60, 65], 43: [59, 62, 67]}
     pent = [60, 62, 64, 67, 69, 72]
     pattern = [0, 2, 4, 2, 3, 1, 2, 5]
+    build = cfg["build"] / fps if cfg.get("build") is not None else None
     t, i = 0.0, 0
     while t < button - 0.05:
+        if build is not None and t >= build:
+            # Climax build: four-on-the-floor kick, open-ish hats, the bass an octave up (energy rises to the button).
+            a = int(t * SR)
+            if i % 2 == 0:
+                k = int(0.18 * SR)
+                kick = np.sin(2 * np.pi * np.cumsum(np.geomspace(150, 45, k)) / SR) * np.exp(-np.arange(k) / SR / 0.06) * 0.55
+                out[a:a + k] += kick
+                bs = pluck(roots[int(t / (2 * beat)) % 4] + 12, beat * 0.8, bright=0.8, decay=0.3) * 0.3
+                out[a:a + len(bs)] += bs
+            kh = int(0.06 * SR)
+            out[a:a + kh] += sosfilt(butter(2, 7000, "highpass", fs=SR, output="sos"), rng.standard_normal(kh)) * np.hanning(kh) * 0.09
         bar = int(t / (2 * beat)) % 4
         root = roots[bar]
         if abs(t / beat - round(t / beat)) < 1e-6:

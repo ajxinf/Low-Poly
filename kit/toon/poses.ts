@@ -42,8 +42,29 @@ export const POSES = {
   lean: { ...REST, arms: both({ at: [-0.08, 0.72], layer: "back" }), lean: 1, knee: 12, bob: -14, tilt: -5 },
   // Hands meet in front of the belly (inward from the shoulders) so a held prop sits between them.
   hold: { ...REST, arms: both({ at: [-0.24, 0.5], grip: "mitt" }), tilt: 3 },
+  // Action poses (pilot critique 2026-11-13: hands must DO things on screen). Animated ones are in actionPose().
+  knock: { ...REST, arms: [hang, { at: [0.36, 0.08], grip: "fist" }], lean: 0.3, look: 0.5 },
+  tape: { ...REST, arms: [{ at: [-0.05, 0.42], grip: "mitt" }, { at: [0.5, 0.36], grip: "mitt" }], tilt: 5, lean: 0.4 },
+  eat: { ...REST, arms: [{ at: [-0.22, 0.52], grip: "mitt" }, { at: [-0.14, -0.2], grip: "point", layer: "front" }], tilt: -3 },
+  bang: { ...REST, arms: both({ at: [0.42, -0.42], grip: "fist" }), bob: 6 },
+  wave: { ...REST, arms: [hang, { at: [0.55, -0.55], grip: "open" }], sway: 3, look: 0.3 },
+  kick: { ...REST, arms: both({ at: [0.6, 0.2], grip: "open" }), lift: [0, 70], sway: -7, knee: 20 },
 } satisfies Record<string, Pose>;
 export type PoseName = keyof typeof POSES | "walk" | "run";
+/**
+ * Animated action poses at time t (s): knock (two raps a second), tape (arms pull a strip across), wave (hand
+ * swings), bang (fists pound). Use them on the beat they belong to; `posed` gives the still versions.
+ */
+export const actionPose = (name: "knock" | "tape" | "wave" | "bang", t: number, look = 0): Pose => {
+  const p: Pose = { ...POSES[name], look: look || POSES[name].look };
+  const s = Math.sin(t * Math.PI * 2 * (name === "tape" ? 1.5 : 2.2));
+  const a = p.arms.map((x) => ({ ...x, at: [...x.at] as [number, number] })) as [Arm, Arm];
+  if (name === "knock") a[1].at = [0.36 + 0.08 * Math.max(s, 0), 0.08];
+  if (name === "tape") a[1].at = [0.2 + 0.32 * (0.5 + 0.5 * s), 0.36];
+  if (name === "wave") a[1].at = [0.55 + 0.14 * s, -0.55];
+  if (name === "bang") { a[0].at = [0.42, -0.42 + 0.3 * Math.max(s, 0)]; a[1].at = [0.42, -0.42 + 0.3 * Math.max(-s, 0)]; }
+  return { ...p, arms: a, bob: p.bob + 4 * Math.abs(s) };
+};
 export const POSE_NAMES: PoseName[] = [...(Object.keys(POSES) as (keyof typeof POSES)[]), "walk", "run"];
 
 /** One step (m). A full walk cycle is two steps. */

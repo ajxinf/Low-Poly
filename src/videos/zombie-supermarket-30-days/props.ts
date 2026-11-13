@@ -1,7 +1,8 @@
 import {
-  AdditiveBlending, BufferAttribute, BufferGeometry, CatmullRomCurve3, Group, Mesh, MeshBasicMaterial, Object3D, ShaderMaterial,
-  TorusGeometry, TubeGeometry, Vector3,
+  AdditiveBlending, BoxGeometry, BufferAttribute, BufferGeometry, CatmullRomCurve3, CylinderGeometry, Group, Mesh, MeshBasicMaterial, Object3D,
+  PlaneGeometry, ShaderMaterial, SphereGeometry, TorusGeometry, TubeGeometry, Vector3,
 } from "three";
+import { MAT } from "../../../kit/toon/build/kit";
 import { glowSprite } from "../../../kit/toon/glow";
 import type { MovingProp } from "../../../kit/toon/guard";
 import { handWorld } from "../../../kit/toon/cast";
@@ -9,7 +10,7 @@ import type { Hand } from "../../../kit/toon/cast";
 import { youLook } from "../../../kit/toon/protagonist";
 import { NOINK, SKY } from "../../../kit/toon/ink";
 import {
-  CART_IN, CHAD, DOCK, FLOODS, FUEL_AT, GENERATOR, SHUTTER_AT,
+  CART_IN, CHAD, DOCK, FLOODS, FUEL_AT, GENERATOR, GRILL, ROOF_Y, SHUTTER_AT, scrawlTex,
   battery, dinoToy, duckToy, floodGlass, fuelCan, hedgehogCart, megaphone, shutter, toothbrush,
 } from "./build";
 import { BEAT, CART_RUN, cartAt } from "./roles";
@@ -99,8 +100,8 @@ const brushProp = (s: S): MovingProp => ({
 
 const floods = (): MovingProp[] =>
   FLOODS.flatMap((p, i) => {
-    const off = BEAT.dies - 2 + i * 9; // one by one on "dies"
-    const lens = p.clone().add(new Vector3(-0.2, 0, 0));
+    const off = BEAT.dies + 6 + i * 9; // one by one on "dies", seen going out in the lights-out close-up
+    const lens = p.clone().add(new Vector3(-0.29, 0, 0)); // on the street face of the lamp housing (it was inside it)
     return [
       { name: `flood ${i} on`, make: () => floodGlass(true), pose: (o: Object3D, F: number) => (o.position.copy(lens), F < off), touches: ["CHAD'S HARDWARE"] },
       { name: `flood ${i} off`, make: () => floodGlass(false), pose: (o: Object3D, F: number) => (o.position.copy(lens), F >= off), touches: ["CHAD'S HARDWARE"] },
@@ -290,28 +291,90 @@ const torchPool = (at: (F: number) => Vector3, size = 1.1, k = 0.9): MovingProp 
 
 // ---------------------------------------------------------------- per shot
 
+/** The duck's "QUACK!" bubble (toys talk until the battery comes out): pops on "batteries". Faces the lens. */
+const quackBubble = (s: S): MovingProp => ({
+  name: "quack bubble",
+  make: () => {
+    const m = new Mesh(new PlaneGeometry(0.5, 0.3), new MeshBasicMaterial({ map: scrawlTex(["QUACK!"], "#fffdf4", "#e8a020", 512, 300), transparent: true }));
+    m.layers.set(NOINK);
+    return m;
+  },
+  pose: (o, F) => {
+    const t0 = Math.round(0.52 * 30) - 4; // pops just before the battery flies
+    if (F > t0 + 4) return false;
+    o.position.copy(handOf(s, "you", "both", F, 0.3)).add(new Vector3(0, 0.12, 0)).addScaledVector(rightOf(s, F), 0.32); // beside the duck, clear of your face
+    faceCam(o, s, F);
+    o.scale.setScalar((F < t0 ? 1 + 0.04 * Math.sin(F * 0.8) : 1 + 0.25 * (F - t0)) * 0.75);
+    return true;
+  },
+  heldBy: "you",
+  hand: "none",
+});
+const rightOf = (s: S, F: number) => {
+  const toCam = camOf(s, F).clone().sub(s.pose(F - s.from).look).setY(0).normalize();
+  return new Vector3(toCam.z, 0, -toCam.x);
+};
+/** Chad's spatula (right hand). Origin at the grip. */
+const spatulaProp = (s: S): MovingProp => ({
+  name: "spatula",
+  make: () => {
+    const g = new Group();
+    const h = new Mesh(new CylinderGeometry(0.015, 0.015, 0.3, 6), MAT.darkWood());
+    h.position.y = 0.15;
+    const b = new Mesh(new BoxGeometry(0.1, 0.12, 0.01), MAT.metal());
+    b.position.y = 0.36;
+    g.add(h, b);
+    return g;
+  },
+  pose: (o, F) => {
+    o.position.copy(handOf(s, "chad", "right", F, 0.08));
+    o.rotation.set(0, 0, -0.9);
+  },
+  heldBy: "chad",
+  hand: "right",
+});
+/** Steak smoke curling up off the grill (three puffs on a loop). */
+const grillSmoke: MovingProp = {
+  name: "grill smoke",
+  make: () => {
+    const g = new Group();
+    for (let i = 0; i < 4; i++) g.add(new Mesh(new SphereGeometry(0.12, 10, 8), new MeshBasicMaterial({ color: "#e8e4e0", transparent: true, opacity: 0.6, depthWrite: false })));
+    return g;
+  },
+  pose: (o, F) => {
+    o.children.forEach((m, i) => {
+      const t = ((F + i * 15) % 60) / 60;
+      m.position.copy(GRILL).add(new Vector3(0.05 * Math.sin(F * 0.1 + i), ROOF_Y + 0.95 + 1.1 * t, 0.06 * i));
+      m.scale.setScalar(0.6 + 1.6 * t);
+      ((m as Mesh).material as MeshBasicMaterial).opacity = 0.6 * (1 - t);
+    });
+  },
+  touches: ["CHAD'S HARDWARE"],
+};
+
 export const propsFor = (s: S): MovingProp[] => {
   const id = s.id.split("/")[1].split("-")[0];
   const ext = s.w.startsWith("ext");
   const out: MovingProp[] = ext ? [...floods(), ...cans(), shutterProp] : [];
   switch (id) {
-    case "A1": out.push(youHeapToy(s), poppedBattery(s)); break;
-    case "A2": case "A3": out.push(megaProp(s, () => false)); break;
-    case "A6": out.push(megaProp(s, (F) => F >= BEAT.grabs + 6), soundRings(s, [BEAT.morning - 2, BEAT.boy - 4])); break;
-    case "A7": out.push(megaProp(s, () => false)); break;
-    case "A9": out.push(cartIn); break;
-    case "A10": out.push(cartExt()); break;
-    case "A14": {
+    case "B01": out.push(youHeapToy(s), poppedBattery(s), quackBubble(s)); break;
+    case "B03": case "B04": case "B05": out.push(megaProp(s, () => false)); break;
+    case "B11": out.push(megaProp(s, (F) => F >= BEAT.grabs + 6), soundRings(s, [BEAT.morning - 2, BEAT.boy - 4])); break;
+    case "B12": out.push(megaProp(s, () => false)); break;
+    case "B13": out.push(spatulaProp(s), grillSmoke); break;
+    case "B15": case "B16": out.push(cartIn); break;
+    case "B17": out.push(cartExt()); break;
+    case "B20": out.push(torchPool((F) => s.pose(F - s.from).look.clone().add(new Vector3(-0.04, 0, 0)), 1.6, 0.8)); break;
+    case "B21": case "B22": {
       const you = s.cast!.find((c) => c.name === "you")!.at(0);
       out.push(cartIn, dinoProp(s), batteryIn(s), torchPool(() => you.clone().add(new Vector3(0.1, 1.0, 0.25)), 0.9, 0.7));
       break;
     }
-    case "A13": out.push(torchPool((F) => s.pose(F - s.from).look.clone().add(new Vector3(-0.04, 0, 0)), 1.6, 0.8)); break;
-    case "A15": out.push(smokeRing); break;
-    case "A16": out.push(brushProp(s)); break;
-    case "A17": out.push(cartExt("you")); break;
-    case "A18": case "A19": case "A20": case "A21": out.push(cartExt(), trail); break;
-    case "A22": case "A23": out.push(megaProp(s, () => false, true), brushProp(s)); break;
+    case "B23": out.push(smokeRing); break;
+    case "B25": out.push(brushProp(s)); break;
+    case "B26": out.push(cartExt("you")); break;
+    case "B27": case "B28": case "B29": case "B30": out.push(cartExt(), trail); break;
+    case "B31": case "B33": out.push(megaProp(s, () => false, true), brushProp(s)); break;
   }
   return out;
 };

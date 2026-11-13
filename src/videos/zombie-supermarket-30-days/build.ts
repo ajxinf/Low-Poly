@@ -1,10 +1,11 @@
 import {
-  BoxGeometry, CanvasTexture, ConeGeometry, CylinderGeometry, Group, Mesh, MeshBasicMaterial, Object3D, PlaneGeometry,
+  BoxGeometry, BufferAttribute, BufferGeometry, CanvasTexture, ConeGeometry, DoubleSide, CylinderGeometry, Group, Mesh, MeshBasicMaterial, Object3D, PlaneGeometry,
   SRGBColorSpace, SphereGeometry, TorusGeometry, Vector3,
 } from "three";
 import { Kit, M, MAT } from "../../../kit/toon/build/kit";
 import { StreetOpts, spine } from "../../../kit/toon/build/street";
 import { signTex } from "../../../kit/toon/build/textures";
+import { glowSprite } from "../../../kit/toon/glow";
 import { rng } from "../../../kit/toon/paint";
 
 /**
@@ -34,6 +35,8 @@ export const CHAD_DOOR = at(CHAD.s + 0.3, FRONT + 1.3, 0.04); // on the shop flo
 export const RAMP_TOP = at(DOCK.s, -FRONT + DOCK.landing / 2, DOCK.floor);
 export const RAMP_FOOT = at(DOCK.s, -FRONT + DOCK.landing + DOCK.run, 0.02);
 export const SHUTTER_AT = at(CHAD.s, FRONT - 0.06, 0);
+/** Chad's grill on the roof (just behind and beside where he stands). */
+export const GRILL = at(CHAD.s - 0.8, FRONT + 1.4, 0);
 
 const named = (o: Object3D, name: string, p: Vector3, door?: number) => {
   o.position.copy(p);
@@ -143,6 +146,18 @@ const chadStore = () => {
   k.box(MAT.wood(), 0.7, 1.0, 1.8, R - 0.6, 0.5, 1.3);
   // Roof: coping along the front, roof hatch, the generator, fuel cans are props (story counts them down).
   k.box(trim, 0.25, 0.18, L, 0.12, H + 0.09, 0);
+  // Fortress dressing (pilot critique: "never shown as a fortress"): barbed wire along the roof edge, sandbags by the
+  // door. Chad stands 0.45 m behind the wire.
+  for (let z = -L / 2 + 0.3; z <= L / 2 - 0.3; z += 1.2) k.add(MAT.metal(), new CylinderGeometry(0.02, 0.02, 0.5, 5), 0.15, H + 0.25, z);
+  for (let z = -L / 2 + 0.3; z <= L / 2 - 0.3; z += 0.14) k.add(MAT.color("#8a8e98"), new TorusGeometry(0.13, 0.012, 4, 10), 0.15, H + 0.33, z, { ry: Math.PI / 2 + 0.3 });
+  const bag = MAT.color("#c8b48a");
+  for (const sz of [-1, 1])
+    for (let row = 0; row < 3; row++)
+      for (let i = 0; i < 4 - row; i++) {
+        const sg = new SphereGeometry(1, 10, 6);
+        sg.scale(0.36, 0.13, 0.24);
+        k.add(bag, sg, -0.55 + (i % 2) * 0.05, 0.12 + row * 0.22, sz * (SW / 2 + 0.55 + i * 0.5 + row * 0.25));
+      }
   k.box(MAT.darkStone(), 1.0, 0.3, 1.0, 4.5, H + 0.15, 2.5);
   // Floodlight poles on the front corners (heads are separate: they switch off).
   for (const z of [L / 2 - 0.6, -(L / 2 - 0.6)]) {
@@ -151,6 +166,13 @@ const chadStore = () => {
   }
   const gl = GENERATOR.clone().sub(at(CHAD.s, FRONT, 0));
   roofLife(k, gl.x, H, gl.z);
+  // Chad's kettle grill with a fat steak (he eats steak, you eat cold beans).
+  const gr = GRILL.clone().sub(at(CHAD.s, FRONT, 0));
+  for (const [dx, dz] of [[-0.2, -0.2], [0.2, -0.2], [0, 0.25]]) k.add(MAT.metal(), new CylinderGeometry(0.02, 0.02, 0.7, 5), gr.x + dx, H + 0.35, gr.z + dz);
+  k.add(MAT.color("#24222a"), new SphereGeometry(0.32, 14, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), gr.x, H + 0.82, gr.z);
+  k.add(MAT.metal(), new CylinderGeometry(0.31, 0.31, 0.02, 16), gr.x, H + 0.83, gr.z);
+  k.box(MAT.color("#8a3a2a"), 0.3, 0.05, 0.2, gr.x, H + 0.865, gr.z);
+  for (const dz of [-0.06, 0, 0.06]) k.box(MAT.color("#3a1a14"), 0.3, 0.052, 0.015, gr.x, H + 0.866, gr.z + dz);
   const g = k.build();
   const gen = generator();
   gen.position.set(gl.x, H, gl.z);
@@ -158,8 +180,8 @@ const chadStore = () => {
   const sign = signFace("CHAD'S HARDWARE", "#2a2a36", "#f2c84a", 8, 1.1);
   sign.position.set(-0.03, SH + 1.25, 0);
   sign.rotation.y = -Math.PI / 2;
-  const members = scrawl(["CHAD'S.", "MEMBERS ONLY"], "#efe6d2", "#b0202a", 1.6, 1.0);
-  members.position.set(-0.04, 1.9, -(SW / 2 + 1.0));
+  const members = scrawl(["CHAD'S.", "MEMBERS ONLY"], "#efe6d2", "#b0202a", 2.3, 1.45);
+  members.position.set(-0.04, 2.35, -(SW / 2 + 1.35));
   members.rotation.y = -Math.PI / 2;
   g.add(sign, members);
   return g;
@@ -235,8 +257,21 @@ export const shutter = () => {
   const slot = new Group();
   slot.name = "slot";
   const hole = new Mesh(new BoxGeometry(0.02, 0.16, 0.5), M("slotDark", () => new MeshBasicMaterial({ color: "#14101a" })));
-  const shades = new Mesh(new BoxGeometry(0.02, 0.07, 0.36), M("slotShades", () => new MeshBasicMaterial({ color: "#2a3a5a" })));
-  shades.position.set(-0.012, 0.0, 0);
+  // Two sunglass lenses and a bridge (one blue bar read as stripes in the slot close-up).
+  const shades = new Group();
+  for (const z of [-0.075, 0.075]) {
+    const lens = new Mesh(new CylinderGeometry(0.05, 0.05, 0.012, 16), M("slotLens", () => new MeshBasicMaterial({ color: "#1e2a44" })));
+    lens.rotation.z = Math.PI / 2;
+    lens.scale.set(1, 1, 0.7);
+    lens.position.set(-0.014, 0, z);
+    const glint = new Mesh(new CylinderGeometry(0.012, 0.012, 0.013, 8), M("slotGlint", () => new MeshBasicMaterial({ color: "#c8e0ff" })));
+    glint.rotation.z = Math.PI / 2;
+    glint.position.set(-0.02, 0.018, z - 0.02);
+    shades.add(lens, glint);
+  }
+  const bridge = new Mesh(new BoxGeometry(0.01, 0.012, 0.06), M("slotLens", () => new MeshBasicMaterial({ color: "#1e2a44" })));
+  bridge.position.set(-0.014, 0.01, 0);
+  shades.add(bridge);
   const lid = new Mesh(new BoxGeometry(0.04, 0.18, 0.52), steel);
   lid.name = "lid";
   slot.add(hole, shades, lid);
@@ -419,7 +454,11 @@ export const hedgehogCart = (taped = 1, sign = true) => {
   if (sign) {
     const s = scrawl(["DO NOT", "PUSH"], "#d8b07a", "#c8302e", 0.5, 0.36);
     s.name = "sign";
-    s.position.set(0, 0.78, 0.5);
+    s.position.set(0, 1.32, -0.58); // on a stick above the handle, facing whoever would push it (clear of the toys)
+    const stick = new Mesh(new CylinderGeometry(0.012, 0.012, 0.45, 5), MAT.darkWood());
+    stick.position.set(0, 1.0, -0.56);
+    g.add(stick);
+    s.rotation.y = Math.PI;
     g.add(s);
   }
   return g;
@@ -453,8 +492,11 @@ export const shakeBox = () => {
 /** Megaphone (local +z = the bell's open end), origin at the grip. */
 export const megaphone = () => {
   const k = new Kit();
-  k.add(MAT.color("#efe8dc"), new CylinderGeometry(0.17, 0.05, 0.42, 14, 1, true), 0, 0.08, 0.2, { rx: Math.PI / 2 });
-  k.add(MAT.color("#c8302e"), new TorusGeometry(0.17, 0.02, 6, 18), 0, 0.08, 0.41);
+  // Red body, white bell face and rim: reads as a megaphone at phone size (a pale cone didn't).
+  k.add(MAT.color("#d8342c"), new CylinderGeometry(0.17, 0.05, 0.42, 14), 0, 0.08, 0.2, { rx: Math.PI / 2 });
+  k.add(MAT.color("#f4f0e6"), new CylinderGeometry(0.155, 0.155, 0.01, 14), 0, 0.08, 0.415, { rx: Math.PI / 2 });
+  k.add(MAT.color("#f4f0e6"), new TorusGeometry(0.17, 0.025, 6, 18), 0, 0.08, 0.41);
+  k.add(MAT.color("#24222a"), new CylinderGeometry(0.05, 0.05, 0.06, 10), 0, 0.08, -0.01, { rx: Math.PI / 2 });
   k.box(MAT.color("#2a2a30"), 0.05, 0.14, 0.06, 0, -0.02, 0.03);
   return k.build();
 };
@@ -566,11 +608,126 @@ export const EXT_OPTS: StreetOpts = {
     named(chadStore(), "CHAD'S HARDWARE", at(CHAD.s, FRONT), CHAD.shutterH),
   ],
 };
-export const INT_EXTRAS = () => [
+export const INT_EXTRAS = (night: boolean) => [
   placedAt(toyHeapHolder(), HEAP),
   named(pallet(), "pallet", PALLET),
   placedAt(chart(), CHART_AT), // hangs on the wall (not a floor-standing collider)
+  windowViews(night),
+  // glowSprite takes a world position, so it is not parented to the placed lantern
+  ...(night ? [placedAt(lantern(), LANTERN), glowSprite(LANTERN.clone().add(new Vector3(0, 0.13, 0)), "#ffb35a", 1.4, 1.1)] : []),
 ];
+
+/**
+ * What you see through the front windows (pilot critique: blank white rectangles): a painted view across the street
+ * to CHAD'S HARDWARE (right of the doors, where Dave keeps watch) with his floodlights, generator and Chad on the
+ * roof, the horde in the street. Unlit planes just inside each pane; one canvas spans all six panes.
+ */
+const PANES: [number, number][] = [[-11.4, -8.5], [-7.9, -4.9], [-4.3, -1.9], [1.9, 4.3], [4.9, 7.9], [8.5, 11.4]];
+const viewTex = (night: boolean) => {
+  const W = 2304, Hh = 260, c = document.createElement("canvas");
+  c.width = W;
+  c.height = Hh;
+  const g = c.getContext("2d")!, r = rng(night ? 9 : 8);
+  const sky = g.createLinearGradient(0, 0, 0, Hh);
+  sky.addColorStop(0, night ? "#141c44" : "#6aa0e0");
+  sky.addColorStop(1, night ? "#3a3a6a" : "#d8e6f2");
+  g.fillStyle = sky;
+  g.fillRect(0, 0, W, Hh);
+  if (!night)
+    for (let i = 0; i < 9; i++) {
+      g.fillStyle = "rgba(255,255,255,0.85)";
+      g.beginPath();
+      g.ellipse(r() * W, 20 + r() * 40, 50 + r() * 60, 12 + r() * 8, 0, 0, Math.PI * 2);
+      g.fill();
+    }
+  else
+    for (let i = 0; i < 60; i++) {
+      g.fillStyle = "#e8eaff";
+      g.fillRect(r() * W, r() * 90, 2, 2);
+    }
+  const X = (x: number) => ((x + 12) / 24) * W, base = Hh * 0.72;
+  // The row across the street.
+  for (let x = -12; x < 12; ) {
+    const w = 2.4 + r() * 2.2, h = 70 + r() * 70;
+    const cols = night ? ["#3a3050", "#2e3a52", "#4a3444"] : ["#9a5a4a", "#c4b48a", "#8aa494", "#a8786a", "#d8ccb4"];
+    g.fillStyle = cols[Math.floor(r() * cols.length)];
+    g.fillRect(X(x), base - h, X(x + w) - X(x) - 2, h);
+    for (let wy = base - h + 12; wy < base - 18; wy += 24)
+      for (let wx = X(x) + 8; wx < X(x + w) - 20; wx += 26) {
+        g.fillStyle = night ? (r() < 0.25 ? "#ffc070" : "#1a1a2a") : "#3a4458";
+        g.fillRect(wx, wy, 12, 14);
+      }
+    x += w;
+  }
+  // CHAD'S HARDWARE, straight across from the right-hand windows.
+  const c0 = X(-8.0), c1 = X(-4.6), top = base - 120; // canvas x for world x is X(-x) (see windowViews uv)
+  g.fillStyle = night ? "#5a2e2a" : "#8e5446";
+  g.fillRect(c0, top, c1 - c0, base - top);
+  g.fillStyle = "#2a2a36";
+  g.fillRect(c0 + 6, top + 30, c1 - c0 - 12, 26);
+  g.fillStyle = "#f2c84a";
+  g.font = "900 22px Arial Black, sans-serif";
+  g.textAlign = "center";
+  g.fillText("CHAD'S HARDWARE", (c0 + c1) / 2, top + 51);
+  g.fillStyle = "#8a8e98";
+  g.fillRect(c0 + 60, top + 66, c1 - c0 - 120, base - top - 66);
+  g.fillStyle = "#4e8a54";
+  g.fillRect(c0 + 20, top - 18, 34, 18); // generator
+  g.fillStyle = "#f2efe6";
+  g.fillRect((c0 + c1) / 2 - 6, top - 34, 12, 22); // Chad
+  g.fillStyle = "#2e4ab0";
+  g.fillRect((c0 + c1) / 2 - 7, top - 40, 14, 6);
+  for (const fx of [c0 + 8, c1 - 8]) {
+    g.fillStyle = night ? "#fff6d8" : "#e8e4d0";
+    g.beginPath();
+    g.arc(fx, top - 22, night ? 9 : 5, 0, Math.PI * 2);
+    g.fill();
+    if (night) {
+      const glow = g.createRadialGradient(fx, top - 22, 4, fx, top - 22, 70);
+      glow.addColorStop(0, "rgba(255,240,200,0.7)");
+      glow.addColorStop(1, "rgba(255,240,200,0)");
+      g.fillStyle = glow;
+      g.fillRect(fx - 70, top - 92, 140, 140);
+    }
+  }
+  // The street and the horde.
+  g.fillStyle = night ? "#2a2840" : "#5a5464";
+  g.fillRect(0, base, W, Hh - base);
+  for (let i = 0; i < 160; i++) {
+    const x = r() * W, y = base + 6 + r() * (Hh - base - 10);
+    g.fillStyle = night ? "#4a6a4a" : "#6a7a6a";
+    g.fillRect(x - 3, y, 6, 9);
+    g.fillStyle = night ? "#6a8a6a" : "#9cb88c";
+    g.beginPath();
+    g.arc(x, y - 3, 4, 0, Math.PI * 2);
+    g.fill();
+  }
+  const t = new CanvasTexture(c);
+  t.colorSpace = SRGBColorSpace;
+  return t;
+};
+const windowViews = (night: boolean) => {
+  const pos: number[] = [], uv: number[] = [], z = 3.83, y0 = 0.9, y1 = 3.6;
+  for (const [x0, x1] of PANES)
+    for (const [x, y] of [[x0, y0], [x1, y0], [x1, y1], [x0, y0], [x1, y1], [x0, y1]]) {
+      pos.push(x, y, z);
+      uv.push((12 - x) / 24, (y - y0) / (y1 - y0)); // looking out (+z), world +x is screen LEFT: u runs the other way
+    }
+  const geo = new BufferGeometry();
+  geo.setAttribute("position", new BufferAttribute(new Float32Array(pos), 3));
+  geo.setAttribute("uv", new BufferAttribute(new Float32Array(uv), 2));
+  return new Mesh(geo, M(`view${night}`, () => new MeshBasicMaterial({ map: viewTex(night), side: DoubleSide, color: night ? "#ffffff" : "#e8e4dc" })));
+};
+/** Battery lantern on the pallet (the night scene's warm practical). */
+export const LANTERN = IN(7.2 - 0.3, 8.8 - 0.35, 0.13);
+const lantern = () => {
+  const k = new Kit();
+  k.box(MAT.metal(), 0.16, 0.04, 0.16, 0, 0.02, 0);
+  k.box(MAT.glow("#ffc070", 4), 0.13, 0.18, 0.13, 0, 0.13, 0);
+  k.box(MAT.metal(), 0.16, 0.03, 0.16, 0, 0.235, 0);
+  k.add(MAT.metal(), new TorusGeometry(0.06, 0.008, 4, 10), 0, 0.29, 0);
+  return k.build();
+};
 const placedAt = (o: Object3D, p: Vector3) => (o.position.copy(p), o);
 const toyHeapHolder = () => {
   const g = new Group().add(toyHeap());

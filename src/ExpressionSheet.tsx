@@ -10,7 +10,7 @@ import { DESIGN, INK, Pen, rad } from "../kit/toon/toon";
 const POSE_OF: Record<Expr, PoseName> = {
   neutral: "idle", tired: "facepalm", worried: "chin", scared: "panic", shocked: "point", smug: "crossed",
   determined: "run", sad: "hold", angry: "hips", sneaky: "lean", relieved: "walk", confused: "shrug",
-  deadpan: "hold", laughing: "panic",
+  deadpan: "hold", laughing: "panic", grin: "wave", smirk: "knock",
 };
 const CELLS: { expr: Expr; pose: PoseName; label: string; fx: Effects; prop?: CharState["prop"] }[] = [
   ...EXPRESSIONS.map((e) => ({ expr: e, pose: POSE_OF[e], label: `${e} / ${POSE_OF[e]}`, fx: {}, prop: e === "sad" ? ("box" as const) : e === "deadpan" ? ("can" as const) : undefined })),

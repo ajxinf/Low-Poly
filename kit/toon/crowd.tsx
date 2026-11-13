@@ -25,7 +25,7 @@ export type CrowdSpec = {
   states: CharState[];
   count: number;
   /** Instance i at composition frame f: soles position, state index, look index, hidden. */
-  place: (i: number, f: number) => { pos: Vector3; state: number; look: number; hidden?: boolean };
+  place: (i: number, f: number) => { pos: Vector3; state: number; look: number; hidden?: boolean; scale?: number };
 };
 
 const CELL_RES = 0.36; // design px -> atlas px (the hero card draws at 2.0)
@@ -178,7 +178,7 @@ export const Crowd: React.FC<{ spec: CrowdSpec; f: number; avoid?: Vector3; clea
       }
       tmp.position.copy(q.pos);
       tmp.rotation.set(0, 0, 0);
-      tmp.scale.setScalar(1);
+      tmp.scale.setScalar(q.scale ?? 1); // height variety: a crowd of one size reads as clones
       tmp.updateMatrix();
       p.cards.setMatrixAt(i, tmp.matrix);
       tmp.position.y += 0.014;

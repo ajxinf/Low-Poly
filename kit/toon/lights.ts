@@ -87,6 +87,8 @@ export const LIGHTS = {
     haze: { color: "#f0b48c", start: 30, amount: 0.3 },
     litTint: "#ffc89c",
     sunDisc: "#ffcf9e",
+    // Pilot critique: empty gradient skies read unfinished; golden skies get warm painted clouds too.
+    clouds: { lit: "#ffc6a0", shade: "#a27ab8", cover: 0.5 },
     char: { tint: [1.0, 0.88, 0.76], shade: 0.88 },
     charInk: "#2e1530",
     grade: "golden",

@@ -12,7 +12,7 @@ import { DESIGN, Pen, makeCanvas } from "./toon";
 import type { Pose } from "./poses";
 
 export type { CharState, Look } from "./figure";
-export { STRIDE, blendPose, idlePose, poseAt, posed, reactSquash, runPose, walkPose } from "./poses";
+export { STRIDE, actionPose, blendPose, idlePose, poseAt, posed, reactSquash, runPose, walkPose } from "./poses";
 
 export type Hand = "left" | "right" | "both";
 /**

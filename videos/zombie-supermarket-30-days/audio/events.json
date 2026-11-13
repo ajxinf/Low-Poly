@@ -328,6 +328,55 @@
    "lead": -16,
    "sfx": "step",
    "note": "steel shutter rattles up"
+  },
+  {
+   "word": "because",
+   "n": 0,
+   "lead": -6,
+   "sfx": "groan",
+   "note": "the horde moans as the camera pulls out over it"
+  },
+  {
+   "word": "400",
+   "n": 1,
+   "lead": 4,
+   "sfx": "groan",
+   "note": "the horde surges to Chad's shutters"
+  },
+  {
+   "word": "now",
+   "n": 0,
+   "lead": 0,
+   "sfx": "groan",
+   "note": "400 heads swing toward the screaming cart"
+  },
+  {
+   "word": "chase",
+   "n": 0,
+   "lead": 0,
+   "sfx": "groan",
+   "note": "the stampede"
+  },
+  {
+   "word": "door",
+   "n": 2,
+   "lead": 2,
+   "sfx": "crash",
+   "note": "the cart crashes into Chad's shop (impact shake)"
+  },
+  {
+   "word": "tape",
+   "n": 0,
+   "lead": -14,
+   "sfx": "step",
+   "note": "tape strip rip"
+  },
+  {
+   "word": "tape",
+   "n": 0,
+   "lead": -28,
+   "sfx": "step",
+   "note": "tape strip rip"
   }
  ],
  "music": {
@@ -347,6 +396,10 @@
     "lead": 4
    }
   ],
-  "button_db": -14
+  "button_db": -14,
+  "build": {
+   "word": "kick",
+   "lead": 20
+  }
  }
 }

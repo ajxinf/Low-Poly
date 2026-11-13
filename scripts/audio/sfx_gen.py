@@ -3,7 +3,8 @@
 Usage: python scripts/audio/sfx_gen.py videos/<slug>
 Reads  videos/<slug>/audio/events.json  {"fps", "frames", "events": [{"f", "sfx", "note"}]}
 Writes videos/<slug>/audio/sfx.wav (48 kHz mono float, exact video length; peaks around -3 dBFS before the mix).
-Sounds: step, whoosh, swish, splat, pat, pop, sting. Each event starts on its frame (the transient lands there;
+Sounds: step, whoosh, swish, splat, pat, pop, sting, groan (a crowd of zombies moaning, 3 s bed), crash (a big
+impact: a cart through a shop). Each event starts on its frame (the transient lands there;
 whooshes are centred on it).
 
 Air sounds (whoosh, swish) are the ones that get annoying (pilot feedback, 2026-11-13): they play quieter than the
@@ -94,8 +95,36 @@ def sting():
     return out
 
 
-# Peak level per sound relative to the -3 dBFS hits (air sounds sit under the voice and the hits).
-LEVEL_DB = {"whoosh": -10, "swish": -8}
+def groan():
+    """Crowd of moaning zombies: several detuned low vowel-ish formant voices with slow wobble, 3 s, soft ends."""
+    n = int(3.0 * SR)
+    t = np.arange(n) / SR
+    out = np.zeros(n)
+    for k in range(7):
+        f0 = 85 + 22 * rng.random()
+        wob = 1 + 0.06 * np.sin(2 * np.pi * (0.4 + 0.5 * rng.random()) * t + 6 * rng.random())
+        saw = 2 * ((np.cumsum(f0 * wob) / SR) % 1) - 1
+        voice = band(saw, 250 + 100 * rng.random(), 900 + 300 * rng.random())  # an "uhhh" formant
+        out += voice * (0.6 + 0.4 * np.sin(2 * np.pi * (0.2 + 0.3 * rng.random()) * t + k)) ** 2
+    out += 0.3 * band(rng.standard_normal(n), 150, 600)
+    return out * np.minimum(t / 0.6, 1) * np.minimum((n - np.arange(n)) / (0.8 * SR), 1)
+
+
+def crash():
+    """Big impact: a low boom, a burst of debris noise and rattling bits over 1.2 s."""
+    n = int(1.2 * SR)
+    boom = sweep_sine(110, 35, n) * env(n, 0.001, 0.25)
+    debris = band(rng.standard_normal(n), 400, 6000) * env(n, 0.001, 0.18)
+    bits = np.zeros(n)
+    for i in range(14):
+        a = int((0.05 + 0.9 * rng.random()) * SR * 0.9)
+        m = int(0.04 * SR)
+        bits[a:a + m] += band(rng.standard_normal(m), 2000, 8000)[: n - a] * env(m, 0.0005, 0.01)[: n - a] * 0.5
+    return 1.0 * boom + 0.8 * debris + bits
+
+
+# Peak level per sound relative to the -3 dBFS hits (air sounds sit under the voice and the hits; the groan is a bed).
+LEVEL_DB = {"whoosh": -10, "swish": -8, "groan": -12}
 AIR = {"whoosh": 20.0, "swish": 10.0}  # max one per this many seconds
 AIR_GAP = 3.0  # s between any two air sounds
 
@@ -115,7 +144,7 @@ def check_air(evs, fps, dur):
         raise SystemExit("sfx_gen: too many air sounds (whoosh/swish):\n  " + "\n  ".join(errs))
 
 
-SOUNDS = {"step": step, "whoosh": whoosh, "swish": swish, "splat": splat, "pat": pat, "pop": pop, "sting": sting}
+SOUNDS = {"groan": groan, "crash": crash, "step": step, "whoosh": whoosh, "swish": swish, "splat": splat, "pat": pat, "pop": pop, "sting": sting}
 CENTRED = {"whoosh"}
 
 

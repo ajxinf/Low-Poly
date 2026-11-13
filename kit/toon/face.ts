@@ -8,7 +8,7 @@ import type { P2 } from "./toon";
  */
 export const EXPRESSIONS = [
   "neutral", "tired", "worried", "scared", "shocked", "smug", "determined",
-  "sad", "angry", "sneaky", "relieved", "confused", "deadpan", "laughing",
+  "sad", "angry", "sneaky", "relieved", "confused", "deadpan", "laughing", "grin", "smirk",
 ] as const;
 export type Expr = (typeof EXPRESSIONS)[number];
 
@@ -36,6 +36,9 @@ const FACE: Record<Expr, Face> = {
   confused: { eye: ["dot", "small"], brow: [[-4, -6], [3, 1]], mouth: "wave" },
   deadpan: { eye: ["lid", "lid"], brow: [0, 0], mouth: "flat" },
   laughing: { eye: ["squeeze", "squeeze"], brow: [-4, -4], mouth: "laugh" },
+  // Pilot critique: more faces that carry a joke. A wide toothy grin; a one-brow-up smirk (cocky, scheming).
+  grin: { eye: ["happy", "happy"], brow: [-3, -5], mouth: "teeth" },
+  smirk: { eye: ["lid", "lid"], brow: [[2, 0], [-7, -9]], mouth: "smirk", glance: 1 },
 };
 
 export type Effects = {

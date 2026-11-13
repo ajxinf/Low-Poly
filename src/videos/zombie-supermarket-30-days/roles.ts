@@ -9,6 +9,7 @@ import { rng } from "../../../kit/toon/paint";
 import type { Pose } from "../../../kit/toon/poses";
 import { bottoms, campCollar, cap, headLayers, layers, nameTag, pattern } from "../../../kit/toon/wardrobe";
 import type { Pen } from "../../../kit/toon/toon";
+import type { Torso } from "../../../kit/toon/figure";
 import type { Head } from "../../../kit/toon/face";
 import WORDS from "../../../videos/zombie-supermarket-30-days/voice/words.json";
 import { CHAD, DOCK, FRONT, RAMP_FOOT, RAMP_TOP, at } from "./build";
@@ -101,6 +102,26 @@ export const BEAT = {
 
 // ---------------------------------------------------------------- looks
 
+/** Chad's gold chain: a thick sagging chain across the top of the chest (reads at phone size). */
+const goldChain = (p: Pen, t: Torso) => {
+  const pts: [number, number][] = [];
+  for (let i = 0; i <= 12; i++) {
+    const k = i / 12, x = t.cx + (k - 0.5) * 1.0 * t.a;
+    pts.push([x, t.chin + 8 * t.u + 14 * t.u * Math.sin(k * Math.PI)]);
+  }
+  p.stroke(pts, 5.2 * t.u);
+  p.stroke(pts, 3.4 * t.u, "#e8c24a");
+  for (let i = 1; i < 12; i += 2) p.ell(pts[i][0], pts[i][1], 1.1 * t.u, 1.1 * t.u, "#fff2b0");
+};
+/** Dave's shirt pocket with two pens and a FRESHMART patch (night-shift stocker). */
+const pensPocket = (p: Pen, t: Torso) => {
+  const x = t.cx - 0.5 * t.a, y = t.chin + 30 * t.u, u = t.u;
+  p.poly([[x - 9 * u, y], [x + 9 * u, y], [x + 9 * u, y + 13 * u], [x - 9 * u, y + 13 * u]], "#2e6a46", 1.2 * u);
+  p.stroke([[x - 4 * u, y + 3 * u], [x - 4 * u, y - 7 * u]], 3 * u, "#c8302e");
+  p.stroke([[x + 2 * u, y + 3 * u], [x + 2 * u, y - 8 * u]], 3 * u, "#3a6aa8");
+  p.ell(t.cx + 0.45 * t.a, t.chin + 58 * u, 8 * u, 5 * u, "#f2c84a", 1.2 * u);
+};
+
 /** Wrap-around dark sunglasses over the eyes (Chad's signature; off when he wakes up). */
 const shades = (p: Pen, h: Head) => {
   const { cx, cy, u, facing } = h, fx = cx + 7 * u * facing;
@@ -122,7 +143,7 @@ export const chadLook: Look = {
   shorts: "#2e3e6a",
   shoes: "#f2efe6",
   sneakers: true,
-  outfit: layers((p, t) => p.poly([[t.cx - 2 * t.a, t.chin + 20 * t.u], [t.cx + 2 * t.a, t.chin + 20 * t.u], [t.cx + 2 * t.a, t.chin + 27 * t.u], [t.cx - 2 * t.a, t.chin + 27 * t.u]], "#2e4ab0"), bottoms("#2e3e6a", 0.86)),
+  outfit: layers((p, t) => p.poly([[t.cx - 2 * t.a, t.chin + 20 * t.u], [t.cx + 2 * t.a, t.chin + 20 * t.u], [t.cx + 2 * t.a, t.chin + 27 * t.u], [t.cx - 2 * t.a, t.chin + 27 * t.u]], "#2e4ab0"), goldChain, bottoms("#2e3e6a", 0.86)),
   hair: headLayers(capHair("#4a3428", 0.3, 0.5), cap("#2e4ab0", true)),
   face: shades,
 };
@@ -146,7 +167,7 @@ export const daveLook: Look = {
   pants: "#3a3446",
   shoes: "#e8e0d0",
   sneakers: true,
-  outfit: layers(campCollar("#f4f0e6"), nameTag("DAVE"), bottoms("#3a3446", 0.86)),
+  outfit: layers(campCollar("#f4f0e6"), nameTag("DAVE"), pensPocket, bottoms("#3a3446", 0.86)),
   hair: capHair("#6a4630", 0.46, 0.38, 7),
 };
 
@@ -163,7 +184,7 @@ const ZLOOKS: Look[] = [
 ];
 const zs = (pose: Pose, expr: Expr, extra: Partial<CharState["fx"]> = {}): CharState => ({ pose, expr, blink: false, fx: { fill: ZOMBIE_SKIN, ...extra } });
 const armsUp = (p: Pose): Pose => ({ ...p, arms: [{ at: [0.62, -0.5], grip: "open" }, { at: [0.62, -0.45], grip: "open" }] });
-export const Z = { idle: 0, sway: 1, tiltL: 2, tiltR: 3, runA: 4, runB: 5, bang: 6 } as const;
+export const Z = { idle: 0, sway: 1, tiltL: 2, tiltR: 3, runA: 4, runB: 5, bang: 6, reachA: 7, reachB: 8 } as const;
 const ZSTATES: CharState[] = [
   zs({ ...posed("idle", 0, 0), tilt: 6, sway: -2 }, "tired"),
   zs({ ...posed("idle", 1.3, 0.3), tilt: -5, sway: 3 }, "tired"),
@@ -172,19 +193,35 @@ const ZSTATES: CharState[] = [
   zs(armsUp(runPose(0.25)), "laughing"),
   zs(armsUp(runPose(1.35)), "laughing"),
   zs({ ...posed("panic", 0), tilt: 8 }, "angry"),
+  // Reaching zombies (arms out in front, the classic shamble): variety in the milling crowd.
+  zs({ ...posed("idle", 0.6, 0.2), arms: [{ at: [0.62, 0.05], grip: "open" }, { at: [0.6, 0.12], grip: "open" }], tilt: 10 }, "tired"),
+  zs({ ...posed("idle", 2.1, -0.2), arms: [{ at: [0.55, 0.2], grip: "open" }, { at: [0.66, -0.02], grip: "open" }], tilt: -8, lean: 0.4 }, "tired"),
 ];
 
 const N_Z = 400;
 const zr = rng(400);
 /** Home spots: the street and both walks from s 8 to 58, keeping the ramp-to-door lane (s 29.5-34.5) clear. */
+// Crowds clump (pilot critique: an even spread read as confetti): 16 clusters, people gaussian around each.
+const CLUSTERS = Array.from({ length: 16 }, () => ({ s: 9 + zr() * 48, x: (zr() - 0.5) * 2 * (FRONT - 1.2), r: 1.2 + zr() * 2.2 }));
+const gauss = () => (zr() + zr() + zr() - 1.5) / 1.5;
 const HOME = Array.from({ length: N_Z }, (_, i) => {
-  let s = 0, x = 0;
+  let s = 0, x = 0, n = 0;
   do {
-    s = 8 + zr() * 50;
-    x = (zr() - 0.5) * 2 * (FRONT - 0.7);
-  } while (Math.abs(s - DOCK.s) < 3.4 && x > -FRONT + 0.6); // the lane: cameras and the cart run there
-  return { s, x, phase: zr() * 100, look: i % ZLOOKS.length, speed: 3.1 + zr() * 1.4, delay: Math.floor(zr() * 26), kind: zr() };
+    const c = CLUSTERS[Math.floor(zr() * CLUSTERS.length)], loose = zr() < 0.18;
+    s = loose ? 8 + zr() * 50 : c.s + gauss() * c.r;
+    x = loose ? (zr() - 0.5) * 2 * (FRONT - 0.7) : Math.max(-FRONT + 0.7, Math.min(FRONT - 0.7, c.x + gauss() * c.r));
+    n++;
+  } while (((Math.abs(s - DOCK.s) < 3.4 && x > -FRONT + 0.6) || s < 7 || s > 59) && n < 60); // keep the lane (cameras, cart) clear
+  return { s, x, phase: zr() * 100, look: i % ZLOOKS.length, speed: 3.1 + zr() * 1.4, delay: Math.floor(zr() * 26), kind: zr(), scale: 0.88 + zr() * 0.22, reach: zr() < 0.35 };
 });
+/** Pile slots inside Chad's shop, in arrival order: rows across the opening, four deep, stacked to the ceiling. */
+const ARRIVAL = HOME.map((h, i) => ({ i, t: h.delay / FPS + Math.hypot(h.s - CHAD.s, h.x - FRONT) / h.speed })).sort((a, b) => a.t - b.t);
+const SLOT = new Map(ARRIVAL.map((a, k) => [a.i, k]));
+const pileAt = (k: number) => {
+  const col = k % 9, deep = Math.floor(k / 9) % 4, layer = Math.floor(k / 36);
+  if (layer > 5) return null;
+  return at(CHAD.s - (CHAD.shutterW - 0.9) / 2 + col * ((CHAD.shutterW - 0.9) / 8), FRONT + 0.45 + deep * 0.55, layer * 0.5);
+};
 const ease = (t: number) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
 const clamp01 = (t: number) => Math.min(Math.max(t, 0), 1);
 
@@ -240,15 +277,20 @@ const zombie = (i: number, f: number) => {
     // Spread across the whole shutter opening, not one point (they stacked into one blob in the pilot).
     const door = at(CHAD.s + (((i * 0.618) % 1) - 0.5) * (CHAD.shutterW - 0.8), FRONT + 0.2, 0);
     const d = home.distanceTo(door), run = Math.min(t * h.speed, d);
-    if (run >= d - 0.4) return { pos: door, state: Z.idle, look: h.look, hidden: true };
+    if (run >= d - 0.4) {
+      // Inside: they pile up in the shop, layer on layer, until it is full to the ceiling (then the rest wait outside).
+      const slot = pileAt(SLOT.get(i)!);
+      if (!slot) return { pos: door, state: Z.bang, look: h.look, scale: h.scale };
+      return { pos: slot, state: (Math.floor(f / 7) + i) % 2 ? Z.bang : Z.reachA, look: h.look, scale: h.scale };
+    }
     const pos = home.clone().lerp(door, run / d);
-    return { pos, state: (Math.floor(f / 4) + i) % 2 ? Z.runA : Z.runB, look: h.look };
+    return { pos, state: (Math.floor(f / 4) + i) % 2 ? Z.runA : Z.runB, look: h.look, scale: h.scale };
   }
-  return { pos: home.add(wob), state: milling, look: h.look };
+  return { pos: home.add(wob), state: h.reach ? (Math.floor((f + h.phase) / 22) % 2 ? Z.reachA : Z.reachB) : milling, look: h.look, scale: h.scale };
 };
 const c2 = (k: number) => (k < 0.5 ? Z.tiltL : Z.tiltR);
 
-export const HORDE: CrowdSpec = { looks: ZLOOKS, states: ZSTATES, count: N_Z, place: zombie };
+export const HORDE: CrowdSpec = { looks: ZLOOKS, states: ZSTATES, count: N_Z, place: (i, f) => ({ ...zombie(i, f), scale: HOME[i].scale }) };
 export { clamp01 };
 
 // ---------------------------------------------------------------- character states

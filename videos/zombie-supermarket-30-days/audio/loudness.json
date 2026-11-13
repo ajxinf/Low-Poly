@@ -1,11 +1,11 @@
 {
- "integrated_lufs": -14.25,
+ "integrated_lufs": -14.24,
  "true_peak_dbtp": -1.3,
  "samples": 3876800,
  "seconds": 80.76666666666667,
  "premaster": {
-  "lufs": -18.96,
-  "dbtp": 0.15
+  "lufs": -18.93,
+  "dbtp": 0.12
  },
  "levels_db": {
   "voice": 0,
@@ -15,7 +15,7 @@
   "duck": -16
  },
  "voice_music_gap_db": 22.7,
- "voice_music_gap_min_word_db": -15.3,
+ "voice_music_gap_min_word_db": -14.9,
  "worst_word": "*gently*.",
- "voice_button_gap_db": 2.9
+ "voice_button_gap_db": 3.3
 }
