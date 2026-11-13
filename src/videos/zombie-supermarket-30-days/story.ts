@@ -28,7 +28,7 @@ const wordsStart = (t: string, n: number) => {
   return Math.round(w.start * FPS);
 };
 const DAVE_ASKS = wordsStart("dave", 3), ON_DAY30 = wordsStart("on", 5), YOU_SEE = wordsStart("you", 8);
-export const FRAMES = LAST + 8;
+export const FRAMES = LAST + 6; // house rule (scripts/audio/events.py "auto")
 
 export type World = "ext-day" | "ext-dawn" | "int-day" | "int-night";
 export const WORLD: Record<World, { preset: PresetName; light: keyof typeof LIGHTS; scene: string; sun: Vector3 }> = {

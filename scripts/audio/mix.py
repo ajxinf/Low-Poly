@@ -59,7 +59,9 @@ def main(d):
     # Duck the bed: gain falls DUCK_DB where the voice envelope is above -40 dBFS (full depth 6 dB above that).
     ev = envelope(voice, 0.03, 0.25)
     duck = db(-DUCK_DB * np.clip((20 * np.log10(ev + 1e-9) + 40) / 6, 0, 1))
-    mus = db(MUSIC_DB) * music[:n] * duck + db(BUTTON_DB) * button
+    # Per video: "music": {"button_db": -12} when the last word is quiet (a deadpan line) and the button would bury it.
+    button_db = json.load(open(f"{d}/audio/events.json"))["music"].get("button_db", BUTTON_DB)
+    mus = db(MUSIC_DB) * music[:n] * duck + db(button_db) * button
     mix = voice + mus + db(SFX_DB) * sfx
     gap = voice_gap(voice, mus, json.load(open(f"{d}/voice/words.json")))
     pre = f"{d}/audio/premaster.wav"
@@ -77,7 +79,7 @@ def main(d):
     i, tp = float(fin["input_i"]), float(fin["input_tp"])
     rep = {"integrated_lufs": i, "true_peak_dbtp": tp, "samples": n, "seconds": n / SR,
            "premaster": {"lufs": float(m["input_i"]), "dbtp": float(m["input_tp"])},
-           "levels_db": {"voice": 0, "music_bed": MUSIC_DB, "button": BUTTON_DB, "sfx": SFX_DB, "duck": -DUCK_DB}, **gap}
+           "levels_db": {"voice": 0, "music_bed": MUSIC_DB, "button": button_db, "sfx": SFX_DB, "duck": -DUCK_DB}, **gap}
     json.dump(rep, open(f"{d}/audio/loudness.json", "w"), indent=1)
     slug = os.path.basename(os.path.normpath(d))
     os.makedirs(f"public/{slug}", exist_ok=True)  # Studio preview: Video.tsx mounts it (16-bit keeps public/ small)

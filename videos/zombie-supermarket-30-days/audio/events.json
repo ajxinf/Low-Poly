@@ -1,0 +1,418 @@
+{
+ "fps": 30,
+ "frames": "auto",
+ "events": [
+  {
+   "f": 0,
+   "sfx": "pat",
+   "note": "DAY 1 stamp thump on the first word"
+  },
+  {
+   "word": "batteries",
+   "n": 0,
+   "lead": 0,
+   "sfx": "pop",
+   "note": "battery pops out of the toy"
+  },
+  {
+   "word": "laughs",
+   "n": 0,
+   "lead": 2,
+   "sfx": "pop",
+   "note": "Chad bursts out laughing (squash)"
+  },
+  {
+   "word": "because",
+   "n": 0,
+   "lead": -14,
+   "sfx": "whoosh",
+   "note": "fast pull-out and crane over the horde (A2 whip)"
+  },
+  {
+   "word": "sound",
+   "n": 0,
+   "lead": 4,
+   "sfx": "swish",
+   "note": "400 heads tilt at once"
+  },
+  {
+   "f": 266,
+   "sfx": "whoosh",
+   "note": "A2->A3 dissolve"
+  },
+  {
+   "word": "megaphone",
+   "n": 0,
+   "lead": 2,
+   "sfx": "pop",
+   "note": "Chad flexes with the megaphone"
+  },
+  {
+   "word": "knocked",
+   "n": 0,
+   "lead": 2,
+   "sfx": "pat",
+   "note": "knock"
+  },
+  {
+   "word": "knocked",
+   "n": 0,
+   "lead": -5,
+   "sfx": "pat",
+   "note": "knock"
+  },
+  {
+   "word": "he",
+   "n": 0,
+   "lead": 3,
+   "sfx": "swish",
+   "note": "peep slot slides open"
+  },
+  {
+   "word": "only",
+   "n": 0,
+   "lead": 1,
+   "sfx": "splat",
+   "note": "slot slams shut (impact kick)"
+  },
+  {
+   "f": 536,
+   "sfx": "whoosh",
+   "note": "A4->A5 dissolve (night)"
+  },
+  {
+   "f": 685,
+   "sfx": "whoosh",
+   "note": "A5->A6 dissolve (morning)"
+  },
+  {
+   "word": "morning",
+   "n": 1,
+   "lead": 2,
+   "sfx": "sting",
+   "note": "megaphone blast, sound rings"
+  },
+  {
+   "word": "boy",
+   "n": 0,
+   "lead": 2,
+   "sfx": "pop",
+   "note": "second ring"
+  },
+  {
+   "word": "heads",
+   "n": 0,
+   "lead": 0,
+   "sfx": "step",
+   "note": "horde shuffles toward Chad's shutters"
+  },
+  {
+   "word": "turn",
+   "n": 0,
+   "lead": 0,
+   "sfx": "step",
+   "note": "shuffle"
+  },
+  {
+   "word": "bang",
+   "n": 0,
+   "lead": 2,
+   "sfx": "splat",
+   "note": "fists on steel"
+  },
+  {
+   "word": "steel",
+   "n": 0,
+   "lead": 2,
+   "sfx": "splat",
+   "note": "fists on steel"
+  },
+  {
+   "word": "and",
+   "n": 1,
+   "lead": 6,
+   "sfx": "splat",
+   "note": "last bang"
+  },
+  {
+   "word": "give",
+   "n": 0,
+   "lead": 0,
+   "sfx": "swish",
+   "note": "horde gives up and drains away"
+  },
+  {
+   "f": 901,
+   "sfx": "whoosh",
+   "note": "A7->A8 dissolve"
+  },
+  {
+   "word": "right",
+   "n": 0,
+   "lead": 2,
+   "sfx": "pop",
+   "note": "Dave turns: 'might be right'"
+  },
+  {
+   "f": 992,
+   "sfx": "whoosh",
+   "note": "A8->A9 dissolve"
+  },
+  {
+   "word": "tape",
+   "n": 0,
+   "lead": 0,
+   "sfx": "swish",
+   "note": "tape strip"
+  },
+  {
+   "word": "toy",
+   "n": 0,
+   "lead": 0,
+   "sfx": "swish",
+   "note": "tape strip"
+  },
+  {
+   "word": "cart",
+   "n": 0,
+   "lead": 0,
+   "sfx": "swish",
+   "note": "tape strip"
+  },
+  {
+   "word": "hedgehog",
+   "n": 0,
+   "lead": 2,
+   "sfx": "pop",
+   "note": "the cart is a hedgehog"
+  },
+  {
+   "f": 1151,
+   "sfx": "whoosh",
+   "note": "A9->A10 dissolve (the ramp)"
+  },
+  {
+   "f": 1253,
+   "sfx": "whoosh",
+   "note": "A10->A11 dissolve"
+  },
+  {
+   "word": "point",
+   "n": 0,
+   "lead": 2,
+   "sfx": "swish",
+   "note": "you point"
+  },
+  {
+   "word": "generator",
+   "n": 0,
+   "lead": 6,
+   "sfx": "pat",
+   "note": "hard cut to the generator insert"
+  },
+  {
+   "f": 1359,
+   "sfx": "whoosh",
+   "note": "A12->A13 dissolve (night, the chart)"
+  },
+  {
+   "word": "day",
+   "n": 1,
+   "lead": 2,
+   "sfx": "pop",
+   "note": "last can circled"
+  },
+  {
+   "word": "day",
+   "n": 2,
+   "lead": 2,
+   "sfx": "pat",
+   "note": "DAY 29 stamp"
+  },
+  {
+   "word": "battery",
+   "n": 0,
+   "lead": 0,
+   "sfx": "swish",
+   "note": "battery slides in"
+  },
+  {
+   "word": "gently",
+   "n": 0,
+   "lead": -8,
+   "sfx": "pop",
+   "note": "click: it's in"
+  },
+  {
+   "f": 1593,
+   "sfx": "whoosh",
+   "note": "A14->A15 dissolve (dawn)"
+  },
+  {
+   "word": "day",
+   "n": 3,
+   "lead": 2,
+   "sfx": "pat",
+   "note": "DAY 30 stamp"
+  },
+  {
+   "word": "coughs",
+   "n": 0,
+   "lead": 2,
+   "sfx": "splat",
+   "note": "generator coughs a smoke ring"
+  },
+  {
+   "word": "dies",
+   "n": 0,
+   "lead": 2,
+   "sfx": "pat",
+   "note": "floodlight 1 off"
+  },
+  {
+   "word": "dies",
+   "n": 0,
+   "lead": -7,
+   "sfx": "pat",
+   "note": "floodlight 2 off"
+  },
+  {
+   "word": "shutters",
+   "n": 1,
+   "lead": -10,
+   "sfx": "whoosh",
+   "note": "steel shutter rolls up"
+  },
+  {
+   "word": "up",
+   "n": 1,
+   "lead": 2,
+   "sfx": "sting",
+   "note": "Chad in pyjamas, ring-eyed shock"
+  },
+  {
+   "word": "kick",
+   "n": 0,
+   "lead": 2,
+   "sfx": "splat",
+   "note": "you kick the cart"
+  },
+  {
+   "word": "ramp",
+   "n": 1,
+   "lead": 4,
+   "sfx": "whoosh",
+   "note": "down the ramp (cart POV)"
+  },
+  {
+   "word": "bump",
+   "n": 0,
+   "lead": 0,
+   "sfx": "step",
+   "note": "rattle"
+  },
+  {
+   "word": "makes",
+   "n": 0,
+   "lead": 0,
+   "sfx": "step",
+   "note": "rattle"
+  },
+  {
+   "word": "toys",
+   "n": 1,
+   "lead": 0,
+   "sfx": "step",
+   "note": "rattle"
+  },
+  {
+   "word": "scream",
+   "n": 0,
+   "lead": 0,
+   "sfx": "sting",
+   "note": "212 toys scream at once"
+  },
+  {
+   "word": "once",
+   "n": 0,
+   "lead": 0,
+   "sfx": "pop",
+   "note": ""
+  },
+  {
+   "word": "you",
+   "n": 8,
+   "lead": 0,
+   "sfx": "swish",
+   "note": "hard cut to the x-ray insert"
+  },
+  {
+   "word": "now",
+   "n": 0,
+   "lead": 2,
+   "sfx": "whoosh",
+   "note": "400 heads swing toward the cart"
+  },
+  {
+   "word": "chase",
+   "n": 0,
+   "lead": 0,
+   "sfx": "whoosh",
+   "note": "the stampede"
+  },
+  {
+   "word": "ball",
+   "n": 0,
+   "lead": 0,
+   "sfx": "step",
+   "note": "stampede"
+  },
+  {
+   "word": "straight",
+   "n": 1,
+   "lead": 0,
+   "sfx": "step",
+   "note": "stampede"
+  },
+  {
+   "word": "door",
+   "n": 2,
+   "lead": 2,
+   "sfx": "splat",
+   "note": "cart crashes into Chad's shop"
+  },
+  {
+   "word": "roof",
+   "n": 0,
+   "lead": 2,
+   "sfx": "pop",
+   "note": "Chad made it to the roof"
+  },
+  {
+   "word": "megaphone",
+   "n": 2,
+   "lead": 0,
+   "sfx": "swish",
+   "note": "megaphone shakes in his hands"
+  }
+ ],
+ "music": {
+  "bpm": 120,
+  "frames": "auto",
+  "button": {
+   "word": "sound",
+   "n": 1
+  },
+  "stop": [
+   {
+    "word": "silence",
+    "lead": 2
+   },
+   {
+    "word": "every",
+    "lead": 4
+   }
+  ],
+  "button_db": -14
+ }
+}
