@@ -154,8 +154,9 @@ const youKick: Role = {
 const chadRoofEnd: Role = {
   name: "chad", look: chadPyjamas, at: still(CHAD_ROOF),
   state: (F) => {
-    const shake = Math.sin(F * 1.9) * 2.5;
     const late = F >= BEAT.but;
+    // A slow tremble while he's scared (fast flips read as camera jitter in QA); dead still on the silent last line.
+    const shake = late ? 0 : Math.sin(F * 0.8) * 2.5;
     return st({ ...posed("hold", F / FPS, -0.1), sway: shake }, late ? "deadpan" : "scared", F, 7, { fx: { sweat: late ? 0.35 + 0.65 * Math.min((F - BEAT.but) / 60, 1) : ((F % 45) / 45) } });
   },
 };

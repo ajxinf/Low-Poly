@@ -5,7 +5,7 @@ Faceless channel **Stickrified** (YouTube Shorts, TikTok, Facebook Reels; long-f
 **How to make a video: follow `.claude/skills/toon-world-short/SKILL.md`.** It holds the pipeline, look values, protagonist spec and gotchas. **Scripts (formulas, jokes, Eleven v4 tags, length): follow `.claude/skills/stickrified-script/SKILL.md`.** This file only holds the project-wide rules.
 
 ## Machine
-Windows 11 laptop: i5-11400H, RTX 3050 4 GB VRAM, 16 GB RAM. Commands must work in PowerShell. Render with `--gl=angle` and `--concurrency=2` (drop to 1 only if a render crashes or goes black). Set `$env:TEMP`/`$env:TMP` to `C:\remotion-tmp` before rendering.
+Windows 11 laptop: i5-11400H, RTX 3050 4 GB VRAM, 16 GB RAM. Commands must work in PowerShell. Render with `--gl=angle` and `--concurrency=1` (default since 2026-11-13: concurrency 2 ran the laptop out of memory on the 80 s pilot). Set `$env:TEMP`/`$env:TMP` to `C:\remotion-tmp` before rendering.
 
 ## Stack
 - Remotion + `@remotion/three` (React Three Fiber). Every motion (characters, camera, shaders) must be driven by `useCurrentFrame()`, never by clocks or `useFrame` time.
@@ -17,7 +17,7 @@ Windows 11 laptop: i5-11400H, RTX 3050 4 GB VRAM, 16 GB RAM. Commands must work 
 Script (`videos/<slug>/script.json`, the single source of truth; Claude drafts, the user edits) → voice + word timings → shot plan timed to words → world, cast, captions → sound → look checks → render, mux, QA. Details in the skill.
 
 ## Formats
-- Shorts: 61–90 s, 1080×1920 composition, 30 fps, final export 2K (1440×2560) unless renders are too slow.
+- Shorts: 61–90 s, 1080×1920 composition, 30 fps, final export 1080×1920 (default since 2026-11-13; 2K 1440×2560 only on request).
 - Shorts: word-by-word burned-in captions (see skill). Long-form (later): 1920×1080, no burned captions (export .srt).
 
 ## Content rules

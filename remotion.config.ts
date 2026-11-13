@@ -11,4 +11,4 @@ Config.setRspack(true);
 Config.setChromiumOpenGlRenderer("angle");
 Config.setVideoImageFormat("jpeg");
 // RTX 3050 4 GB: keep renders to 2 parallel tabs (CLAUDE.md).
-Config.setConcurrency(2);
+Config.setConcurrency(1);

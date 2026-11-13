@@ -65,7 +65,7 @@ const megaProp = (s: S, who: () => Vector3, atMouth: (F: number) => boolean, clu
   name: "megaphone",
   make: megaphone,
   pose: (o, F) => {
-    const shake = clutched ? 0.015 * Math.sin(F * 2.3) : 0;
+    const shake = clutched && F < BEAT.but ? 0.015 * Math.sin(F * 0.8) : 0;
     o.position.copy(clutched ? onCard(s, F, who(), 0.08, 0.86, 0.24) : MEGA_AT(s, F, who(), atMouth(F))).add(new Vector3(shake, shake, 0));
     o.scale.setScalar(clutched ? 0.75 : 1);
     const cam = s.pose(F - s.from).pos;

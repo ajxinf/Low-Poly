@@ -47,7 +47,7 @@ stories, characters, jokes or shots, never name their channels. Once our pilot i
     into a look-ahead true-peak limiter (ceiling -1.3 dBTP). Loudnorm alone falls back to dynamic mode.
   - End the mix on the last word. A musical button may land on the last word and must decay before the last frame;
     no outro sting after it, no end card.
-- Final export 2K vertical 1440x2560: scale `4/3` (`1.3333` gives 2559.936 px and Remotion refuses it). If a final render on the laptop takes more than 30 min,
+- Final export 1080x1920 (scale 1, the default since 2026-11-13). 2K 1440x2560 only on request: scale `4/3` (`1.3333` gives 2559.936 px and Remotion refuses it). If a final render on the laptop takes more than 30 min,
   export 1080x1920 instead and note it in `docs/STYLE.md`.
 - A fresh verifier agent (Opus, max effort) checks every look step and the final video.
 - Commit after every step (`git add -A; git commit -m "<video>: <step>"`). Push at the end of each session.
@@ -57,7 +57,7 @@ stories, characters, jokes or shots, never name their channels. Once our pilot i
   templates: this protects against YouTube's inauthentic-content policy).
 
 ## Machine (Windows 11, PowerShell)
-- i5-11400H, RTX 3050 4 GB, 16 GB RAM. Render with `--gl=angle --concurrency=2` (drop to 1 if it crashes).
+- i5-11400H, RTX 3050 4 GB, 16 GB RAM. Render with `--gl=angle --concurrency=1` (the default; 2 ran out of memory on the pilot).
 - Before any render in a new terminal: `$env:TEMP='C:\remotion-tmp'; $env:TMP='C:\remotion-tmp'`
   (use another drive if it has more space). See Gotchas: Disk.
 - Python 3 is needed for the sound and QA scripts (`pip install numpy scipy soundfile pillow`).
@@ -161,7 +161,7 @@ Redesigned 2026-11-13 (`kit/toon/protagonist.ts`):
    `python scripts/sbs_sheet.py out.jpg --ours ... --ref ...`; a verifier gives a <=200-word
    verdict, scores (colour, lighting, ink, textures, characters, depth, composition) and a numbered fix list.
 10. **Final render**:
-    `node scripts/render.mjs <Comp> out/<slug>/video.mp4 4/3 [--concurrency 1|2]` (QA layer 1 + `out/<slug>/plan.json`, then h264 crf 16, angle; prints the total time),
+    `node scripts/render.mjs <Comp> out/<slug>/video.mp4` (1080p, concurrency 1) (QA layer 1 + `out/<slug>/plan.json`, then h264 crf 16, angle; prints the total time),
     mux with `npx remotion ffmpeg -i out/<slug>/video.mp4 -i videos/<slug>/audio/mix.wav -map 0:v:0 -map 1:a:0 -c:v copy -c:a aac -b:a 320k out/<slug>/final.mp4`.
     QA: run the **video-qa** skill (scene checks before rendering, `scripts/video_qa.py` + `short_qa.py` +
     `measure.py` on the final, then a fresh reviewer agent). Fix everything, then a final verifier audit.
