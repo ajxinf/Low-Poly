@@ -2,6 +2,7 @@ import { CircleGeometry, DodecahedronGeometry, InstancedMesh, Matrix4, Mesh, Pla
 import { LightPreset, linear } from "../lights";
 import { grain, painted, rng, shade, strokes } from "../paint";
 import { toonMaterial } from "../shade";
+import { SKY } from "../ink";
 
 /**
  * Ground textures (2 m tiles, 512 px), all on the same variation rules:
@@ -12,7 +13,7 @@ import { toonMaterial } from "../shade";
  */
 export type GroundKind = "cobbles" | "planks" | "dirt" | "snow" | "tiles" | "slabs" | "asphalt" | "grass";
 /** `grime` 0..1: scuff marks, dirty grout and blotches (worn interiors, back alleys). */
-export type GroundOpts = { kind: GroundKind; base: string; contrast?: number; accent?: string; grime?: number };
+export type GroundOpts = { kind: GroundKind; base: string; contrast?: number; accent?: string; grime?: number; grout?: number };
 
 type R = () => number;
 type Ctx = CanvasRenderingContext2D;
@@ -27,7 +28,7 @@ const wrapDraw = (ctx: Ctx, f: (dx: number, dy: number) => void) => {
   for (const dx of [-W, 0, W]) for (const dy of [-W, 0, W]) f(dx, dy);
 };
 
-const PAINT: Record<GroundKind, (ctx: Ctx, r: R, base: string, c: number, accent: string) => void> = {
+const PAINT: Record<GroundKind, (ctx: Ctx, r: R, base: string, c: number, accent: string, grout?: number) => void> = {
   cobbles: (ctx, r, base, c) => {
     ctx.fillStyle = shade(base, -0.28 * c * 2); // lighter mortar
     ctx.fillRect(0, 0, W, W);
@@ -140,8 +141,8 @@ const PAINT: Record<GroundKind, (ctx: Ctx, r: R, base: string, c: number, accent
     }
     ctx.globalAlpha = 1;
   },
-  tiles: (ctx, r, base, c, accent) => {
-    ctx.fillStyle = shade(base, 0.35); // light grout
+  tiles: (ctx, r, base, c, accent, grout = 0.35) => {
+    ctx.fillStyle = shade(base, grout); // light grout (floors); ceilings pass a darker one
     ctx.fillRect(0, 0, W, W);
     const n = 8, s = W / n;
     for (let j = 0; j < n; j++)
@@ -223,18 +224,19 @@ const PAINT: Record<GroundKind, (ctx: Ctx, r: R, base: string, c: number, accent
 };
 
 /** A ground texture (2 m tile). */
-export const groundTex = ({ kind, base, contrast = 0.5, accent, grime = 0 }: GroundOpts) =>
-  painted(`ground${kind}${base}${contrast}${accent ?? ""}${grime}`, W, W, (ctx, r) => {
-    PAINT[kind](ctx, r, base, contrast, accent ?? (kind === "snow" ? "#9fb0d0" : base));
+export const groundTex = ({ kind, base, contrast = 0.5, accent, grime = 0, grout }: GroundOpts) =>
+  painted(`ground${kind}${base}${contrast}${accent ?? ""}${grime}${grout ?? ""}`, W, W, (ctx, r) => {
+    PAINT[kind](ctx, r, base, contrast, accent ?? (kind === "snow" ? "#9fb0d0" : base), grout);
     if (grime > 0) {
       // Blotches, dirty joints and curved scuff marks (shoe and trolley wheels).
       strokes(ctx, r, W, W, Math.round(40 * grime), [shade(base, -0.25), shade(base, -0.15)], 120, 40, 0.18 * grime);
       ctx.lineCap = "round";
-      for (let i = 0; i < 26 * grime; i++) {
-        const x = r() * W, y = r() * W, len = 20 + r() * 60, a = r() * Math.PI;
-        ctx.strokeStyle = shade(base, -0.55);
-        ctx.globalAlpha = 0.25 + 0.3 * r();
-        ctx.lineWidth = 1.5 + r() * 2.5;
+      // Wide, faint scuffs (thin dark strokes read as hairs on the floor at 2K).
+      for (let i = 0; i < 14 * grime; i++) {
+        const x = r() * W, y = r() * W, len = 30 + r() * 70, a = r() * Math.PI;
+        ctx.strokeStyle = shade(base, -0.3);
+        ctx.globalAlpha = 0.07 + 0.08 * r();
+        ctx.lineWidth = 8 + r() * 10;
         ctx.beginPath();
         ctx.moveTo(x, y);
         ctx.quadraticCurveTo(x + Math.cos(a) * len * 0.5 + (r() - 0.5) * 20, y + Math.sin(a) * len * 0.5 + (r() - 0.5) * 20, x + Math.cos(a) * len, y + Math.sin(a) * len);
@@ -249,7 +251,7 @@ export const groundTex = ({ kind, base, contrast = 0.5, accent, grime = 0 }: Gro
 export const groundMaterial = (o: GroundOpts, wear?: { center: number; width: number }) => {
   const k = o.kind === "asphalt" ? 1 / ASPHALT_TILE : 0.5;
   // Asphalt paints its own lane wear (offset half a tile so the painted centre sits on the road axis).
-  return toonMaterial({ map: groundTex(o), repeat: [k, k], offset: o.kind === "asphalt" ? 0.5 : 0, wear: wear && o.kind !== "asphalt" ? { ...wear, amount: 0.75 } : undefined });
+  return toonMaterial({ map: groundTex(o), repeat: [k, k], offset: o.kind === "asphalt" ? 0.5 : 0, wear: wear && o.kind !== "asphalt" ? { ...wear, amount: 0.75 } : undefined, mottle: 0.14 });
 };
 
 // ------------------------------------------------------------- puddles
@@ -270,8 +272,8 @@ void main() {
   float fres = 0.12 + 0.28 * pow(1.0 - abs(v.y), 3.0);
   c = mix(uRim, c, fres);
   float e = length(vUv - 0.5) * 2.0;
-  c = mix(c, uRim, smoothstep(0.7, 1.0, e)); // wet dark rim
-  gl_FragColor = vec4(c, 1.0);
+  c = mix(c, uRim, smoothstep(0.55, 0.9, e)); // wet dark rim
+  gl_FragColor = vec4(c, 1.0 - smoothstep(0.8, 1.0, e)); // fades into the ground: no cut-out sticker edge
   #include <fog_fragment>
 }`;
 
@@ -298,9 +300,12 @@ export const puddle = (rx: number, rz: number, seed: number, p: LightPreset, rim
       uRim: { value: linear(rim) },
     },
   });
+  m.transparent = true;
+  m.depthWrite = false;
   const mesh = new Mesh(g, m);
   mesh.position.y = 0.012;
   mesh.receiveShadow = false;
+  mesh.layers.set(SKY); // colour pass only: a wet patch, not an object (no ink rim, no depth)
   return mesh;
 };
 

@@ -2,8 +2,6 @@ import { Quaternion, Vector3 } from "three";
 import { CamPose, arc, drift, pushIn, shot, smootherstep } from "../../../kit/toon/camera";
 import { DOF, Dof, POST } from "../../../kit/toon/Composer";
 import type { Plan, Shot } from "../../../kit/toon/guard";
-import type { Shaft } from "../../../kit/toon/shafts";
-import { LIGHTS, sunDirection } from "../../../kit/toon/lights";
 import { FENCE_S, HIS, SHED, YOURS, at, roofPoint, roofY } from "./build";
 import { BEAT, HIM_S5, HIM_YARD, LAST, YOU_S1, YOU_S5, castS1, castS4, castS5, words } from "./roles";
 
@@ -17,7 +15,13 @@ export const FRAMES = LAST + 6;
 export const XF = 10;
 
 const S1_BASE = { pos: at(15.9, -0.9, 3.4), look: at(15.9, 6.6, 1.6), fov: 66 }; // both leads in frame // high enough to see the roofs
-export const SUN = sunDirection(LIGHTS.day, S1_BASE.pos, S1_BASE.look); // one sun for the whole scene
+/**
+ * One sun for the whole scene: the visible disc (where S2's crane starts, right of the DAY stamp, 33 deg up) and
+ * the key light point the same way, so shadows and the ray gag all come from that disc.
+ */
+const S2_BASE = { pos: at(16.0, -2.5, 2.0), look: at(16.0, 7.2, 1.5), fov: 62 };
+export const SUN_POS = at(4, 140, 2 + 140 * Math.tan((33 * Math.PI) / 180));
+export const SUN = SUN_POS.clone().sub(S2_BASE.pos).normalize();
 
 type S = Shot & { from: number; dof: Dof; sunDisc?: boolean; rays?: boolean };
 const base = { scene: "suburb day", light: "day" as const, sun: SUN };
@@ -29,8 +33,7 @@ const S1: S = {
 };
 
 // S2: the look eases from the sun (high over the houses) down to the sheds while the camera keeps a slow push.
-export const SUN_POS = at(4, 140, 2 + 140 * Math.tan((33 * Math.PI) / 180)); // screen right of the stamp
-const S2_FROM = 98, S2_BASE = { pos: at(16.0, -2.5, 2.0), look: at(16.0, 7.2, 1.5), fov: 62 };
+const S2_FROM = 98;
 const S2_AIM = S2_BASE.pos.clone().add(SUN_POS.clone().sub(S2_BASE.pos).normalize().applyAxisAngle(new Vector3(0, 0, 1), (-4 * Math.PI) / 180).multiplyScalar(20));
 const s2push = shot(S2_BASE, [pushIn(0.9)], 120, -10);
 const S2: S = {
@@ -64,16 +67,6 @@ const S5: S = {
 };
 export const SHOTS = [S1, S2, S3, S4, S5];
 
-/**
- * Heatwave light shafts. The sun sits high behind the houses (shadows fall toward the road), so each shaft starts
- * just in front of a facade (x 10.2) and slants down into the yard: a bright beam against the shaded wall reads;
- * one traced back to the sun would be hidden by the houses.
- */
-const SHAFT_DIR = new Vector3(0.45, 1, 0.05).normalize();
-export const SHAFTS: Shaft[] = [at(12.0, 6.4), at(16.6, 6.6), at(20.6, 6.5)].map((p, i) => ({
-  from: p.clone().addScaledVector(SHAFT_DIR, (10.2 - p.x) / SHAFT_DIR.x), to: p, r0: 0.55 + 0.15 * i, r1: 1.5,
-  color: "#ffd890", opacity: 0.32,
-}));
 export const PLAN: Plan = { slug: "_pipeline-test-2", shots: SHOTS, words };
 
 // ---- story props (composition frames) ----
@@ -96,8 +89,10 @@ export const handAt = (p: Vector3) => p.clone().add(new Vector3(0.12, 1.02, 0));
 export const ROLLER_FOR = { yours: { s: YOURS.s, who: YOU_S1 }, his: { s: HIS.s, who: HIM_S5 } };
 
 /** Sun rays: start (sky) and end (roof) points, grown over 14 frames from `from`. Bounce = reflected off the roof. */
-// Steep (sun high over the houses): traced 9 m back from a roof, a ray stays in front of the facades (guard "Moving props").
-const RAY_DIR = new Vector3(-0.22, -1, 0.05).normalize();
+// Along the real sunlight (from SUN_POS, so the gag agrees with the sun, its shadows and its rays); traced RAY_LEN
+// back from a roof, a ray must stay in front of the facades (guard "Moving props").
+const RAY_DIR = SUN.clone().negate();
+const RAY_LEN = 2.8;
 const N = new Vector3(-Math.sin(Math.atan2(SHED.back - SHED.front, SHED.d)), Math.cos(Math.atan2(SHED.back - SHED.front, SHED.d)), 0);
 const REFLECT = RAY_DIR.clone().sub(N.clone().multiplyScalar(2 * RAY_DIR.dot(N)));
 export type Rod = { a: Vector3; b: Vector3; color: string };
@@ -109,9 +104,9 @@ export const rays = (f: number): Rod[] => {
     const mine = roofPoint(YOURS.s, 0.5, ds), his = roofPoint(HIS.s, 0.5, ds);
     // incoming rays drawn from the roof back up toward the sun, growing downward: a = sky end, b = roof
     const inMine = ramp(f, BEAT.white - 6, BEAT.white + 8), inHis = ramp(f, BEAT.black - 6, BEAT.black + 8);
-    if (inMine > 0) out.push({ a: mine.clone().addScaledVector(RAY_DIR, -9), b: mine.clone().addScaledVector(RAY_DIR, -9 + 9 * inMine), color: "#ffd54a" });
-    if (inHis > 0) out.push({ a: his.clone().addScaledVector(RAY_DIR, -9), b: his.clone().addScaledVector(RAY_DIR, -9 + 9 * inHis), color: "#ffd54a" });
-    out.push(grow(mine, REFLECT, 8, ramp(f, BEAT.away - 4, BEAT.away + 10)));
+    if (inMine > 0) out.push({ a: mine.clone().addScaledVector(RAY_DIR, -RAY_LEN), b: mine.clone().addScaledVector(RAY_DIR, RAY_LEN * (inMine - 1)), color: "#ffd54a" });
+    if (inHis > 0) out.push({ a: his.clone().addScaledVector(RAY_DIR, -RAY_LEN), b: his.clone().addScaledVector(RAY_DIR, RAY_LEN * (inHis - 1)), color: "#ffd54a" });
+    out.push(grow(mine, REFLECT, 3.5, ramp(f, BEAT.away - 4, BEAT.away + 10)));
   }
   return out.filter((r): r is Rod => r !== null);
 };

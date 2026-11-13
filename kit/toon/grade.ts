@@ -15,6 +15,12 @@ export type Grade = {
   /** RGB offsets /255 per zone. */
   tint: { s: [number, number, number]; m: [number, number, number]; h: [number, number, number] };
   vig: [number, number];
+  /** Darken the top of the frame by up to this (ceilings, night skies: the light sits low, ref13). */
+  top: number;
+  /** Film grain amplitude (sRGB, strongest in the mids). */
+  grain: number;
+  /** Warm halation: extra bloom tinted orange-red around bright practicals. */
+  halation: number;
   /** 0 = off, 1 = full. */
   amount: number;
   /** Linear exposure after bloom, before the tone map (backlit dusk frames are mostly shade). */
@@ -28,12 +34,16 @@ export type GradeName = "day" | "golden" | "night" | "interior";
  * (corners ~.85 of centre; darker at night).
  */
 const S_CURVE = { y: [0.045, 0.095, 0.19, 0.47, 0.83, 0.96, 1], m: [0.45, 0.55, 1.1, 1.65, 1.0, 0.5, 0.3] };
+// Night and interiors: a deeper toe so corners and ceilings reach L* ~15 (ref13 measured 16) while ink stays darker.
+const DEEP_CURVE = { y: [0.03, 0.075, 0.17, 0.46, 0.83, 0.96, 1], m: [0.4, 0.5, 1.05, 1.7, 1.0, 0.5, 0.3] };
+// 2026-11-13 reference pass (R11/R13/R14): saturation down ~12 % (refs C*p90 27-49, ours 52-57), exposure down,
+// vignette + top darkening up (refs .77-.86 corner/centre, ours .95-.98), grain and halation on every preset.
+const FILM = { grain: 0.022, halation: 0.35 };
 export const GRADE: Record<GradeName, Grade> = {
-  // vig .06 -> .14 (2026-11-12, _pipeline-test): day corners read flat; day exteriors have their own measure.py range.
-  day: { ...S_CURVE, exposure: 1.15, sat: [1.3, 1.5, 1.3], tint: { s: [8, 0, 2], m: [0, 0, 4], h: [0, 0, 2] }, vig: [0.14, 0.45], amount: 1 },
-  golden: { ...S_CURVE, exposure: 1.95, sat: [1.35, 1.6, 1.4], tint: { s: [8, -1, 6], m: [2, 0, 2], h: [3, 0, -4] }, vig: [0.28, 0.4], amount: 1 },
-  night: { ...S_CURVE, sat: [1.3, 1.45, 1.3], tint: { s: [6, -1, 10], m: [2, -1, 6], h: [0, 0, 0] }, vig: [0.35, 0.3], amount: 1 },
-  interior: { ...S_CURVE, sat: [1.25, 1.5, 1.35], tint: { s: [8, 0, 2], m: [-2, 0, 6], h: [-2, 0, 4] }, vig: [0.18, 0.4], amount: 1 },
+  day: { ...S_CURVE, ...FILM, exposure: 1.05, sat: [1.15, 1.3, 1.15], tint: { s: [8, 0, 2], m: [0, 0, 4], h: [0, 0, 2] }, vig: [0.22, 0.4], top: 0, amount: 1 },
+  golden: { ...S_CURVE, ...FILM, exposure: 1.8, sat: [1.2, 1.38, 1.2], tint: { s: [8, -1, 6], m: [2, 0, 2], h: [3, 0, -4] }, vig: [0.36, 0.35], top: 0.1, amount: 1 },
+  night: { ...DEEP_CURVE, ...FILM, sat: [1.15, 1.28, 1.15], tint: { s: [6, -1, 10], m: [2, -1, 6], h: [0, 0, 0] }, vig: [0.5, 0.25], top: 0.3, amount: 1 },
+  interior: { ...DEEP_CURVE, ...FILM, sat: [1.1, 1.3, 1.2], tint: { s: [8, 0, 2], m: [-2, 0, 6], h: [-2, 0, 4] }, vig: [0.4, 0.3], top: 0.3, amount: 1 },
 };
 
 /** The grade the Composer applies; set by applyLight() from the shot's light preset. */
@@ -41,9 +51,10 @@ export const gradeState = { current: GRADE.day };
 
 /** GLSL: needs uniforms uKy[7], uKm[7], uGSat (vec3), uTintS/M/H (vec3), uVig (vec2), uGAmount. Input/output sRGB 0..1. */
 export const GRADE_GLSL = /* glsl */ `
-uniform float uKy[7], uKm[7], uGAmount;
+uniform float uKy[7], uKm[7], uGAmount, uTop, uGrain, uFrame;
 uniform vec3 uGSat, uTintS, uTintM, uTintH;
 uniform vec2 uVig;
+float grainHash(vec3 p) { p = fract(p * 0.1031); p += dot(p, p.zyx + 31.32); return fract((p.x + p.y) * p.z); }
 float gradeCurve(float x) {
   float xs[7];
   xs[0] = 0.0; xs[1] = 0.1; xs[2] = 0.25; xs[3] = 0.5; xs[4] = 0.75; xs[5] = 0.9; xs[6] = 1.0;
@@ -66,6 +77,10 @@ vec3 grade(vec3 src, vec2 uv) {
   c += wS * uTintS + wM * uTintM + wH * uTintH;
   float r = length(uv * 2.0 - 1.0) * 0.70710678;
   c *= 1.0 - uVig.x * smoothstep(uVig.y, 1.0, r);
+  c *= 1.0 - uTop * smoothstep(0.6, 1.0, uv.y);
+  // Grain from the frame number (deterministic per render tab), strongest in the mids, none in pure ink or white.
+  float gy = dot(c, vec3(0.2126, 0.7152, 0.0722));
+  c += uGrain * (grainHash(vec3(gl_FragCoord.xy, uFrame)) - 0.5) * 4.0 * gy * (1.0 - gy);
   return mix(src, clamp(c, 0.0, 1.0), uGAmount);
 }`;
 
@@ -78,6 +93,9 @@ export const setGradeUniforms = (u: Record<string, { value: unknown }>, g: Grade
   u.uTintM.value = g.tint.m.map((v) => v / 255);
   u.uTintH.value = g.tint.h.map((v) => v / 255);
   u.uVig.value = g.vig;
+  u.uTop.value = g.top;
+  u.uGrain.value = g.grain;
+  u.uHalation.value = g.halation;
   u.uGAmount.value = g.amount;
   u.uExposure.value = g.exposure ?? 1;
 };

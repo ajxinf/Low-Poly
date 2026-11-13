@@ -1,5 +1,6 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo } from "react";
+import { useCurrentFrame } from "remotion";
 import {
   Color,
   DepthTexture,
@@ -24,11 +25,12 @@ import {
 import { CARD_PASS } from "./cardshade";
 import { GRADE_GLSL, gradeState, setGradeUniforms } from "./grade";
 import { NOINK, inkMaterial } from "./ink";
+import { shared } from "./shade";
 
 /** Post look values. Pixel sizes are at 1080x1920 and scale with output height / 1920. */
 export const POST = {
   // Lens blur on close-ups and mediums only; wides and establishing shots stay sharp (the default).
-  dof: { maxPx: 0, near: 14, far: 45 },
+  dof: { maxPx: 0, near: 14, far: 45, fgPx: 0, fgNear: 0, fgFar: 0 },
   bloom: { threshold: 1.0, intensity: 0.5, levels: 6, radius: 0.6 },
   // The grade itself is per light preset (grade.ts).
 };
@@ -45,7 +47,7 @@ const dofFrag = /* glsl */ `
 uniform sampler2D tColor, tDepth;
 uniform mat4 uProjInv;
 uniform vec2 uTexel;
-uniform float uMax, uNear, uFar;
+uniform float uMax, uNear, uFar, uFgMax, uFgNear, uFgFar;
 varying vec2 vUv;
 float dist(vec2 uv) {
   float d = texture2D(tDepth, uv).x;
@@ -53,7 +55,8 @@ float dist(vec2 uv) {
   vec4 v = uProjInv * vec4(uv * 2.0 - 1.0, d * 2.0 - 1.0, 1.0);
   return length(v.xyz / v.w);
 }
-float coc(vec2 uv) { return uMax * smoothstep(uNear, uFar, dist(uv)); }
+// Background past uNear blurs up to uMax; foreground nearer than uFgFar blurs up to uFgMax (framing props, shoulders).
+float coc(vec2 uv) { float d = dist(uv); return max(uMax * smoothstep(uNear, uFar, d), uFgMax * (1.0 - smoothstep(uFgNear, uFgFar, d))); }
 void main() {
   float c0 = coc(vUv);
   vec3 sum = texture2D(tColor, vUv).rgb;
@@ -71,6 +74,28 @@ void main() {
   gl_FragColor = vec4(sum / wsum, 1.0);
 }`;
 
+// Camera motion blur (180 deg shutter): every pixel is re-projected with last frame's view-projection and the
+// image is averaged along that screen motion. Only fast moves smear (whips, quick reframes); holds stay crisp.
+const motionFrag = /* glsl */ `
+uniform sampler2D tColor, tDepth;
+uniform mat4 uProjInv, uCamWorld, uPrevVP;
+uniform vec2 uTexel;
+uniform float uShutter, uMaxPx;
+varying vec2 vUv;
+void main() {
+  float d = texture2D(tDepth, vUv).x;
+  vec4 v = uProjInv * vec4(vUv * 2.0 - 1.0, min(d, 0.9999) * 2.0 - 1.0, 1.0);
+  vec4 w = uCamWorld * vec4(v.xyz / v.w, 1.0);
+  vec4 pc = uPrevVP * w;
+  vec2 vel = (vUv - (pc.xy / pc.w * 0.5 + 0.5)) * uShutter;
+  float px = length(vel / uTexel);
+  if (!(px > 2.0)) { gl_FragColor = vec4(texture2D(tColor, vUv).rgb, 1.0); return; }
+  vel *= min(px, uMaxPx) / px;
+  vec3 sum = vec3(0.0);
+  for (int i = 0; i < 16; i++) sum += texture2D(tColor, vUv + vel * (float(i) / 15.0 - 0.5)).rgb;
+  gl_FragColor = vec4(sum / 16.0, 1.0);
+}`;
+
 const downFrag = /* glsl */ `
 uniform sampler2D tSrc;
 uniform vec2 uTexel;
@@ -79,7 +104,10 @@ varying vec2 vUv;
 void main() {
   vec3 c = 0.25 * (texture2D(tSrc, vUv + uTexel * vec2(-1.0, -1.0)).rgb + texture2D(tSrc, vUv + uTexel * vec2(1.0, -1.0)).rgb
                  + texture2D(tSrc, vUv + uTexel * vec2(-1.0, 1.0)).rgb + texture2D(tSrc, vUv + uTexel * vec2(1.0, 1.0)).rgb);
-  if (uFirst > 0.5) { float b = max(c.r, max(c.g, c.b)); c *= max(b - uThreshold, 0.0) / max(b, 1e-4); }
+  if (uFirst > 0.5) {
+    if (any(isnan(c)) || any(isinf(c))) c = vec3(0.0); // one bad pixel must not flood the bloom chain
+    float b = max(c.r, max(c.g, c.b)); c *= max(b - uThreshold, 0.0) / max(b, 1e-4);
+  }
   gl_FragColor = vec4(c, 1.0);
 }`;
 
@@ -99,7 +127,7 @@ void main() {
 // grey, lighting.md 3) -> sRGB -> fitted grade (grade.ts).
 const finalFrag = /* glsl */ `
 uniform sampler2D tColor, tBloom;
-uniform float uBloom, uExposure;
+uniform float uBloom, uExposure, uHalation;
 varying vec2 vUv;
 ${GRADE_GLSL}
 vec3 neutral(vec3 color) {
@@ -114,26 +142,31 @@ vec3 neutral(vec3 color) {
 }
 vec3 toSRGB(vec3 c) { return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(0.0031308, c)); }
 void main() {
-  vec3 c = (texture2D(tColor, vUv).rgb + uBloom * texture2D(tBloom, vUv).rgb) * uExposure;
+  vec3 b = texture2D(tBloom, vUv).rgb;
+  // Halation: the glow around practicals bleeds warm (film), on top of the neutral bloom.
+  vec3 c = (texture2D(tColor, vUv).rgb + uBloom * b + uHalation * dot(b, vec3(0.3333)) * vec3(1.0, 0.45, 0.2)) * uExposure;
   c = neutral(max(c, 0.0));
   c = toSRGB(clamp(c, 0.0, 1.0));
   gl_FragColor = vec4(grade(c, vUv), 1.0);
 }`;
 
 /**
- * Takes over rendering: shadows -> colour (HDR, MSAA 4) -> normal+depth -> ink -> lens blur -> bloom ->
+ * Takes over rendering: shadows -> colour (HDR, MSAA 4) -> normal+depth -> ink -> lens blur -> motion blur -> bloom ->
  * NEUTRAL tone map -> grade. Mount once inside <ThreeCanvas>.
  */
-export type Dof = { maxPx: number; near: number; far: number };
+export type Dof = { maxPx: number; near: number; far: number; fgPx?: number; fgNear?: number; fgFar?: number };
 /** Lens presets: focus on the front character at `d` m (background blur 0 px before d+1.2, max past d+10). */
 export const DOF = {
   none: POST.dof,
-  medium: (d: number): Dof => ({ maxPx: 10, near: d + 1.2, far: d + 10 }),
-  closeup: (d: number): Dof => ({ maxPx: 13, near: d + 0.6, far: d + 4 }),
+  // 2026-11-13 (ref13): backgrounds clearly soft but still readable (6/8 px read as all-sharp, 10/13 as mush), and
+  // anything nearer than ~60 % of the focus distance blurs hard (foreground framing: a chair edge, a shoulder).
+  medium: (d: number): Dof => ({ maxPx: 9, near: d + 1.2, far: d + 12, fgPx: 20, fgNear: d * 0.3, fgFar: d * 0.65 }),
+  closeup: (d: number): Dof => ({ maxPx: 11, near: d + 0.7, far: d + 5, fgPx: 22, fgNear: d * 0.3, fgFar: d * 0.65 }),
 };
 
 export const Composer: React.FC<{ dof?: Dof }> = ({ dof = POST.dof }) => {
   const { gl, scene, camera } = useThree();
+  const frame = useCurrentFrame();
 
   const p = useMemo(() => {
     gl.shadowMap.enabled = true;
@@ -149,6 +182,7 @@ export const Composer: React.FC<{ dof?: Dof }> = ({ dof = POST.dof }) => {
     normalRT.depthTexture = new DepthTexture(size.x, size.y, FloatType);
     const inkRT = rt(size.x, size.y);
     const dofRT = rt(size.x, size.y);
+    const mbRT = rt(size.x, size.y);
     const B = POST.bloom;
     const down = Array.from({ length: B.levels }, (_, i) => rt(size.x >> (i + 1), size.y >> (i + 1)));
     const up = Array.from({ length: B.levels }, (_, i) => rt(size.x >> (i + 1), size.y >> (i + 1)));
@@ -165,6 +199,19 @@ export const Composer: React.FC<{ dof?: Dof }> = ({ dof = POST.dof }) => {
       uMax: { value: POST.dof.maxPx * px },
       uNear: { value: POST.dof.near },
       uFar: { value: POST.dof.far },
+      uFgMax: { value: 0 },
+      uFgNear: { value: 0 },
+      uFgFar: { value: 0 },
+    });
+    const motion = pass(motionFrag, {
+      tColor: { value: dofRT.texture },
+      tDepth: { value: normalRT.depthTexture },
+      uProjInv: { value: new Matrix4() },
+      uCamWorld: { value: new Matrix4() },
+      uPrevVP: { value: new Matrix4() },
+      uTexel: { value: new Vector2(1 / size.x, 1 / size.y) },
+      uShutter: { value: 0.5 },
+      uMaxPx: { value: 90 * px },
     });
     const downM = pass(downFrag, { tSrc: { value: null }, uTexel: { value: new Vector2() }, uThreshold: { value: B.threshold }, uFirst: { value: 0 } });
     const upM = pass(upFrag, { tSrc: { value: null }, tLow: { value: null }, uTexel: { value: new Vector2() }, uRadius: { value: B.radius } });
@@ -179,14 +226,18 @@ export const Composer: React.FC<{ dof?: Dof }> = ({ dof = POST.dof }) => {
       uTintM: { value: [0, 0, 0] },
       uTintH: { value: [0, 0, 0] },
       uVig: { value: [0, 0.5] },
+      uTop: { value: 0 },
+      uGrain: { value: 0 },
+      uHalation: { value: 0 },
+      uFrame: { value: 0 },
       uGAmount: { value: 1 },
       uExposure: { value: 1 },
     });
     const quad = new Mesh(new PlaneGeometry(2, 2), ink);
     quad.frustumCulled = false;
     const post = new Scene().add(quad);
-    const targets = [colorRT, normalRT, inkRT, dofRT, ...down, ...up];
-    return { targets, colorRT, normalRT, inkRT, dofRT, down, up, ink, dof, downM, upM, fin, quad, post, normalMat: new MeshNormalMaterial(), ortho: new OrthographicCamera() };
+    const targets = [colorRT, normalRT, inkRT, dofRT, mbRT, ...down, ...up];
+    return { targets, colorRT, normalRT, inkRT, dofRT, mbRT, motion, down, up, ink, dof, downM, upM, fin, quad, post, normalMat: new MeshNormalMaterial(), ortho: new OrthographicCamera() };
   }, [gl]);
 
   useEffect(() => () => p.targets.forEach((t) => t.dispose()), [p]);
@@ -200,10 +251,14 @@ export const Composer: React.FC<{ dof?: Dof }> = ({ dof = POST.dof }) => {
     };
     const u = p.ink.uniforms;
     u.uProjInv.value.copy(cam.projectionMatrixInverse);
+    u.uContact.value = shared.uContactInk.value;
     p.dof.uniforms.uProjInv.value.copy(cam.projectionMatrixInverse);
     p.dof.uniforms.uMax.value = dof.maxPx * (p.dofRT.height / 1920);
     p.dof.uniforms.uNear.value = dof.near;
     p.dof.uniforms.uFar.value = dof.far;
+    p.dof.uniforms.uFgMax.value = (dof.fgPx ?? 0) * (p.dofRT.height / 1920);
+    p.dof.uniforms.uFgNear.value = dof.fgNear ?? 0;
+    p.dof.uniforms.uFgFar.value = dof.fgFar ?? 0;
     if (scene.fog instanceof Fog) {
       u.uFog.value.copy(scene.fog.color);
       u.uFogNear.value = scene.fog.near;
@@ -243,9 +298,20 @@ export const Composer: React.FC<{ dof?: Dof }> = ({ dof = POST.dof }) => {
 
     draw(p.ink, p.inkRT);
     draw(p.dof, p.dofRT);
+    let out: Texture = p.dofRT.texture;
+    const prevVP = cam.userData.prevVP as Matrix4 | undefined;
+    if (prevVP) {
+      const mu = p.motion.uniforms;
+      mu.uProjInv.value.copy(cam.projectionMatrixInverse);
+      mu.uCamWorld.value.copy(cam.matrixWorld);
+      mu.uPrevVP.value.copy(prevVP);
+      draw(p.motion, p.mbRT);
+      out = p.mbRT.texture;
+    }
+    p.fin.uniforms.tColor.value = out;
 
     // Bloom: threshold + 4-tap downsample chain, then tent upsample back up.
-    let src: Texture = p.dofRT.texture;
+    let src: Texture = out;
     let w = p.dofRT.width, h = p.dofRT.height;
     p.down.forEach((t, i) => {
       p.downM.uniforms.tSrc.value = src;
@@ -265,6 +331,7 @@ export const Composer: React.FC<{ dof?: Dof }> = ({ dof = POST.dof }) => {
       draw(p.upM, p.up[i]);
     }
     setGradeUniforms(p.fin.uniforms, gradeState.current);
+    p.fin.uniforms.uFrame.value = frame % 997;
     draw(p.fin, null);
   }, 1);
 

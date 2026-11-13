@@ -2,7 +2,7 @@ import { drawFace, drawFill } from "./face";
 import type { Effects, Expr, Head } from "./face";
 import { REST } from "./poses";
 import type { Arm, Pose } from "./poses";
-import { CREAM, DESIGN, INK, INK_K, Pen, SH_CLOTH, SH_PALE, blobPts, clamp, headBlob, mix, rad } from "./toon";
+import { CREAM, DESIGN, INK, INK_K, Pen, SH_CLOTH, SH_PALE, blobPts, clamp, headBlob, inkWeight, mix, rad } from "./toon";
 import type { Blob, Build, P2 } from "./toon";
 
 /**
@@ -37,9 +37,11 @@ export type Look = {
   shorts?: string;
   /** Socks colour: a thick sock band above the shoe (socks-and-sandals, striped sports socks...). */
   socks?: string;
+  /** Chunky sneakers: inked outline, `shoes` fill and a sole line (instead of a plain foot stroke). */
+  sneakers?: boolean;
 };
 
-export type PropName = "phone" | "flashlight" | "box" | "can";
+export type PropName = "phone" | "flashlight" | "box" | "can" | "mug" | "lantern";
 export type CharState = { pose: Pose; expr: Expr; blink: boolean; fx: Effects; prop?: PropName };
 
 const { SOLE } = DESIGN;
@@ -114,6 +116,19 @@ const drawProp = (p: Pen, name: CharState["prop"], arms: Solved[], u: number) =>
     p.poly(rect(mx - 11 * u, my - 15 * u, 22 * u, 16 * u), "#3a8ad8");
     p.dot(mx + 2 * u, my - 7 * u, 4 * u, "#f2c84a");
     p.poly(rect(mx - 11 * u, my - 22 * u, 22 * u, 30 * u), null, w);
+  } else if (name === "mug") {
+    const [hx, hy] = r;
+    p.poly(rect(hx - 9 * u, hy - 20 * u, 18 * u, 22 * u), "#f2ece2", w);
+    p.arc(hx + 11 * u, hy - 9 * u, 5 * u, 6 * u, -90, 90, 2.4 * u);
+    p.poly(rect(hx - 9 * u, hy - 14 * u, 18 * u, 5 * u), "#2f8f86");
+    for (const dx of [-3, 3]) p.stroke([[hx + dx * u, hy - 24 * u], [hx + (dx + 2) * u, hy - 30 * u], [hx + dx * u, hy - 36 * u]], 1.4 * u, "#d8d2cc"); // steam
+  } else if (name === "lantern") {
+    // Held low at the side by its bail: dark frame, warm glass (pair it with glowSprite for the halo).
+    const [hx, hy] = r;
+    p.arc(hx, hy + 4 * u, 6 * u, 6 * u, 180, 360, 1.8 * u);
+    p.poly(rect(hx - 8 * u, hy + 6 * u, 16 * u, 4 * u), "#4a4058", w);
+    p.poly(rect(hx - 7 * u, hy + 10 * u, 14 * u, 18 * u), "#ffd27a", w);
+    p.poly(rect(hx - 9 * u, hy + 28 * u, 18 * u, 4 * u), "#4a4058", w);
   } else if (name === "phone") {
     const [hx, hy] = r;
     p.poly(rect(hx - 8 * u, hy - 24 * u, 16 * u, 27 * u), "#3a3048", w);
@@ -130,6 +145,8 @@ export const drawPerson = (p: Pen, look: Look, s: CharState) => {
   const g = p.g, pose = s.pose, L = layout(look, pose), B = look.build;
   const { H, W, HH, u, torsoBot, chin, facing, fwd, stoop } = L;
   const ow = 5 * u;
+  p.weight = inkWeight(B, look.seed);
+  p.seed = look.seed;
   const sq = (pose.squash ?? 0) * 0.08;
   g.save();
   g.translate(CX, SOLE);
@@ -137,7 +154,8 @@ export const drawPerson = (p: Pen, look: Look, s: CharState) => {
   g.translate(-CX, -SOLE);
 
   // Legs: single thin strokes from the hips, slight bow, A-stance; feet = short outward strokes.
-  const legCol = mix(look.pants, INK, 0.55), footCol = mix(look.shoes, INK, 0.3);
+  // Limbs are ink strokes with only a hint of the cloth (refs: navy/near-black limbs that read against any outfit).
+  const legCol = mix(look.pants, INK, 0.8), footCol = mix(look.shoes, INK, 0.3);
   ([-1, 1] as const).forEach((side, i) => {
     const lift = pose.lift[i];
     const hx = CX + side * 15 * u, hy = torsoBot - 0.12 * HH;
@@ -157,7 +175,13 @@ export const drawPerson = (p: Pen, look: Look, s: CharState) => {
     if (look.shorts) band(0, 0.24, 12 * u, look.shorts);
     if (look.socks) band(0.68, 0.97, 7.5 * u, look.socks);
     const drop = lift > 2 ? 0.35 : 0; // the toe drops while the foot is off the ground
-    p.stroke([[fx, fy], [fx + side * 16 * u * Math.cos(drop), fy + 0.5 * u + 16 * u * Math.sin(drop)]], 7.5 * u, footCol);
+    const toe: P2 = [fx + side * 16 * u * Math.cos(drop), fy + 0.5 * u + 16 * u * Math.sin(drop)];
+    if (look.sneakers) {
+      const heel: P2 = [fx - side * 2 * u, fy - 1 * u];
+      p.stroke([heel, toe], 12 * u, INK);
+      p.stroke([heel, toe], 8.4 * u, look.shoes);
+      p.stroke([[heel[0], heel[1] + 3 * u], [toe[0], toe[1] + 3 * u]], 1.6 * u, mix(look.shoes, INK, 0.35));
+    } else p.stroke([[fx, fy], toe], 7.5 * u, footCol);
   });
 
   // Upper body pivots around the hips.
@@ -175,7 +199,7 @@ export const drawPerson = (p: Pen, look: Look, s: CharState) => {
     const front = !!s.prop || Math.abs(r.H[0] - tcx) < T.a * 0.9;
     return { ...r, front };
   });
-  const armCol = mix(look.jacket, INK, 0.5);
+  const armCol = mix(look.jacket, INK, 0.82);
   const drawArm = (a: Solved) => {
     p.stroke([a.S, a.E, a.H], 5.2 * u, armCol);
     hand(p, a, u);

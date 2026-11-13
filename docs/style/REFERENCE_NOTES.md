@@ -178,3 +178,37 @@ Visuals worth taking from the same-style refs:
 **What we take**: the story engine, the plain language, costumes per role, in-world signs, mechanism close-ups,
 time-of-day by story beat, smug ending shot. **What we don't**: their stories, jokes, characters or shots; their
 third-person "he" (we keep "you"); R7's made-up invention ending (our history stays true).
+
+---
+
+# Look study: R13, R14 (+ R11 re-measured) (2026-11-13)
+
+`ref13.mp4` was replaced (no longer a copy of R12): a barbershop story, same visual family (round heads, painted
+3D, warm interiors). `ref14.mp4`: a beach survival story, painted 3D plus full-frame 2D explainer inserts.
+
+| | R13 | R14 | R11 | our stress test v2 | our _pipeline-test-2 |
+|---|---|---|---|---|---|
+| Luma median | .29 | .46 | .40 | .45 | .61 |
+| C* p90 | 27 | 49 | 47 | 57 | 52 |
+| Vignette (corner/centre) | .86 | .83 | .77 | .98 | .95 |
+| Dark L* (p2, non-ink) | 16 | 24 | 22 | 22 | 21 |
+| Drift p50 / p95 px/f | 4.1 / 49 | 1.6 / 21 | 6.5 / 44 | 3.0 / 29 | 1.3 / 19 |
+| Still % / longest still run | 13 % / 34 f | 33 % / 131 f | 18 % / 53 f | 8 % / 14 f | 6 % / 5 f |
+
+What they do that we didn't:
+1. **Motivated light with falloff** (R13): a visible bare bulb in every interior shot, a warm pool on the faces,
+   dark corners and a near-black ceiling. The subject is the brightest thing in the frame.
+2. **Real darks and vignette**: R13 sits below our old L* 19 floor; all three vignette harder than we did.
+3. **Filmic finish**: muted saturation, warm halation around bulbs, fine grain, dust motes in the light.
+4. **Focus**: mediums have soft backgrounds and blurred foreground objects (chair edge, a shoulder).
+5. **Framing**: waist/chest crops, characters off-centre and overlapping at different depths, slight low angles,
+   doorway/window frames; we framed full-length, centred, eye-level.
+6. **Camera rhythm**: real holds on beats, then fast moves. We crept at one slow speed through everything.
+7. **Dense sets**: wallpaper, trim, clocks, bottles, coat racks (R13); crowds, signs, foliage (R11, R14).
+8. **2D explainer inserts** (R14): satellite storm map, x-ray, thermal camera, skin cross-section, macro leaf,
+   a poster. They explain the science and let the edit sit still without feeling static.
+
+Applied the same day: grade.ts (sat, exposure, vignette, top darkening, grain, halation, deeper toe at night/
+indoors), lights.ts/shade.ts (darker fill, stronger, wider lamps), cardshade.ts (lamp falls off across the card),
+Composer DOF (stronger background, foreground blur), camera.ts (tighter SHOT_SIZE, low default angle), street.tsx
+(props every 3 m), guard (holds up to 60 f), Insert.tsx, measure.py targets. Scored on `_stress-test` v3.

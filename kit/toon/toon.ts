@@ -88,8 +88,13 @@ export const headBlob = (seed: number, a: number, facing = 0): Blob => {
 
 /** Thickest outline direction: away from the light, pulled toward the ground (64 deg measured for upper-left light). */
 export const thickAngle = (light: number) => Math.atan2(-Math.sin(light) + 0.8, -Math.cos(light));
-/** Outline thickness profile: w0 (1 + K cos(theta - thick)), thick/thin = (1 + K) / (1 - K) = 2.6. */
-export const INK_K = 0.45;
+/**
+ * Outline thickness profile: w0 (1 + K cos(theta - thick)), thick/thin = (1 + K) / (1 - K) = 3.4 (ref2 / ref11
+ * measured 3-4: ~2 % W on the lit side, ~7.5 % W away from the light).
+ */
+export const INK_K = 0.55;
+/** Hand-drawn pressure wobble of the outline width (+-, seeded per character, so no two outlines are the same). */
+export const INK_WOBBLE = 0.12;
 
 /** Contour points above `y` (the crown), left to right, pushed out from (cx, cy) by `push`. */
 export const crownPts = (pts: P2[], y: number, cx: number, cy: number, push = 1.03): P2[] => {
@@ -110,6 +115,10 @@ export const crownPts = (pts: P2[], y: number, cx: number, cy: number, push = 1.
 export class Pen {
   g: CanvasRenderingContext2D;
   light: number;
+  /** Per-character line weight (x every ink ring) and wobble seed; drawPerson sets both from the Look. */
+  weight = 1;
+  seed = 0;
+  private rings = 0;
   constructor(g: CanvasRenderingContext2D, light = rad(-125)) {
     this.g = g;
     this.light = light;
@@ -232,9 +241,14 @@ export class Pen {
     this.shade(pts, m, R, shift, soft);
   }
 
-  /** Thick-thin ink ring: w(theta) = w0 (1 + K cos(theta - thick)), theta from the contour centroid. */
+  /**
+   * Thick-thin ink ring: w(theta) = w0 weight (1 + K cos(theta - thick)) (1 + wobble), theta from the contour
+   * centroid. The wobble is two slow seeded waves per ring (pressure of one brush pass), stable from frame to frame.
+   */
   inkRing(pts: P2[], w0: number, thick = this.thick, k = INK_K, col = INK) {
-    const n = pts.length;
+    const n = pts.length, ring = this.rings++;
+    const ph1 = rnd(this.seed, 40 + ring) * 6.283, ph2 = rnd(this.seed, 60 + ring) * 6.283;
+    w0 *= this.weight;
     let cx = 0, cy = 0;
     for (const [x, y] of pts) {
       cx += x / n;
@@ -247,7 +261,8 @@ export class Pen {
       const l = Math.hypot(nx, ny) || 1;
       nx /= l;
       ny /= l;
-      const h = 0.5 * w0 * (1 + k * Math.cos(Math.atan2(q[1] - cy, q[0] - cx) - thick));
+      const th = Math.atan2(q[1] - cy, q[0] - cx);
+      const h = 0.5 * w0 * (1 + k * Math.cos(th - thick)) * (1 + INK_WOBBLE * (0.6 * Math.sin(3 * th + ph1) + 0.4 * Math.sin(5 * th + ph2)));
       out.push([q[0] + nx * h, q[1] + ny * h]);
       inn.push([q[0] - nx * h, q[1] - ny * h]);
     });
@@ -309,12 +324,14 @@ export class Pen {
  * torso width in head widths. Adults 3.5 HH, stout 3.47, kids 2.85. `egg` widens the torso bottom (pear),
  * `stoop` pushes the head forward and down (old age).
  */
-export type Build = { a: number; torso: number; legs: number; tw: number; egg?: number; stoop?: number };
+export type Build = { a: number; torso: number; legs: number; tw: number; egg?: number; stoop?: number; ink?: number };
 export const BUILD = {
   adult: { a: 128, torso: 1.1, legs: 1.4, tw: 0.8 },
-  stout: { a: 128, torso: 1.15, legs: 1.32, tw: 0.92 },
-  kid: { a: 116, torso: 0.85, legs: 1.0, tw: 0.72 },
+  stout: { a: 128, torso: 1.15, legs: 1.32, tw: 0.92, ink: 1.12 },
+  kid: { a: 116, torso: 0.85, legs: 1.0, tw: 0.72, ink: 0.86 },
 } satisfies Record<string, Build>;
+/** Outline weight of a character: its build's (heavier for stout, lighter for kids) x a seeded +-8 %. */
+export const inkWeight = (b: Build, seed: number) => (b.ink ?? 1) * (0.92 + 0.16 * rnd(seed, 31));
 
 /** One canvas per card at RES x the design size, mipmapped. `draw(fn)` paints in design units. */
 export const makeCanvas = () => {

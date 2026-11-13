@@ -36,6 +36,13 @@ export type LightPreset = {
    * Heads stay at V >= .86 in every light (lighting.md 5): day near-white, golden peach, lamp warm, moon lavender.
    */
   char: { tint: RGB; shade: number };
+  /**
+   * Character ink under this light (ref2/ref11: the drawn outline is a dark of the scene light, navy-violet at night,
+   * plum at sunset). Unset = the identity warm ink (toon.ts INK) by day.
+   */
+  charInk?: string;
+  /** World ink on concave contacts (an object standing on the ground), 0-1. Interiors 0: no wall/floor lines. */
+  contactInk?: number;
   /** Grade preset (grade.ts) applied after the tone map. */
   grade: GradeName;
 };
@@ -57,14 +64,15 @@ export const LIGHTS = {
     sat: 1.1,
     haze: { color: "#b8d0ec", start: 50, amount: 0.25 },
     // Painted cumulus: white tops, cool lavender-blue undersides (2026-11-13, empty skies read unfinished).
-    clouds: { lit: "#ffffff", shade: "#c4cdea", cover: 0.42 },
+    clouds: { lit: "#ffffff", shade: "#c4cdea", cover: 0.56 }, // refs: every day sky has clouds
     litTint: "#fff2dc",
     char: { tint: [1.0, 0.97, 0.96], shade: 0.86 },
     grade: "day",
   },
+  // el 11 (was 7): at 7 deg a backlit street was all building shadow; refs keep sunlit ground beside violet shade.
   golden: {
     az: 6,
-    el: 7,
+    el: 11,
     lit: [1.42, 0.79, 0.48],
     shade: [0.176, 0.206, 0.72],
     lift: [0.035, 0.03, 0.075],
@@ -80,6 +88,7 @@ export const LIGHTS = {
     litTint: "#ffc89c",
     sunDisc: "#ffcf9e",
     char: { tint: [1.0, 0.88, 0.76], shade: 0.88 },
+    charInk: "#2e1530",
     grade: "golden",
   },
   // Backlit: the sun just right of straight ahead, 8 deg up; peach sunlit patches ~3x the violet shade, long
@@ -104,6 +113,7 @@ export const LIGHTS = {
     clouds: { lit: "#ffa58f", shade: "#9070b8", cover: 0.68 },
     lamp: ["#ffa245", 3.0],
     char: { tint: [1.0, 0.9, 0.86], shade: 0.86 },
+    charInk: "#2a1638",
     grade: "golden",
   },
   // Moon-blue key, warm practicals carry the scene (lamp pools, lit windows).
@@ -111,7 +121,8 @@ export const LIGHTS = {
     az: 40,
     el: 35,
     lit: [0.55, 0.66, 1.0],
-    shade: [0.24, 0.28, 0.48],
+    // 2026-11-13 (ref13): darker fill so the lamp pools carry the frame (was .24/.28/.48, lamps 3.2).
+    shade: [0.17, 0.2, 0.38],
     lift: [0.01, 0.015, 0.04],
     skyTop: "#0d1838",
     skyMid: "#1f3266",
@@ -122,8 +133,9 @@ export const LIGHTS = {
     sat: 1.05,
     haze: { color: "#4a5e9a", start: 30, amount: 0.3 },
     litTint: "#a9c4ff",
-    lamp: ["#ffa245", 3.2],
+    lamp: ["#ffa245", 4.2],
     char: { tint: [0.8, 0.8, 0.97], shade: 0.86 },
+    charInk: "#151a3c",
     grade: "night",
   },
   // Indoors (supermarket): overhead key through the (non-shadowing) ceiling, soft shade, ceiling panels as practicals.
@@ -131,7 +143,7 @@ export const LIGHTS = {
     az: 20,
     el: 72,
     lit: [0.92, 0.91, 0.86],
-    shade: [0.52, 0.48, 0.54],
+    shade: [0.44, 0.4, 0.47], // was .52/.48/.54: the store read evenly lit (refs: pools under each light)
     lift: [0.02, 0.02, 0.03],
     skyTop: "#e8eef2",
     skyHorizon: "#f2f0ea",
@@ -141,8 +153,9 @@ export const LIGHTS = {
     sat: 1.1,
     haze: { color: "#cfc6dc", start: 40, amount: 0.12 },
     litTint: "#f4fff4",
-    lamp: ["#e6fff0", 0.5], // fluorescent strips: slightly green-white
+    lamp: ["#e6fff0", 0.7], // fluorescent strips: slightly green-white
     char: { tint: [1.0, 1.0, 0.97], shade: 0.9 },
+    contactInk: 0,
     grade: "interior",
   },
   // Abandoned interior at night: power off, lavender moonlight through the front windows (key from behind the lens),
@@ -165,6 +178,8 @@ export const LIGHTS = {
     haze: { color: "#2a2446", start: 14, amount: 0.3 },
     lamp: ["#e6fff0", 0.7],
     char: { tint: [0.8, 0.78, 0.98], shade: 0.88 },
+    charInk: "#1a1640",
+    contactInk: 0,
     grade: "night",
   },
 } satisfies Record<string, LightPreset>;

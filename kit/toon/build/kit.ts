@@ -61,12 +61,13 @@ export const tiled = (key: string, tex: () => ReturnType<typeof rough>) => M(key
 export const MAT = {
   stone: () => M("stone", () => toonMaterial({ map: rough("#b3a492"), repeat: [1, 1] })),
   darkStone: () => M("darkStone", () => toonMaterial({ map: rough("#7d6f66"), repeat: [1, 1] })),
-  metal: () => M("metal", () => toonMaterial({ map: rough("#3a3438"), repeat: [1, 1] })),
+  metal: () => M("metal", () => toonMaterial({ map: rough("#4a4650"), repeat: [1, 1], spec: 0.5 })), // coloured dark + one highlight
   wood: () => M("wood", () => toonMaterial({ map: planks("#80583a"), repeat: [1, 1] })),
   darkWood: () => M("darkWood", () => toonMaterial({ map: planks("#4e3426"), repeat: [1, 1] })),
-  winLit: () => M("winLit", () => toonMaterial({ map: windowTex(true), emissive: ["#ffb76a", 3] })), // HDR x3: blooms past threshold 1
+  winLit: () => M("winLit", () => toonMaterial({ map: windowTex(true), emissive: ["#ffb76a", 1.6] })), // the room stays readable; glow.ts adds the halo
   winDark: () => M("winDark", () => toonMaterial({ map: windowTex(false) })),
-  lampGlass: () => M("lampGlass", () => toonMaterial({ color: "#ffd18a", emissive: ["#ffb35a", 3] })),
+  /** Lamp glass: lit (HDR, blooms) when the light preset has lamps, plain pale glass by day. */
+  lampGlass: (lit = true) => M(`lampGlass${lit}`, () => toonMaterial(lit ? { color: "#ffd18a", emissive: ["#ffb35a", 3] } : { color: "#e6e2d6" })),
   color: (c: string) => M(`col${c}`, () => toonMaterial({ map: rough(c), repeat: [1, 1] })),
   glow: (c: string, k: number) => M(`glow${c}${k}`, () => toonMaterial({ color: c, emissive: [c, k] })),
 };

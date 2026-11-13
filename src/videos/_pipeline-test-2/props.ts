@@ -1,4 +1,4 @@
-import { CylinderGeometry, Group, Mesh, MeshBasicMaterial, Object3D } from "three";
+import { AdditiveBlending, Color, CylinderGeometry, Group, Mesh, MeshBasicMaterial, Object3D, ShaderMaterial } from "three";
 import { MAT } from "../../../kit/toon/build/kit";
 import type { MovingProp } from "../../../kit/toon/guard";
 import { NOINK } from "../../../kit/toon/ink";
@@ -42,15 +42,38 @@ const rollerPole = (whose: "yours" | "his"): MovingProp => ({
 });
 const rollerProp = (whose: "yours" | "his") => [rollerHead(whose), rollerPole(whose)];
 
+// Soft sunlight streak: additive, bright along the axis and gone at the rim (view-angle falloff), ends fade out.
+const glow = (strength: number) =>
+  new ShaderMaterial({
+    uniforms: { uColor: { value: new Color("#ffd98a").multiplyScalar(strength) } },
+    vertexShader: `varying float vEdge; varying float vAlong;
+void main() {
+  vAlong = uv.y;
+  vec4 mv = modelViewMatrix * vec4(position, 1.0);
+  vEdge = abs(dot(normalize(normalMatrix * normal), normalize(-mv.xyz)));
+  gl_Position = projectionMatrix * mv;
+}`,
+    fragmentShader: `uniform vec3 uColor; varying float vEdge; varying float vAlong;
+void main() {
+  float ends = smoothstep(0.0, 0.3, vAlong) * (1.0 - smoothstep(0.85, 1.0, vAlong));
+  gl_FragColor = vec4(uColor * pow(vEdge, 2.5) * ends, 1.0);
+}`,
+    blending: AdditiveBlending,
+    transparent: true,
+    depthWrite: false,
+    fog: false,
+  });
+
 const rayProp: MovingProp = {
   name: "sun rays",
   make: () => {
     const g = new Group();
+    const core = glow(1.1), halo = glow(0.22);
     for (let i = 0; i < 9; i++) {
-      const m = new Mesh(new CylinderGeometry(0.07, 0.07, 1, 8), new MeshBasicMaterial({ color: "#ffd54a", fog: false, toneMapped: false }));
-      m.material.color.multiplyScalar(2.5); // HDR: blooms past threshold 1
-      m.layers.set(NOINK);
-      g.add(m);
+      // A soft core inside a wide faint halo: a beam of light, not a lit tube.
+      const ray = new Group().add(new Mesh(new CylinderGeometry(0.1, 0.1, 1, 16, 1, true), core), new Mesh(new CylinderGeometry(0.24, 0.24, 1, 16, 1, true), halo));
+      ray.traverse((o) => o.layers.set(NOINK));
+      g.add(ray);
     }
     return g;
   },

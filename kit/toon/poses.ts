@@ -111,3 +111,28 @@ export const idlePose = (t: number, look = 0) => posed("idle", t, look);
  * Squash and stretch on a reaction, `f` frames after it: squash, overshoot into a stretch, settle (4 frames, ~8 %).
  */
 export const reactSquash = (f: number) => (f < 0 || f > 3 ? 0 : [1, -0.8, -0.3, 0.1][Math.floor(f)]);
+
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+/** In-between of two poses (t 0..1): numbers and hand targets blend, grips switch halfway. */
+export const blendPose = (a: Pose, b: Pose, t: number): Pose => {
+  const k = Math.min(Math.max(t, 0), 1), e = k * k * (3 - 2 * k);
+  const num = (x?: number, y?: number) => lerp(x ?? 0, y ?? 0, e);
+  return {
+    ...(e < 0.5 ? a : b),
+    bob: num(a.bob, b.bob), sway: num(a.sway, b.sway), look: num(a.look, b.look),
+    lift: [num(a.lift[0], b.lift[0]), num(a.lift[1], b.lift[1])],
+    tilt: num(a.tilt, b.tilt), lean: num(a.lean, b.lean), shrug: num(a.shrug, b.shrug), knee: num(a.knee, b.knee),
+    arms: [0, 1].map((i) => ({ ...(e < 0.5 ? a.arms[i] : b.arms[i]), at: [lerp(a.arms[i].at[0], b.arms[i].at[0], e), lerp(a.arms[i].at[1], b.arms[i].at[1], e)] })) as [Arm, Arm],
+  };
+};
+/**
+ * A pose timeline: [frame, pose name] keys; each change eases over `ease` frames (4 by default, refs never pop a
+ * pose in one frame). Breathing from `posed` stays on.
+ */
+export const poseAt = (keys: [number, PoseName][], f: number, ease = 4, look?: number): Pose => {
+  let i = 0;
+  while (i + 1 < keys.length && keys[i + 1][0] <= f) i++;
+  const cur = posed(keys[i][1], f / 30, look);
+  if (i === 0 || f - keys[i][0] >= ease) return cur;
+  return blendPose(posed(keys[i - 1][1], f / 30, look), cur, (f - keys[i][0]) / ease);
+};

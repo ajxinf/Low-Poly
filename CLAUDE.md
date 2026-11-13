@@ -5,7 +5,7 @@ Faceless channel **Stickrified** (YouTube Shorts, TikTok, Facebook Reels; long-f
 **How to make a video: follow `.claude/skills/toon-world-short/SKILL.md`.** It holds the pipeline, look values, protagonist spec and gotchas. **Scripts (formulas, jokes, Eleven v4 tags, length): follow `.claude/skills/stickrified-script/SKILL.md`.** This file only holds the project-wide rules.
 
 ## Machine
-Windows 11 laptop: i5-11400H, RTX 3050 4 GB VRAM, 16 GB RAM. Commands must work in PowerShell. Render with `--gl=angle` and `--concurrency=1` or `2` (raise only if stable). Set `$env:TEMP`/`$env:TMP` to `C:\remotion-tmp` before rendering.
+Windows 11 laptop: i5-11400H, RTX 3050 4 GB VRAM, 16 GB RAM. Commands must work in PowerShell. Render with `--gl=angle` and `--concurrency=2` (drop to 1 only if a render crashes or goes black). Set `$env:TEMP`/`$env:TMP` to `C:\remotion-tmp` before rendering.
 
 ## Stack
 - Remotion + `@remotion/three` (React Three Fiber). Every motion (characters, camera, shaders) must be driven by `useCurrentFrame()`, never by clocks or `useFrame` time.

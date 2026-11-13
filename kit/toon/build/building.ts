@@ -149,7 +149,7 @@ export const building = (s: BuildingSpec): Built => {
   // ---- windows
   const nb = Math.max(2, Math.floor(s.w / 2.1)), bay = s.w / nb;
   const winMat = (look: WindowLook) =>
-    M(`w${look}${s.trim}${s.windows.curtain}`, () => toonMaterial({ map: windowLook(look, s.trim, s.windows.curtain), emissive: look.startsWith("lit") ? ["#ffb76a", 2.4] : undefined }));
+    M(`w${look}${s.trim}${s.windows.curtain}`, () => toonMaterial({ map: windowLook(look, s.trim, s.windows.curtain), emissive: look.startsWith("lit") ? ["#ffb76a", 1.4] : undefined }));
   const windowAt = (x: number, y0: number) => {
     const style = s.windows.styles[Math.floor(r() * s.windows.styles.length)];
     const lit = style !== "boarded" && style !== "broken" && r() < s.windows.lit;

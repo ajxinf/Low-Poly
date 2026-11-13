@@ -1,9 +1,10 @@
 import { useMemo } from "react";
 import { useCurrentFrame } from "remotion";
-import { Box3, BufferAttribute, BufferGeometry, ConeGeometry, CylinderGeometry, Group, Mesh, Object3D, SphereGeometry, Vector3 } from "three";
+import { Box3, BufferAttribute, BufferGeometry, CatmullRomCurve3, ConeGeometry, CylinderGeometry, Group, Mesh, Object3D, SphereGeometry, TubeGeometry, Vector3 } from "three";
 import { LightPreset } from "../lights";
 import { rng } from "../paint";
 import { PracticalKind, practicalLights } from "../shade";
+import { practicalGlows } from "../glow";
 import { BuildingSpec, building, specFacts } from "./building";
 import { debris, groundMaterial, puddle, scraps } from "./ground";
 import { Kit, MAT } from "./kit";
@@ -48,6 +49,8 @@ export type StreetOpts = {
   extra?: (sp: ReturnType<typeof spine>) => Object3D[];
   /** Practical lights for those extra objects. */
   extraLights?: { pos: Vector3; kind: PracticalKind }[];
+  /** Override the preset's utility poles and wires (off when a shot needs open sky, e.g. a light gag). */
+  wires?: boolean;
 };
 
 type Light = { pos: Vector3; kind: PracticalKind };
@@ -206,14 +209,14 @@ export const buildStreet = (p: EraPreset, light: LightPreset, o: StreetOpts = {}
     // Past the facades' reach, plus the base's own 0.19 m half-width.
     const x = p.layout === "detached" ? side * (ROAD + 0.6) : side * (FRONT - REACH - 0.35);
     const ry = yaw(right(s).multiplyScalar(-side)) - Math.PI / 2; // arm reaches over the street
-    const lp = place(lampPost(), at(s, x), ry, `lamp post at s ${s}`);
+    const lp = place(lampPost(!!light.lamp), at(s, x), ry, `lamp post at s ${s}`); // unlit by day
     lights.push({ pos: lp.localToWorld(LAMP_HEAD.clone()), kind: "lamp" });
   }
 
   // Props along the walks (or yards), keeping clear of lamps.
   // 0.6 m past the facades' reach: a 1.8 m bench turned by up to 0.25 rad still clears it. Props keep 2.2 m apart
   // along each side so they never stand in each other.
-  const nProps = Math.round(L / 4.5);
+  const nProps = Math.round(L / 3); // was L / 4.5: refs are packed with set dressing
   const taken: Record<number, number[]> = { [-1]: [], [1]: [] };
   // The caller's own props (foreground framing) are placed first, so random props keep 1 m away from them.
   const extras = o.extra?.(sp) ?? [];
@@ -227,7 +230,7 @@ export const buildStreet = (p: EraPreset, light: LightPreset, o: StreetOpts = {}
     if (kind === "cart") x = side * (Math.abs(x) - 0.5); // 1.3 m deep with its shafts
     if (extraBoxes.some((b) => b.distanceToPoint(at(s, x)) < 1)) continue;
     if (kind === "hedge" || kind === "fence") [x, ry] = [side * (WALK + 0.3), yaw(tangent(s)) + Math.PI / 2];
-    if (kind === "mailbox") x = side * (WALK + 0.2);
+    if (kind === "mailbox" || kind === "trashBin") x = side * (WALK + 0.2); // on the verge, never in the road
     if (kind === "pine" || kind === "campfire") x = side * (WALK + 1.5 + r() * 2.5);
     const obj = place(PROP[kind](r), at(s, x), ry, `${kind} at s ${s.toFixed(1)}`);
     if (kind === "pine" || kind === "campfire") {
@@ -237,6 +240,51 @@ export const buildStreet = (p: EraPreset, light: LightPreset, o: StreetOpts = {}
       obj.updateMatrixWorld(true);
     }
     if (kind === "campfire") lights.push({ pos: obj.localToWorld(FIRE_HEAD.clone()), kind: "fire" });
+  }
+
+  // Snow streets: low banks along both kerbs (ploughed snow), lumpy, so the edge of the road reads.
+  if (p.road.kind === "snow") {
+    const bank = MAT.color("#eef2fa");
+    const kb = new Kit();
+    for (const side of [-1, 1])
+      for (let s = -4; s < L + 4; s += 1.1 + r() * 0.8) {
+        const w = 0.7 + r() * 0.9, hgt = 0.18 + r() * 0.22;
+        const geo = new SphereGeometry(1, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2);
+        geo.scale(w, hgt, 0.45 + r() * 0.2);
+        const q = at(s, side * (ROAD + 0.15));
+        kb.add(bank, geo, q.x, -0.02, q.z, { ry: yaw(tangent(s)) });
+      }
+    const banks = kb.build();
+    banks.traverse((o) => ((o as Mesh).castShadow = false));
+    g.add(banks);
+  }
+
+  // Utility poles and sagging wires along one side (refs: power lines in most exterior shots).
+  if (o.wires ?? p.wires) {
+    const side = 1, xs = p.layout === "detached" ? side * (ROAD + 0.9) : side * (FRONT - REACH - 0.35);
+    const tops: Vector3[][] = [];
+    for (let s = 1; s < L + 6; s += 13) {
+      if (lampSpots.some(([ls, lside]) => lside === side && Math.abs(ls - s) < 1.5)) s += 2;
+      const kp = new Kit();
+      kp.add(MAT.darkWood(), new CylinderGeometry(0.11, 0.14, 7.6, 8), 0, 3.8, 0);
+      kp.box(MAT.darkWood(), 1.7, 0.1, 0.1, 0, 7.1, 0);
+      for (const dx of [-0.7, 0, 0.7]) kp.add(MAT.color("#d8d0c0"), new CylinderGeometry(0.04, 0.05, 0.14, 6), dx, 7.22, 0);
+      const pole = place(kp.build(), at(s, xs), yaw(tangent(s)), `utility pole at s ${s.toFixed(1)}`);
+      pole.updateMatrixWorld(true);
+      tops.push([-0.7, 0, 0.7].map((dx) => pole.localToWorld(new Vector3(dx, 7.29, 0))));
+    }
+    const wire = MAT.color("#2a2226");
+    for (let i = 0; i + 1 < tops.length; i++)
+      for (let w = 0; w < 3; w++) {
+        const a = tops[i][w], b = tops[i + 1][w], pts: Vector3[] = [];
+        for (let j = 0; j <= 12; j++) {
+          const t = j / 12;
+          pts.push(a.clone().lerp(b, t).setY(a.y + (b.y - a.y) * t - 0.55 * 4 * t * (1 - t)));
+        }
+        const tube = new Mesh(new TubeGeometry(new CatmullRomCurve3(pts), 24, 0.018, 4), wire);
+        tube.castShadow = false;
+        g.add(tube);
+      }
   }
 
   // Washing lines across the street, birds on roofs, flags off facades.
@@ -281,7 +329,23 @@ export const buildStreet = (p: EraPreset, light: LightPreset, o: StreetOpts = {}
   });
   lights.push(...(o.extraLights ?? []));
   g.add(pickLights(lights, light, o.lightCenter ?? at(L * 0.4, 0, 2), o.maxLights ?? 24));
+  g.add(practicalGlows(lights, light)); // every lamp and lit window glows, not only those with a real light
   return { group: g, smoke, sp, ROAD, WALK, FRONT, animate: undefined as ((f: number) => void) | undefined };
+};
+
+/** Jitter a cone's side vertices radially (ridges and gullies); the apex and base ring stay put. */
+const ridged = (geo: ConeGeometry, r: () => number, amp: number) => {
+  const pos = geo.attributes.position, h = (geo.parameters as { height: number }).height;
+  const ph = [r(), r(), r()].map((v) => v * 6.28);
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i), rad = Math.hypot(x, z);
+    if (rad < 1e-3) continue;
+    const a = Math.atan2(z, x), t = (y + h / 2) / h;
+    const k = 1 + amp * (0.6 * Math.sin(5 * a + ph[0]) + 0.4 * Math.sin(9 * a + ph[1] + t * 2)) * Math.sin(Math.PI * Math.min(t + 0.15, 1));
+    pos.setXYZ(i, x * k, y, z * k);
+  }
+  geo.computeVertexNormals();
+  return geo;
 };
 
 /** Distant hills / mesas / snowy mountains in a 120 deg fan 90-150 m past the street end (aerial perspective hazes them). */
@@ -290,15 +354,21 @@ const backdrop = (b: NonNullable<EraPreset["backdrop"]>, end: Vector3, dir: Vect
   const m = MAT.color(b.color), snow = MAT.color("#f4f6fc"), tree = b.trees ? MAT.color(b.trees) : null;
   const base = Math.atan2(dir.x, -dir.z);
   for (let i = 0; i < 14; i++) {
-    const a = base + (i / 13 - 0.5) * 2.2, d = (90 + r() * 60) / Math.sqrt(k0) ;
+    const a = base + (i / 13 - 0.5) * 2.2, d = ((b.shape === "mountains" ? 130 : 90) + r() * 60) / Math.sqrt(k0);
     const x = end.x + Math.sin(a) * d, z = end.z - Math.cos(a) * d;
     if (b.shape === "mesas") {
       const w = 30 + r() * 40, h = 22 + r() * 18;
       k.add(m, new CylinderGeometry(w * 0.42, w * 0.5, h, 7), x, h / 2, z);
     } else if (b.shape === "mountains") {
-      const h = 45 + r() * 40;
-      k.add(m, new ConeGeometry(h * 0.9, h, 6), x, h / 2 - 2, z);
-      k.add(snow, new ConeGeometry(h * 0.3, h * 0.33, 6), x, h - h * 0.165 - 2, z);
+      // A ridged peak with one or two shoulders (not a 6-sided pyramid), snowcap following the same ridges.
+      const h = 30 + r() * 26;
+      const peak = (hh: number, px: number, pz: number) => {
+        const geo = ridged(new ConeGeometry(hh * 0.95, hh, 18, 4), r, 0.16);
+        k.add(m, geo, px, hh / 2 - 2, pz);
+        k.add(snow, ridged(new ConeGeometry(hh * 0.34, hh * 0.36, 18, 2), r, 0.12), px, hh - hh * 0.18 - 2, pz);
+      };
+      peak(h, x, z);
+      if (r() < 0.8) peak(h * (0.55 + r() * 0.2), x + (r() - 0.5) * h * 1.2, z + 8);
     } else {
       const w = (40 + r() * 50) * k0, h = (20 + r() * 16) * k0 * k0;
       const hill = new SphereGeometry(1, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2);

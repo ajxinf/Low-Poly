@@ -11,7 +11,7 @@ import { practicals, shared } from "./shade";
 import { DESIGN, Pen, makeCanvas } from "./toon";
 
 export type { CharState, Look } from "./figure";
-export { STRIDE, idlePose, posed, reactSquash, runPose, walkPose } from "./poses";
+export { STRIDE, blendPose, idlePose, poseAt, posed, reactSquash, runPose, walkPose } from "./poses";
 
 /** Blinks every 0.5-2.3 s, 4 frames long (seeded so every render tab agrees). */
 /** Height of the contact blob above the soles (the QA guard checks it stays above the ground). */
@@ -79,7 +79,9 @@ export const Character: React.FC<{ position: Vector3; state: CharState; look?: L
     }
     const lu = (p.lampCast.material as ShaderMaterial).uniforms;
     if (lamp) lu.uLampP.value.copy(lamp.pos);
-    const k = lamp ? Math.max(0, 1 - best) : 0;
+    // A lamp right overhead throws a blob straight under the feet (reads as a stain): only side lamps cast.
+    const side = lamp ? Math.hypot(lamp.pos.x - position.x, lamp.pos.z - position.z) : 0;
+    const k = lamp ? Math.max(0, 1 - best) * Math.min(Math.max((side - 0.8) / 1.2, 0), 1) : 0;
     lu.uStrength.value = CARD_LOOK.lampCast * k * k;
     p.lampCast.visible = k > 0;
     if (lamp) p.lampCast.rotation.y = Math.atan2(position.x - lamp.pos.x, position.z - lamp.pos.z);

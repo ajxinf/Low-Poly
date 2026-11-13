@@ -10,13 +10,12 @@ import { Composer } from "../../../kit/toon/Composer";
 import { Dust } from "../../../kit/toon/dust";
 import { MovingProp, QAPlan, ShotCamera } from "../../../kit/toon/guard";
 import { LIGHTS } from "../../../kit/toon/lights";
-import { LightShafts } from "../../../kit/toon/shafts";
 import { Stamp } from "../../../kit/toon/Stamp";
 import { ToonWorld } from "../../../kit/toon/world";
 import { OPTS, at, sunDisc } from "./build";
 import { propsFor } from "./props";
 import { BEAT, words } from "./roles";
-import { PLAN, SHAFTS, SHOTS, SUN, SUN_POS, XF } from "./story";
+import { PLAN, SHOTS, SUN, SUN_POS, XF } from "./story";
 
 // _pipeline-test-2: 15 s pipeline smoke test 2 (not for posting). Each shot is its own Sequence + canvas; a shot that
 // starts before the previous one ends dissolves in over 10 frames on top of it, one that starts after it is a cut.
@@ -49,7 +48,6 @@ const ShotView: React.FC<{ i: number }> = ({ i }) => {
       <Street preset={PRESETS.modern_suburb} light={LIGHTS.day} opts={OPTS} />
       <Dust center={DUST.center} size={DUST.size} color="#fff4dc" strength={1.2} count={500} />
       {s.sunDisc && <Sun cam={s.pose(lf).pos} />}
-      <LightShafts shafts={SHAFTS} />
       {moving.map((p) => <Moving key={p.name} prop={p} f={f} />)}
       {s.cast?.map((c) => <Character key={c.name} position={c.at(lf)} state={c.state(lf)} look={c.look} />)}
       <Composer dof={s.dof} />

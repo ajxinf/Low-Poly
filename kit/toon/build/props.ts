@@ -34,13 +34,13 @@ export const clockTower = () => {
 
 /** Street lamp, 3.9 m. `LAMP_HEAD` = lantern position (local) for its practical light. */
 export const LAMP_HEAD = new Vector3(0.55, 3.55, 0);
-export const lampPost = () => {
+export const lampPost = (lit = true) => {
   const k = new Kit();
   k.add(MAT.metal(), new CylinderGeometry(0.16, 0.2, 0.5, 10), 0, 0.25, 0);
   k.add(MAT.metal(), new CylinderGeometry(0.06, 0.08, 3.8, 10), 0, 2.15, 0);
   k.box(MAT.metal(), 0.75, 0.06, 0.06, 0.32, 3.95, 0);
   k.add(MAT.metal(), new ConeGeometry(0.32, 0.25, 4), 0.55, 3.88, 0, { ry: Math.PI / 4 });
-  k.add(MAT.lampGlass(), new CylinderGeometry(0.2, 0.14, 0.42, 4), 0.55, 3.55, 0, { ry: Math.PI / 4 });
+  k.add(MAT.lampGlass(lit), new CylinderGeometry(0.2, 0.14, 0.42, 4), 0.55, 3.55, 0, { ry: Math.PI / 4 });
   k.add(MAT.metal(), new CylinderGeometry(0.1, 0.1, 0.06, 6), 0.55, 3.31, 0);
   return k.build();
 };

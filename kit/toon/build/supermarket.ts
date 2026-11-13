@@ -6,6 +6,7 @@ import { SKY } from "../ink";
 import { LightPreset, linear } from "../lights";
 import { rng } from "../paint";
 import { PracticalKind, practicalLights, toonMaterial } from "../shade";
+import { practicalGlows } from "../glow";
 import { groundMaterial, groundTex, scraps } from "./ground";
 import { Kit, M, MAT } from "./kit";
 import { EraPreset } from "./presets";
@@ -182,7 +183,7 @@ export const buildSupermarket = (p: EraPreset, light: LightPreset, o: { seed?: n
   const power = p.interior?.power ?? true;
   const abandoned = p.interior?.abandoned ?? false;
   const g = new Group();
-  const lights: { pos: Vector3; kind: PracticalKind; color?: [string, number] }[] = [];
+  const lights: { pos: Vector3; kind: PracticalKind; color?: [string, number]; glowAt?: Vector3 }[] = [];
   const add = (obj: Object3D, pos: Vector3, ry = 0, collider?: string) => {
     obj.position.copy(pos);
     obj.rotation.y = ry;
@@ -218,7 +219,7 @@ export const buildSupermarket = (p: EraPreset, light: LightPreset, o: { seed?: n
     // through the windows, not through the roof); by day the key stands in for the strips.
     const k = new Kit();
     const ceil = p.roofs.colors[0];
-    k.box(M(`ceil${ceil}`, () => toonMaterial({ map: groundTex({ kind: "tiles", base: ceil, accent: ceil, contrast: 0.15 }), repeat: [0.0625, 0.0625] })), HW * 2, 0.3, LEN - FRONT_S, 0, 0, 0);
+    k.box(M(`ceil${ceil}`, () => toonMaterial({ map: groundTex({ kind: "tiles", base: ceil, accent: ceil, contrast: 0.15, grout: -0.12 }), repeat: [0.0625, 0.0625] })), HW * 2, 0.3, LEN - FRONT_S, 0, 0, 0);
     const cg = k.build();
     cg.traverse((m) => ((m as Mesh).castShadow = !power));
     add(cg, at((LEN + FRONT_S) / 2, 0, H + 0.15));
@@ -309,6 +310,24 @@ export const buildSupermarket = (p: EraPreset, light: LightPreset, o: { seed?: n
     }
   }
 
+  // Set dressing by the entrance (refs: lived-in rooms): sale posters on the front wall, a row of shopping carts.
+  ["SALE", "2 FOR 1", "OPEN 24H", "FRESH"].forEach((t, i) => {
+    const s = new Mesh(new BoxGeometry(1.3, 0.7, 0.03), M(`poster${t}`, () => toonMaterial({ map: signTex(t, ["#d84a3a", "#f2c84a", "#2f8f86", "#4a7ad8"][i], "#fff6e8") })));
+    s.position.copy(at(FRONT_S + 0.17, [-10.2, -6.4, 6.4, 10.2][i], 3.1));
+    s.rotation.y = Math.PI;
+    g.add(s);
+  });
+  {
+    const cartMat = MAT.metal();
+    for (let i = 0; i < 4; i++) {
+      const k = new Kit();
+      k.box(cartMat, 0.55, 0.42, 0.85, 0, 0.72, 0);
+      k.box(MAT.color("#c8423a"), 0.56, 0.05, 0.05, 0, 1.0, -0.47);
+      for (const [dx, dz] of [[-0.22, -0.35], [0.22, -0.35], [-0.22, 0.35], [0.22, 0.35]]) k.box(cartMat, 0.05, 0.5, 0.05, dx, 0.25, dz);
+      add(k.build(), at(1.2 + i * 0.32, 9.6, 0), 0, i ? undefined : "shopping carts");
+    }
+  }
+
   // Department signs on the back wall.
   p.shops.signs.slice(0, 4).forEach((t, i) => {
     const s = new Mesh(new BoxGeometry(4, 0.8, 0.06), M(`dept${t}`, () => toonMaterial({ map: signTex(t, "#1f6f6a", "#fff6e8") })));
@@ -324,10 +343,11 @@ export const buildSupermarket = (p: EraPreset, light: LightPreset, o: { seed?: n
     const panel = new Mesh(new BoxGeometry(STRIP.w, 0.08, STRIP.d), i === FLICKER && !power ? flickMat : lit ? on : off);
     panel.position.copy(at(sp.s, sp.x, H - 0.2));
     g.add(panel);
-    if (lit) lights.push({ pos: at(sp.s, sp.x, H - 1.2), kind: "lamp" });
+    if (lit) lights.push({ pos: at(sp.s, sp.x, H - 1.2), kind: "lamp", glowAt: at(sp.s, sp.x, H - 0.3) });
   });
   const pl = practicalLights(lights, light);
   g.add(pl);
+  g.add(practicalGlows(lights, light));
   const flickLight = power ? undefined : pl.children[lights.findIndex((l) => l.kind === "lamp")];
   const baseI = flickLight ? (flickLight as unknown as { intensity: number }).intensity : 0;
   const animate = power

@@ -5,8 +5,8 @@ import { PerspectiveCamera, Vector3 } from "three";
  * whole camera is driven by the frame number. Moves compose: `shot(base, [pushIn(2), arc(12)])`.
  *
  * Easing: smootherstep blended with 45 % linear, so a move never stops at its ends (no still hold: the ends still
- * creep at ~45 % of the average speed) while reading as a glide (peak ~1.5x average). Targets (skill): ~3 px/f typical, 10-25 px/f on moves, roll <= 5 deg, no still hold of
- * 12+ frames. Check with `python scripts/measure.py <video>`.
+ * creep at ~45 % of the average speed) while reading as a glide (peak ~1.5x average). Targets (skill): real holds on beats (up to 60 f), quick 10-15 f moves up to
+ * ~50 px/f, roll <= 5 deg. Check with `python scripts/measure.py <video>`.
  */
 export type CamPose = { pos: Vector3; look: Vector3; fov: number; roll: number };
 export type Move = (p: CamPose, u: number) => CamPose;
@@ -90,4 +90,45 @@ export const applyCam = (camera: PerspectiveCamera, p: CamPose) => {
   camera.up.set(0, 1, 0);
   camera.lookAt(p.look);
   camera.rotateZ((p.roll * Math.PI) / 180);
+};
+
+/**
+ * Shot sizes from the references, as the frame HEIGHT in m around a standing card character (heads are 0.5 m wide,
+ * so in a 9:16 frame a "close-up" with the head at ~45 % of the width also shows the torso, exactly as the refs do):
+ * cu head ~45 % of the width, mcu ~36 %, ms ~30 %, fs ~19 % (whole body + ground), ws the place.
+ */
+// 2026-11-13: tighter (ms was 3.0 and read full-length; refs crop mediums at the waist, mcu at the chest).
+export const SHOT_SIZE = { cu: 1.45, mcu: 1.75, ms: 2.1, fs: 4.6, ws: 9 } as const;
+export type ShotSize = keyof typeof SHOT_SIZE;
+/**
+ * Base pose framing a character standing at `at` (soles), camera toward `from` (any point on the camera side),
+ * at eye level by default. `size` sets the distance from the fov so the framed span fills the frame height; the
+ * eyes land about a third down the frame.
+ */
+export const frameOn = (at: Vector3, from: Vector3, size: ShotSize, o: { fov?: number; head?: number; height?: number; side?: number } = {}) => {
+  const fov = o.fov ?? (size === "cu" ? 34 : size === "mcu" ? 38 : size === "ms" ? 42 : 48), head = o.head ?? 1.55;
+  const span = SHOT_SIZE[size], dist = span / 2 / Math.tan((fov * Math.PI) / 360);
+  // Eyes about a third down the frame for every size (refs), never looking below the knees.
+  const eye = head - 0.17, lookY = Math.max(eye - span * 0.18, 0.5);
+  const dir = from.clone().sub(at).setY(0).normalize();
+  const right = new Vector3(-dir.z, 0, dir.x);
+  const pos = at.clone().addScaledVector(dir, dist).addScaledVector(right, o.side ?? 0).setY(o.height ?? lookY - 0.12); // slightly below the look point: a gentle low angle (refs), not eye level
+  return { pos, look: at.clone().setY(lookY), fov };
+};
+
+/**
+ * Reframe inside a shot: glide the pose toward the framing `to` between shot-local frames `a` and `b`
+ * (smootherstep: ~10 f in, ~10 f out, the reference's motivated move), holding before and after. The base pose's
+ * own push keeps the holds creeping. Reference rhythm: hold 1-3 s, glide 15-25 f at up to ~22 px/f, hold again.
+ */
+export const reframe = (pose: (f: number) => CamPose, to: Omit<CamPose, "roll">, a: number, b: number) => (f: number): CamPose => {
+  const p = pose(f), t = smootherstep((f - a) / Math.max(b - a, 1));
+  if (t <= 0) return p;
+  const d = pose(b); // the base pose's own drift carries on after the glide
+  return {
+    pos: p.pos.clone().lerp(to.pos.clone().add(p.pos.clone().sub(d.pos)), t),
+    look: p.look.clone().lerp(to.look.clone().add(p.look.clone().sub(d.look)), t),
+    fov: p.fov + (to.fov - p.fov) * t,
+    roll: p.roll,
+  };
 };

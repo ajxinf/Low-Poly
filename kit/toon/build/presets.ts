@@ -44,6 +44,8 @@ export type EraPreset = {
   birds: number;
   flags: [string, string][];
   washing: boolean;
+  /** Utility poles with sagging wires along one side (refs: power and telegraph lines in most exterior shots). */
+  wires?: boolean;
   smoke: string;
   /** Interiors: power on (strip lights) or off, and abandoned (barricades, empty shelves, litter). */
   interior?: { power: boolean; abandoned: boolean };
@@ -60,11 +62,11 @@ const SUPERMARKET: EraPreset = {
   layout: "interior",
   interior: { power: true, abandoned: false },
   // Hue families: sage + warm cream floor, cream walls over a teal wainscot, teal signage and shelf headers,
-  // lavender-grey ceiling; products carry the reds, yellows and blues. Rust stays reserved for "you".
+  // warm off-white ceiling; products carry the reds, yellows and blues. Rust stays reserved for "you".
   road: { kind: "tiles", base: "#7fae8c", accent: "#dcc0a0", contrast: 0.35, grime: 0.5 },
   walk: { kind: "tiles", base: "#7fae8c", contrast: 0.35 },
   walls: [{ kind: "plaster", colors: ["#ecc9a6"] }],
-  roofs: { types: ["flat"], colors: ["#9c90bc"] },
+  roofs: { types: ["flat"], colors: ["#d9d3c6"] }, // warm off-white ceiling (lavender read as a neon grid)
   trims: ["#2f8f86", "#2f8a84"],
   doors: ["#a0a8b0"],
   shutters: [],
@@ -97,7 +99,7 @@ export const PRESETS: Record<PresetName, EraPreset> = {
     walk: { kind: "slabs", base: "#c4a283", contrast: 0.5 },
     walls: [
       { kind: "brick", colors: ["#9a5a44", "#8a4e4a", "#a06048"] },
-      { kind: "plaster", colors: ["#c98f6a", "#d8b07a", "#9fae8e", "#8a9fbc", "#dcc4a0", "#b97a84", "#c2a26a"] },
+      { kind: "plaster", colors: ["#d8b07a", "#dcc4a0", "#c2a26a", "#8a9fbc"] }, // cream/ochre + one slate blue: 3-4 hue families
       { kind: "stone", colors: ["#b8a890"] },
     ],
     roofs: { types: ["gable", "gable", "hip", "flat"], colors: ["#a4503a", "#7a4a5c", "#5a4a6a", "#8a5a3a", "#9a4a40"] },
@@ -165,6 +167,7 @@ export const PRESETS: Record<PresetName, EraPreset> = {
     puddles: 1,
     birds: 4,
     flags: [["#c8423a", "#f2ece2"]],
+    wires: true,
     washing: false,
     smoke: "#e0d4c4",
     backdrop: { color: "#c87a5a", shape: "mesas" },
@@ -201,6 +204,7 @@ export const PRESETS: Record<PresetName, EraPreset> = {
     puddles: 2,
     birds: 3,
     flags: [["#2e4a8a", "#f2ece2"]],
+    wires: true,
     washing: false,
     smoke: "#e8e8ee",
     backdrop: { color: "#6a9a5a", shape: "hills", trees: "#3e6a3a" },
@@ -235,7 +239,7 @@ export const PRESETS: Record<PresetName, EraPreset> = {
     porch: 0.7,
     chimneys: [1, 2],
     posters: 0,
-    props: ["pine", "fence", "crate", "campfire"],
+    props: ["pine", "fence", "crate", "bench", "barrel"],
     debris: [],
     scraps: [],
     puddles: 0,

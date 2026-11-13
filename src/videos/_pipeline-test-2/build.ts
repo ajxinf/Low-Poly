@@ -1,8 +1,9 @@
-import { BoxGeometry, CircleGeometry, ConeGeometry, CylinderGeometry, Group, Mesh, MeshBasicMaterial, Object3D, SphereGeometry, Vector3 } from "three";
+import { BoxGeometry, ConeGeometry, CylinderGeometry, Group, Mesh, MeshBasicMaterial, Object3D, SphereGeometry, Vector3 } from "three";
 import { StreetOpts, spine } from "../../../kit/toon/build/street";
 import { Kit, M, MAT } from "../../../kit/toon/build/kit";
 import { NOINK } from "../../../kit/toon/ink";
 import { toonMaterial } from "../../../kit/toon/shade";
+import { sunDisc as kitSunDisc } from "../../../kit/toon/glow";
 
 // World layout for _pipeline-test-2: a straight modern-suburb street by day. In the right-hand front yard stand two
 // garden sheds with a low fence between them: yours (s 14) and the neighbour's (s 18.4), each with a step ladder in
@@ -155,13 +156,8 @@ export const lemonade = () => {
 };
 
 /** The heatwave sun: a big disc far up the sky, drawn without ink or fog. */
-export const sunDisc = () => {
-  const m = new Mesh(new CircleGeometry(22, 48), new MeshBasicMaterial({ color: "#ffe7a0", fog: false, toneMapped: false }));
-  // 0.97, not HDR: a 22 m disc this close fills ~7 % of the frame and clipped to pure white at x2.2 (video_qa CLIP).
-  m.material.color.multiplyScalar(0.97);
-  m.layers.set(NOINK);
-  return m;
-};
+// Not HDR: a 22 m disc this close fills ~7 % of the frame and clipped to pure white at x2.2 (video_qa CLIP).
+export const sunDisc = () => kitSunDisc(22);
 
 /** His black roof heating up: a red-hot overlay whose opacity follows the story. */
 export const hotRoof = () => {
@@ -184,6 +180,7 @@ export const OPTS: StreetOpts = {
   curve: 0,
   lamps: [[4, -1], [26, -1]],
   landmark: false,
+  wires: false, // the S3 sun-ray gag needs open sky over the yards
   lightCenter: at(16, 4, 2),
   extra: () => [
     named(shed("#c8d8c0", "#4a4a52"), "your shed", at(YOURS.s, SHED.x), SHED.door),

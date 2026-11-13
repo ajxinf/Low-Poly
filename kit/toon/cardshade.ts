@@ -31,7 +31,7 @@ export const CARD_LOOK = {
   /** Lamp-thrown shadow strength right under a lamp (fades out over the lamp radius). */
   lampCast: 0.55,
   /** How much a practical (x its HDR colour) warms the card at its centre. */
-  practical: 0.3,
+  practical: 0.45, // was .3: faces must take the lamp (ref13: warm bulb side, falling off across the head)
 };
 
 const cardVert = /* glsl */ `
@@ -63,7 +63,7 @@ const cardFrag = /* glsl */ `
 #include <shadowmap_pars_fragment>
 uniform sampler2D uMap;
 uniform float uPass, uCharShade, uPractical;
-uniform vec3 uCharTint, uHazeColor;
+uniform vec3 uCharTint, uHazeColor, uInkFrom, uCharInk;
 uniform float uHazeStart, uHazeAmount;
 varying vec3 vView;
 varying vec2 vUv;
@@ -85,13 +85,22 @@ void main() {
                 + getShadow(directionalShadowMap[0], ds.shadowMapSize, 1.0, ds.shadowBias, ds.shadowRadius, vProbeB));
   #endif
   vec3 m = uCharTint * mix(uCharShade, 1.0, street);
+  vec3 lamp = vec3(0.0);
   #if NUM_POINT_LIGHTS > 0
   for (int i = 0; i < NUM_POINT_LIGHTS; i++) {
-    float r = length(pointLights[i].position - vView), D = pointLights[i].distance;
-    m *= 1.0 + pointLights[i].color * (1.0 - smoothstep(0.0, D, r)) * uPractical;
+    vec3 L = pointLights[i].position - vView;
+    float r = length(L), D = pointLights[i].distance;
+    // Bent normal (a card is a cylinder for light): the lamp side of the body is lit, the far side falls off.
+    vec3 n = normalize(vec3((vUv.x - 0.5) * 1.8, 0.0, 1.0));
+    lamp += pointLights[i].color * (1.0 - smoothstep(0.0, D, r)) * (0.35 + 0.9 * max(dot(n, L / max(r, 1e-3)), 0.0));
   }
+  m *= 1.0 + lamp * uPractical;
   #endif
-  vec3 c = aerial(tex.rgb * m, length(vView));
+  // Ink takes the scene light (ref2: navy at night, warmer on the lantern side). Only the ink colour itself is
+  // recoloured (dark hair, trousers and limb strokes keep theirs); a nearby lamp lifts it a little toward its colour.
+  float inkness = 1.0 - smoothstep(0.005, 0.012, distance(tex.rgb, uInkFrom));
+  vec3 base = mix(tex.rgb, uCharInk, inkness) + inkness * lamp * 0.03;
+  vec3 c = aerial(base * m, length(vView));
   gl_FragColor = vec4(c, tex.a);
   #include <fog_fragment>
 }`;

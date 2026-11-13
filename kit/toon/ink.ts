@@ -18,6 +18,11 @@ export const INK = {
   depthJump: 0.01,
   fogTint: 0, // same ink at every distance
   skyMaxM: 150, // no silhouette against the sky beyond this (keeps the horizon line-free)
+  /** Crease and contact lines are thinner than silhouettes (outlines.md 2.1: 2.2-2.4 px vs 3.1 px). */
+  creaseScale: 0.7,
+  contactScale: 0.6,
+  /** Opacity at farM (outlines.md: cores lighten 7 -> 16 -> 50 with distance). */
+  farOpacity: 0.8,
 };
 
 const vert = /* glsl */ `
@@ -30,6 +35,7 @@ uniform sampler2D tColor, tNormal, tDepth;
 uniform mat4 uProjInv;
 uniform vec2 uTexel;
 uniform float uPx, uNearPx, uNearM, uFarPx, uFarM, uCrease, uJump, uFogTint, uSkyMax, uFogNear, uFogFar;
+uniform float uCreaseScale, uContact, uContactScale, uFarOpacity;
 uniform vec3 uInk, uFog;
 varying vec2 vUv;
 
@@ -39,9 +45,11 @@ vec3 viewPos(vec2 uv, float d) {
 }
 float widthAt(float z) { return uPx * mix(uNearPx, uFarPx, clamp((z - uNearM) / (uFarM - uNearM), 0.0, 1.0)); }
 
-// Edge strength (0..1) between the centre sample and the one at uv; zn = distance of the nearer surface.
-float edgeAt(vec3 pc, vec3 nc, float zc, bool skyC, vec2 uv, out float zn) {
+// Edge strength (0..1) between the centre sample and the one at uv; zn = distance of the nearer surface,
+// ws = line width scale (silhouettes 1, creases and contacts thinner).
+float edgeAt(vec3 pc, vec3 nc, float zc, bool skyC, vec2 uv, out float zn, out float ws) {
   zn = zc;
+  ws = 1.0;
   vec4 nq4 = texture2D(tNormal, uv);
   if (nq4.a < 0.5) return -1.0; // neighbour is a NOINK card
   float dq = texture2D(tDepth, uv).x;
@@ -54,9 +62,14 @@ float edgeAt(vec3 pc, vec3 nc, float zc, bool skyC, vec2 uv, out float zn) {
   vec3 nq = normalize(nq4.xyz * 2.0 - 1.0);
   // Depth jump: one sample lies behind the other's tangent plane (signed, so concave joins stay clean).
   float off = max(dot(nc, pc - pq), dot(nq, pq - pc));
-  // Crease: normals bend past the angle and the surface falls away (convex only).
-  bool crease = dot(nc, nq) < uCrease && dot(nc, pq - pc) < -1e-4 * zn;
-  return (off > uJump * zn || crease) ? 1.0 : 0.0;
+  if (off > uJump * zn) return 1.0;
+  if (dot(nc, nq) < uCrease) {
+    // Convex crease (the surface falls away): box corners, wall tops. Concave (rises toward us): an object standing
+    // on the ground, drawn at uContact (0 indoors, where the reference has no wall/floor lines).
+    if (dot(nc, pq - pc) < -1e-4 * zn) { ws = uCreaseScale; return 1.0; }
+    if (dot(nc, pq - pc) > 1e-4 * zn) { ws = uContactScale; return uContact; }
+  }
+  return 0.0;
 }
 
 void main() {
@@ -78,13 +91,13 @@ void main() {
       for (int i = 1; i <= 4; i++) {
         float r = rMax * float(i) / 4.0;
         vec2 uv = vUv + dir * r * uTexel;
-        float zn, zn2;
-        float e = edgeAt(pc, nc, zc, skyC, uv, zn);
+        float zn, zn2, ws, ws2;
+        float e = edgeAt(pc, nc, zc, skyC, uv, zn, ws);
         if (e < 0.0) break;
         // Must still be across the edge 1 px further on: drops 1-px tile cracks.
-        if (e > 0.0) e = min(e, max(edgeAt(pc, nc, zc, skyC, uv + dir * uTexel, zn2), 0.0));
+        if (e > 0.0) e = min(e, max(edgeAt(pc, nc, zc, skyC, uv + dir * uTexel, zn2, ws2), 0.0));
         if (e > 0.0) {
-          float hw = 0.5 * widthAt(zn);
+          float hw = 0.5 * widthAt(zn) * ws;
           float c = e * (1.0 - smoothstep(hw - 0.5, hw + 0.5, r - 0.5 * rMax / 4.0));
           if (c > cover) { cover = c; zInk = zn; }
           break;
@@ -94,6 +107,7 @@ void main() {
   }
   float fogF = smoothstep(uFogNear, uFogFar, zInk);
   cover *= 1.0 - smoothstep(0.97, 1.0, fogF); // lines only vanish where fog fully hides the surface
+  cover *= mix(1.0, uFarOpacity, clamp((zInk - uNearM) / (uFarM - uNearM), 0.0, 1.0));
   vec3 ink = mix(uInk, uFog, uFogTint * fogF);
   gl_FragColor = vec4(mix(col, ink, cover), 1.0);
 }`;
@@ -120,6 +134,10 @@ export const inkMaterial = (size: Vector2) =>
       uJump: { value: INK.depthJump },
       uFogTint: { value: INK.fogTint },
       uSkyMax: { value: INK.skyMaxM },
+      uCreaseScale: { value: INK.creaseScale },
+      uContact: { value: 0.6 },
+      uContactScale: { value: INK.contactScale },
+      uFarOpacity: { value: INK.farOpacity },
       uFogNear: { value: 1e9 },
       uFogFar: { value: 2e9 },
       uInk: { value: new Color(INK.color) },

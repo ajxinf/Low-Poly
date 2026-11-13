@@ -1,6 +1,7 @@
 import { Color, Group, PointLight, ShaderMaterial, Texture, UniformsLib, UniformsUtils, Vector2, Vector3 } from "three";
 import { GRADE, gradeState } from "./grade";
 import { LightPreset, linear } from "./lights";
+import { INK } from "./toon";
 
 // Shared by every toon material, so one applyLight() relights the whole world.
 export const shared = {
@@ -15,6 +16,11 @@ export const shared = {
   /** Character cards: scene light tint and street-shadow dimming (lights.ts `char`). */
   uCharTint: { value: new Vector3(1, 1, 1) },
   uCharShade: { value: 0.86 },
+  /** Character ink: as drawn (toon.ts INK) and as this light shows it (lights.ts `charInk`); linear. */
+  uInkFrom: { value: linear(INK) },
+  uCharInk: { value: linear(INK) },
+  /** World ink on concave contacts (ink.ts), per preset. */
+  uContactInk: { value: 0.6 },
 };
 
 /** Practical light positions (world), for the lamp-thrown card shadow; the lights themselves are three PointLights. */
@@ -55,12 +61,15 @@ export const applyLight = (p: LightPreset, sunDir: Vector3) => {
   shared.uHazeAmount.value = p.haze.amount;
   shared.uCharTint.value.set(...p.char.tint);
   shared.uCharShade.value = p.char.shade;
+  shared.uCharInk.value.copy(linear(p.charInk ?? INK));
+  shared.uContactInk.value = p.contactInk ?? 0.6;
   gradeState.current = GRADE[p.grade];
 };
 
 export type PracticalKind = "lamp" | "window" | "shop" | "fire";
 /** Reach (m) and strength (x the preset's lamp strength) per kind. */
-const PRACTICAL = { lamp: [4.4, 1], window: [3.0, 0.45], shop: [3.6, 0.6], fire: [4.0, 1.2] } as const;
+// Reach up ~25 % (2026-11-13): pools wide enough to light a face and fall off across the frame, not a spot.
+const PRACTICAL = { lamp: [5.5, 1], window: [3.6, 0.45], shop: [4.4, 0.6], fire: [5.0, 1.2] } as const;
 
 /**
  * Real point lights for practicals (lamps, lit windows, shop fronts, fires). They light the world and the character
@@ -145,7 +154,7 @@ const fragment = /* glsl */ `
 #include <shadowmask_pars_fragment>
 uniform vec3 uColor, uEmissive;
 uniform sampler2D uMap;
-uniform float uHasMap, uMute, uFloor;
+uniform float uHasMap, uMute, uFloor, uMottle, uSpec;
 uniform vec3 uSunDir, uLit, uShade, uLift, uHazeColor;
 uniform float uSat, uHazeStart, uHazeAmount, uWear, uWearC, uWearW;
 uniform vec2 uRepeat;
@@ -158,6 +167,12 @@ varying vec3 vNV;
 ${POINT_LIGHTS}
 ${AERIAL}
 const vec3 W = vec3(0.2126, 0.7152, 0.0722);
+float vh(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float vnoise(vec2 p) {
+  vec2 i = floor(p), f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(vh(i), vh(i + vec2(1, 0)), f.x), mix(vh(i + vec2(0, 1)), vh(i + vec2(1, 1)), f.x), f.y);
+}
 void main() {
   vec3 a = uHasMap > 0.5 ? texture2D(uMap, vUv).rgb : vec3(1.0);
   if (uWear > 0.0) {
@@ -167,6 +182,11 @@ void main() {
   }
   a = mix(a, vec3(dot(a, W)), uMute) * uColor;
   a = mix(vec3(uFloor), vec3(1.0), a);
+  if (uMottle > 0.0) {
+    // World-space tonal mottling: breaks the repeat of 2 m ground tiles (cobbles read as wallpaper without it).
+    float m = 0.65 * vnoise(vW.xz * 0.23) + 0.35 * vnoise(vW.xz * 0.9 + 7.3);
+    a *= 1.0 + uMottle * (m - 0.5) * 2.0;
+  }
   vec3 n = normalize(vN);
   // Two tones: a hard (1-2 px soft) terminator between lit and shade, then cast shadows.
   float t = smoothstep(-0.03, 0.03, dot(n, uSunDir));
@@ -176,6 +196,12 @@ void main() {
   vec3 c = a * mix(uShade, uLit, t) + uLift * (1.0 - t);
   // Practicals: real point lights (lamps, windows, fires).
   c += a * practicalLight(vView, normalize(vNV));
+  if (uSpec > 0.0) {
+    // One soft toon highlight on metal (lighting.md 6: only metal props have specular), sunlit side only.
+    vec3 V = normalize(-vView), L = normalize((viewMatrix * vec4(uSunDir, 0.0)).xyz);
+    float s = pow(max(dot(normalize(vNV), normalize(L + V)), 0.0), 36.0);
+    c += uLit * uSpec * smoothstep(0.3, 0.55, s) * t;
+  }
   c = max(mix(vec3(dot(c, W)), c, uSat), 0.0);
   c = aerial(c, vDist);
   c += uEmissive * a; // HDR glow keeps the map's frames and mullions dark
@@ -196,10 +222,14 @@ export type ToonOpts = {
   offset?: number;
   /** Worn smoother path along uv.y, centred at uv.x = center (m), `width` m wide (ground ribbons). */
   wear?: { center: number; width: number; amount: number };
+  /** World-space tonal mottling, +- this fraction (ground: hides the tile repeat). */
+  mottle?: number;
+  /** Soft toon highlight strength (metal only). */
+  spec?: number;
 };
 
 /** Two-tone toon material. `mute` (0-1) pulls the map toward grey, then `color` tints it; `floor` lifts its darkest value. */
-export const toonMaterial = ({ color = "#ffffff", map = null, repeat = [1, 1], offset = 0, mute = 0, floor = 0, emissive, wear }: ToonOpts = {}) =>
+export const toonMaterial = ({ color = "#ffffff", map = null, repeat = [1, 1], offset = 0, mute = 0, floor = 0, emissive, wear, mottle = 0, spec = 0 }: ToonOpts = {}) =>
   new ShaderMaterial({
     vertexShader: vertex,
     fragmentShader: fragment,
@@ -218,6 +248,8 @@ export const toonMaterial = ({ color = "#ffffff", map = null, repeat = [1, 1], o
       uFloor: { value: floor },
       uEmissive: { value: emissive ? linear(emissive[0]).multiplyScalar(emissive[1]) : new Color(0, 0, 0) },
       uWear: { value: wear?.amount ?? 0 },
+      uMottle: { value: mottle },
+      uSpec: { value: spec },
       uWearC: { value: wear?.center ?? 0 },
       uWearW: { value: wear?.width ?? 1 },
     },

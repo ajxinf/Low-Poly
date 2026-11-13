@@ -160,14 +160,23 @@ const moustache = (p: Pen, h: Head) => {
 };
 
 /** Bald with grey side hair: a crescent hugging each side of the skull above the ear line. */
+/**
+ * Old man's hair: fluffy white side tufts (scalloped outer edge, thin line so they never read as ear cups) and three
+ * comb-over wisps across the bald crown.
+ */
 const tufts = (p: Pen, h: Head) => {
-  const { cx, cy, b, pts } = h;
+  const { cx, cy, a, b, u, pts } = h;
   for (const s of [-1, 1]) {
-    const side = pts.filter(([x, y]) => (x - cx) * s > 0 && y > cy - 0.62 * b && y < cy - 0.02 * b);
+    const side = pts.filter(([x, y]) => (x - cx) * s > 0 && y > cy - 0.66 * b && y < cy + 0.05 * b);
     if (side.length < 3) continue;
     const at = (q: P2, k: number): P2 => [cx + (q[0] - cx) * k, cy + (q[1] - cy) * k];
-    fillInk(p, h, [...side.map((q) => at(q, 1.07)), ...side.reverse().map((q) => at(q, 0.95))], "#d8d2cc");
+    const outer = side.map((q, i) => at(q, 1.1 + 0.06 * Math.abs(Math.sin(i * 1.3))));
+    const shape = [...outer, ...side.slice().reverse().map((q) => at(q, 0.93))];
+    p.poly(shape, "#ece8e2");
+    p.inkRing(shape, 0.45 * 5 * u, p.thick, 0.3, "#9a948e"); // soft grey line: fluffy hair, not ear cups
   }
+  for (const k of [-0.25, 0.05, 0.35])
+    p.stroke([[cx + (k - 0.45) * a, cy - 0.78 * b], [cx + k * a, cy - 1.0 * b], [cx + (k + 0.45) * a, cy - 0.8 * b]], 1.6 * u, "#8a8480");
 };
 
 // ------------------------------------------------------------- the six extras
@@ -198,7 +207,7 @@ export const EXTRAS: { name: string; look: Look }[] = [
   {
     name: "old + moustache",
     look: {
-      build: BUILDS.old, seed: 37, jacket: "#8a5a44", pants: "#4a4a5e", shoes: "#4a3428",
+      build: BUILDS.old, seed: 37, jacket: "#5e6e5a", pants: "#4a4a5e", shoes: "#4a3428",
       outfit: outfit({ bottom: ["#4a4a5e", 0.86], collar: "#f2ece2", buttons: "#4a3428" }),
       hair: tufts,
       face: moustache,

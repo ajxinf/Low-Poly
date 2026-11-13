@@ -8,9 +8,9 @@ p5       5th percentile luma of non-ink pixels (ink = luma < .08)
 C*p90    90th percentile CIELAB chroma
 sat      mean HSV saturation
 vignette mean luma of the outer corners (ellipse r > .9) / centre (r < .3); content-dependent, read as a trend.
-         Target by --light: dusk, golden, night, interior 0.8-0.9; day exteriors DAY_VIGNETTE (sky and sunlit
+         Target by --light: dusk, golden, night, interior 0.75-0.88; day exteriors DAY_VIGNETTE (sky and sunlit
          ground fill the corners, so the ratio sits above 1 whatever the vignette does)
-dark L*  2nd percentile CIELAB L* outside the ink (ink = luma < .15, grown by 1 px): darks stay >= 19 (LOOK_SPEC)
+dark L*  2nd percentile CIELAB L* outside the ink (ink = luma < .15, grown by 1 px): darks stay >= 14 (LOOK_SPEC)
 dark C*  median chroma of the darkest 10 % outside the ink: coloured darks, never grey (>= 10)
 dark hue hue of those darks (deg): brown (40-80) is out
 
@@ -20,9 +20,9 @@ scene geometry). Optical flow under-reads flat sky, blurred backgrounds and far 
 Blocks without texture (mean gradient < 1 grey level/px at 540 wide: flat sky, blank walls) are skipped; frames with
 fewer than 8 of 28 textured blocks are "untracked" and left out of the numbers below.
 drift p50   median per-frame motion over textured blocks (reference >= 2.5)
-drift p95   95th percentile (moves: <= 25)
-still %     tracked frames moving < 0.5 px/f (reference <= 5 %)
-still run   longest run of still tracked frames (reference < 12)
+drift p95   95th percentile (moves: <= 50)
+still %     tracked frames moving < 0.5 px/f (reference <= 20 %: holds on beats)
+still run   longest run of still tracked frames (reference <= 60)
 """
 import os
 import subprocess
@@ -32,8 +32,9 @@ import tempfile
 import numpy as np
 from PIL import Image
 
-TARGETS = {"luma": (0.43, 0.57), "std": (0.21, 0.29), "sat": (0.38, 0.65), "C*p90": (55, 68), "vignette": (0.8, 0.9),
-           "dark L*": (19, 100), "dark C*": (10, 200)}
+# 2026-11-13 (R11/R13/R14 measured): refs are darker (luma .29-.46), calmer (C*p90 27-49) and keep real darks (L* 16).
+TARGETS = {"luma": (0.32, 0.50), "std": (0.18, 0.29), "sat": (0.3, 0.55), "C*p90": (40, 55), "vignette": (0.75, 0.88),
+           "dark L*": (14, 100), "dark C*": (10, 200)}
 # Day exteriors (mean over the sampled frames): _pipeline-test, day street, grade vig .14, measured 1.26 (single
 # frames 0.92-1.75). See videos/_pipeline-test/TEST-REPORT.md.
 DAY_VIGNETTE = (1.1, 1.4)
@@ -158,7 +159,8 @@ def motion(path):
     return {"drift p50": float(np.median(per)), "drift p95": float(np.percentile(per, 95)), "still %": float(still.mean() * 100), "still run": best}
 
 
-MOTION_TARGETS = {"drift p50": (2.5, None), "drift p95": (None, 25), "still %": (None, 5), "still run": (None, 11)}
+# Refs R11/R13: real holds (13-18 % still, runs up to ~50 f) between fast moves (p95 44-49).
+MOTION_TARGETS = {"drift p50": (2.5, None), "drift p95": (None, 50), "still %": (None, 20), "still run": (None, 60)}
 
 
 def main():

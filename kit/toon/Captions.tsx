@@ -4,7 +4,7 @@ import { AbsoluteFill, useCurrentFrame, useVideoConfig } from "remotion";
 
 /**
  * Burned-in word captions (SKILL "Captions", LOOK_SPEC identity 3): 1-2 words at a time from words.json, white bold
- * rounded sans with a dark outline and a soft drop shadow, centred at y = 0.70 H, size 0.055 W, no pop or bounce:
+ * rounded sans with a thick dark outline and a firm drop shadow, centred at y = 0.70 H, size 0.066 W, no pop or bounce:
  * each group appears on its first word and holds until the next. The sentence's key word (marked `*word*` in
  * script.json, the marks carried into the word list) is rust-orange #ff8a3d and scales up 8 % for 4 frames.
  */
@@ -13,7 +13,8 @@ export type CaptionWord = { text: string; start: number; end: number };
 // shortcut: system fonts until Nunito Black (OFL) is bundled in public/ and recorded in assets/CREDITS.md.
 export const CAPTION_FONT = '"Nunito Black", "Segoe UI Black", "Arial Rounded MT Bold", "Arial Black", sans-serif';
 /** Sizes as fractions of the frame width: font, outline, max line width (longer groups wrap; the guard checks). */
-export const CAPTION = { size: 0.055, stroke: 0.012, maxWidth: 0.84, maxLines: 2 };
+// Larger and heavier than v1 (refs: big bold words, thick black outline, firm drop shadow; 2026-11-14 stress test).
+export const CAPTION = { size: 0.066, stroke: 0.017, maxWidth: 0.84, maxLines: 2 };
 export const KEY_COLOR = "#ff8a3d";
 const KEY = /\*([^*]+)\*/;
 
@@ -56,7 +57,7 @@ export const Captions: React.FC<{ words: CaptionWord[] }> = ({ words }) => {
           color: "#ffffff",
           WebkitTextStroke: `${CAPTION.stroke * width}px #141014`,
           paintOrder: "stroke fill",
-          filter: `drop-shadow(0 ${0.003 * width}px ${0.003 * width}px rgba(0,0,0,0.6))`,
+          filter: `drop-shadow(0 ${0.005 * width}px ${0.002 * width}px rgba(0,0,0,0.75))`,
           maxWidth: CAPTION.maxWidth * width, // wraps inside the safe area instead of running off-frame
           whiteSpace: "normal",
           textAlign: "center",

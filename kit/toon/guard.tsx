@@ -25,8 +25,9 @@ import { DESIGN } from "./toon";
  * Colliders opt in with `userData.collider = "<name>"`; boxes are taken in each object's own frame.
  */
 export const CLEARANCE = 0.3;
-const FEET_TOL = 0.02, CARD_DEPTH = 0.3, ZFIGHT = 0.25, PROP_EPS = 0.01, FLOAT_TOL = 0.02;
-const MAX_SPEED = 25, MAX_ACCEL = 20, MAX_ZOOM = 2.2, SNAP = 25, STILL_PX = 0.5, STILL_RUN = 12;
+const FEET_TOL = 0.02, CARD_DEPTH = 0.3, ZFIGHT = 0.25, PROP_EPS = 0.01, FLOAT_TOL = 0.02, BODY_GAP = 0.5;
+const MAX_SPEED = 25, MAX_ACCEL = 20, MAX_ZOOM = 2.2, SNAP = 25, STILL_PX = 0.5, STILL_RUN = 61;
+// STILL_RUN 12 -> 61 (2026-11-13): refs R11/R13 hold dead still for up to ~50 f on beats, then move fast.
 // measure.py motion blocks (96 px at 540x960): centres as frame fractions.
 const GRID_X = [72, 204, 336, 468].map((x) => x / 540), GRID_Y = [96, 224, 352, 480, 608, 736, 864].map((y) => y / 960);
 const SAFE_X: [number, number] = [0.08, 0.92], CAPTION_Y: [number, number] = [0.64, 0.76];
@@ -261,6 +262,12 @@ const sceneChecks = (shot: Shot, scene: Object3D, aspect: number) => {
           if (o.intersectsOBB(pt.obb)) r.add("Card penetration", shot, f, `"${c.name}" vs ${pt.name}`, "card footprint overlaps it");
         }
       }
+      // Two characters may not stand on the same spot (bodies passing through each other).
+      for (let i = 0; i < cast.length; i++)
+        for (let j = i + 1; j < cast.length; j++) {
+          const d = cast[i].at(f).distanceTo(cast[j].at(f));
+          if (d < BODY_GAP) r.add("Card penetration", shot, f, `"${cast[i].name}" vs "${cast[j].name}"`, `stand ${d.toFixed(2)} m apart (bodies overlap, needs >= ${BODY_GAP})`);
+        }
       // Two cards overlapping on screen must be >= 0.25 m apart in depth (z-fighting).
       for (let i = 0; i < cast.length; i++)
         for (let j = i + 1; j < cast.length; j++) {
@@ -545,6 +552,7 @@ export const QAPlan: React.FC<{ plan: Plan }> = ({ plan }) => {
  * The camera for one shot (mount inside its own Sequence so the frame is shot-local): applies `pose(frame)` every
  * frame and, once per mount, runs the scene checks over the whole shot.
  */
+const prevCam = new PerspectiveCamera();
 export const ShotCamera: React.FC<Shot> = (shot) => {
   const frame = useCurrentFrame();
   const { width, height } = useVideoConfig();
@@ -557,6 +565,14 @@ export const ShotCamera: React.FC<Shot> = (shot) => {
     checked.current = true;
     emit("shot", shot.id, sceneChecks(shot, scene, width / height));
   }, [scene, shot, width, height]);
-  useLayoutEffect(() => applyCam(camera, shot.pose(frame)), [frame, camera, shot]);
+  useLayoutEffect(() => {
+    applyCam(camera, shot.pose(frame));
+    // Last frame's view-projection, for the Composer's camera motion blur (frame-driven, so renders in any order).
+    applyCam(prevCam, shot.pose(frame - 1));
+    prevCam.aspect = camera.aspect;
+    prevCam.updateProjectionMatrix();
+    prevCam.updateMatrixWorld(true);
+    camera.userData.prevVP = new Matrix4().multiplyMatrices(prevCam.projectionMatrix, prevCam.matrixWorldInverse);
+  }, [frame, camera, shot]);
   return null;
 };
