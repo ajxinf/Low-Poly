@@ -4,29 +4,31 @@ import {
 } from "three";
 import { glowSprite } from "../../../kit/toon/glow";
 import type { MovingProp } from "../../../kit/toon/guard";
-import { headHeight } from "../../../kit/toon/figure";
+import { handWorld } from "../../../kit/toon/cast";
+import type { Hand } from "../../../kit/toon/cast";
+import { youLook } from "../../../kit/toon/protagonist";
 import { NOINK, SKY } from "../../../kit/toon/ink";
 import {
-  CART_IN, CHAD, CHAD_DOOR, CHAD_ROOF, DOCK, FLOODS, FUEL_AT, GENERATOR, HEAP, SHUTTER_AT,
+  CART_IN, CHAD, DOCK, FLOODS, FUEL_AT, GENERATOR, SHUTTER_AT,
   battery, dinoToy, duckToy, floodGlass, fuelCan, hedgehogCart, megaphone, shutter, toothbrush,
 } from "./build";
-import { BEAT, CART_RUN, cartAt, chadLook } from "./roles";
+import { BEAT, CART_RUN, cartAt } from "./roles";
 import type { S } from "./story";
 
 // Story props: one definition for the render (Video.tsx mounts `make()` and calls `pose` every frame) and the QA
-// guard (Shot.moving). Held props are placed in front of the card toward the shot's camera.
+// guard (Shot.moving). Held props sit in the drawn hand (`handWorld`, from the holder's pose and the shot's camera);
+// their origin is the grip point and the guard checks it stays in that hand.
 const clamp01 = (t: number) => Math.min(Math.max(t, 0), 1);
 const ease = (t: number) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
 
-/** A point on a camera-facing card at `who`: `right` m to screen right, `up` m above the soles, `fwd` m toward the lens. */
-const onCard = (s: S, F: number, who: Vector3, right: number, up: number, fwd = 0.1) => {
-  const cam = s.pose(F - s.from).pos;
-  const toCam = cam.clone().sub(who).setY(0).normalize();
-  const r = new Vector3(toCam.z, 0, -toCam.x);
-  return who.clone().addScaledVector(r, right).addScaledVector(toCam, fwd).setY(who.y + up);
+/** Where `who`'s `hand` is at composition frame F in shot `s` (the shot's cast and camera). */
+const handOf = (s: S, who: string, hand: Hand, F: number, fwd = 0.06) => {
+  const c = s.cast!.find((x) => x.name === who)!, lf = F - s.from;
+  return handWorld(c.look ?? youLook, c.state(lf).pose, c.at(lf), s.pose(lf).pos, hand, fwd);
 };
+const camOf = (s: S, F: number) => s.pose(F - s.from).pos;
 const faceCam = (o: Object3D, s: S, F: number) => {
-  const cam = s.pose(F - s.from).pos;
+  const cam = camOf(s, F);
   o.lookAt(cam.x, o.position.y, cam.z);
 };
 
@@ -36,11 +38,12 @@ const youHeapToy = (s: S): MovingProp => ({
   name: "toy in your hands",
   make: duckToy,
   pose: (o, F) => {
-    o.position.copy(onCard(s, F, HEAP, 0, 0.84, 0.2));
+    o.position.copy(handOf(s, "you", "both", F, 0.1));
     faceCam(o, s, F);
     o.rotateY(Math.PI / 2);
   },
   heldBy: "you",
+  hand: "both",
 });
 /** The battery pops out of the toy on "batteries" and tumbles to the floor. */
 const poppedBattery = (s: S): MovingProp => ({
@@ -48,8 +51,8 @@ const poppedBattery = (s: S): MovingProp => ({
   make: battery,
   pose: (o, F) => {
     const t0 = Math.round(0.52 * 30) - 2, t = (F - t0) / 18;
-    const start = onCard(s, F, HEAP, 0.05, 0.86, 0.26);
     if (t <= 0) return false;
+    const start = handOf(s, "you", "both", t0, 0.16).add(new Vector3(0, 0.12, 0));
     const k = Math.min(t, 1);
     o.position.copy(start).add(new Vector3(0.35 * k, 0.45 * k - 0.95 * k * k, 0.15 * k));
     o.position.y = Math.max(o.position.y, 0.03);
@@ -57,40 +60,39 @@ const poppedBattery = (s: S): MovingProp => ({
     return true;
   },
   heldBy: "you",
+  hand: "none", // flies out of the toy
 });
 
-const MEGA_AT = (s: S, F: number, who: Vector3, atMouth: boolean, look = chadLook) =>
-  atMouth ? onCard(s, F, who, 0.3, headHeight(look) - 0.12, 0.25) : onCard(s, F, who, 0.42, 0.92, 0.18);
-const megaProp = (s: S, who: () => Vector3, atMouth: (F: number) => boolean, clutched = false): MovingProp => ({
+/** The megaphone in Chad's right hand (or hugged in both); its bell points out toward the street. */
+const megaProp = (s: S, atMouth: (F: number) => boolean, clutched = false): MovingProp => ({
   name: "megaphone",
   make: megaphone,
   pose: (o, F) => {
-    const shake = clutched && F < BEAT.but ? 0.015 * Math.sin(F * 0.8) : 0;
-    o.position.copy(clutched ? onCard(s, F, who(), 0.08, 0.86, 0.24) : MEGA_AT(s, F, who(), atMouth(F))).add(new Vector3(shake, shake, 0));
-    o.scale.setScalar(clutched ? 0.75 : 1);
-    const cam = s.pose(F - s.from).pos;
-    // Bell toward the street (camera side) and out to screen right; clutched: bell up, hugged to the chest.
-    if (clutched) {
-      const toCam = cam.clone().sub(o.position).setY(0).normalize();
-      o.lookAt(o.position.clone().add(new Vector3(toCam.z, 0, -toCam.x))); // hugged sideways across the chest
-    } else {
-      const toCam = cam.clone().sub(o.position).setY(0).normalize();
-      const r = new Vector3(toCam.z, 0, -toCam.x);
-      o.lookAt(o.position.clone().add(toCam.multiplyScalar(0.6)).add(r.multiplyScalar(0.8)).add(new Vector3(0, atMouth(F) ? 0.15 : -0.5, 0)));
-    }
+    o.position.copy(handOf(s, "chad", "right", F, 0.08));
+    o.scale.setScalar(clutched ? 0.8 : 1);
+    const cam = camOf(s, F), toCam = cam.clone().sub(o.position).setY(0).normalize();
+    const r = new Vector3(toCam.z, 0, -toCam.x);
+    if (clutched) o.lookAt(o.position.clone().add(r)); // hugged sideways across the belly
+    else o.lookAt(o.position.clone().add(toCam.multiplyScalar(0.6)).add(r.multiplyScalar(0.8)).add(new Vector3(0, atMouth(F) ? 0.15 : -0.5, 0)));
   },
   heldBy: "chad",
+  hand: "right",
   touches: ["CHAD'S HARDWARE"],
 });
-const brushProp = (s: S, who: () => Vector3): MovingProp => ({
+/** Where the megaphone's bell is (sound rings start there). */
+const bellAt = (s: S, F: number) => {
+  const grip = handOf(s, "chad", "right", F, 0.08), toCam = camOf(s, F).clone().sub(grip).setY(0).normalize();
+  return grip.addScaledVector(toCam, 0.25).addScaledVector(new Vector3(toCam.z, 0, -toCam.x), 0.33).add(new Vector3(0, 0.08, 0));
+};
+const brushProp = (s: S): MovingProp => ({
   name: "toothbrush",
   make: toothbrush,
   pose: (o, F) => {
-    // In his other hand (in the mouth it would cut through the head card).
-    o.position.copy(onCard(s, F, who(), -0.36, 0.86, 0.2));
+    o.position.copy(handOf(s, "chad", "left", F, 0.08));
     o.rotation.set(0, 0, 0.5);
   },
   heldBy: "chad",
+  hand: "left",
 });
 
 // ---------------------------------------------------------------- Chad's store
@@ -160,7 +162,7 @@ const soundRings = (s: S, starts: number[]): MovingProp => ({
     return g;
   },
   pose: (o, F) => {
-    const mouth = MEGA_AT(s, F, CHAD_ROOF, true);
+    const mouth = bellAt(s, F);
     const cam = s.pose(F - s.from).pos;
     let any = false;
     o.children.forEach((m, i) => {
@@ -178,6 +180,7 @@ const soundRings = (s: S, starts: number[]): MovingProp => ({
     return any;
   },
   heldBy: "chad",
+  hand: "none", // sound in the air
   touches: ["CHAD'S HARDWARE"],
 });
 
@@ -188,7 +191,7 @@ const cartProp = (name: string, place: (F: number) => { pos: Vector3; yaw: numbe
   name,
   make: () => {
     const g = new Group();
-    for (const k of [0.25, 0.5, 0.75, 1]) {
+    for (const k of [0.5, 1]) {
       const c = hedgehogCart(k, k === 1);
       c.name = `t${k}`;
       g.add(c);
@@ -199,10 +202,11 @@ const cartProp = (name: string, place: (F: number) => { pos: Vector3; yaw: numbe
     const q = place(F), k = taped(F);
     o.position.copy(q.pos);
     o.rotation.set(0, q.yaw, q.tilt ?? 0, "YXZ");
-    for (const c of o.children) c.visible = c.name === `t${k <= 0.25 ? 0.25 : k <= 0.5 ? 0.5 : k <= 0.75 ? 0.75 : 1}`;
+    for (const c of o.children) c.visible = c.name === `t${k < 0.75 ? 0.5 : 1}`;
   },
   touches: ["FRESHMART", "CHAD'S HARDWARE"],
   heldBy: held,
+  hand: held ? "none" : undefined, // kicked, not held
 });
 const CART_YAW_EXT = Math.PI / 2; // front (+z local) toward Chad's (+x)
 const cartExt = (held?: string) =>
@@ -248,26 +252,29 @@ void main(){ gl_FragColor = vec4(hue(fract(vT*2.5)) * 1.8 * smoothstep(0.0, 0.4,
 
 // ---------------------------------------------------------------- night pieces
 
-const dinoProp = (s: S, you: Vector3): MovingProp => ({
+const dinoProp = (s: S): MovingProp => ({
   name: "dino",
   make: dinoToy,
   pose: (o, F) => {
-    o.position.copy(onCard(s, F, you, -0.02, 0.86, 0.22));
+    o.position.copy(handOf(s, "you", "both", F, 0.12));
     o.scale.setScalar(0.5);
     faceCam(o, s, F);
     o.rotateY(Math.PI / 2);
   },
   heldBy: "you",
+  hand: "both",
 });
-const batteryIn = (s: S, you: Vector3): MovingProp => ({
+/** The battery travels from your right hand into the dinosaur's hatch (between your hands), very, very gently. */
+const batteryIn = (s: S): MovingProp => ({
   name: "battery going in",
   make: battery,
   pose: (o, F) => {
     const t = ease((F - BEAT.battery) / (BEAT.gently + 10 - BEAT.battery));
-    o.position.copy(onCard(s, F, you, 0.2 - 0.14 * t, 0.86 + 0.02 * Math.sin(F * 0.7) * (1 - t), 0.28));
+    o.position.copy(handOf(s, "you", "right", F, 0.16).lerp(handOf(s, "you", "both", F, 0.16), t)).add(new Vector3(0, 0.02 * Math.sin(F * 0.7) * (1 - t), 0));
     o.rotation.set(0, 0, Math.PI / 2);
   },
   heldBy: "you",
+  hand: "right",
 });
 /** A flashlight pool: a warm glow that follows `at(F)` (glowSprite reads the vector it was given every frame). */
 const torchPool = (at: (F: number) => Vector3, size = 1.1, k = 0.9): MovingProp => ({
@@ -286,25 +293,24 @@ export const propsFor = (s: S): MovingProp[] => {
   const id = s.id.split("/")[1].split("-")[0];
   const ext = s.w.startsWith("ext");
   const out: MovingProp[] = ext ? [...floods(), ...cans(), shutterProp] : [];
-  const roof = () => CHAD_ROOF;
   switch (id) {
     case "A1": out.push(youHeapToy(s), poppedBattery(s)); break;
-    case "A2": case "A3": out.push(megaProp(s, roof, () => false)); break;
-    case "A6": out.push(megaProp(s, roof, (F) => F >= BEAT.grabs + 6), soundRings(s, [BEAT.morning - 2, BEAT.boy - 4])); break;
-    case "A7": out.push(megaProp(s, roof, () => false)); break;
+    case "A2": case "A3": out.push(megaProp(s, () => false)); break;
+    case "A6": out.push(megaProp(s, (F) => F >= BEAT.grabs + 6), soundRings(s, [BEAT.morning - 2, BEAT.boy - 4])); break;
+    case "A7": out.push(megaProp(s, () => false)); break;
     case "A9": out.push(cartIn); break;
     case "A10": out.push(cartExt()); break;
     case "A14": {
       const you = s.cast!.find((c) => c.name === "you")!.at(0);
-      out.push(cartIn, dinoProp(s, you), batteryIn(s, you), torchPool(() => you.clone().add(new Vector3(0.1, 1.0, 0.25)), 0.9, 0.7));
+      out.push(cartIn, dinoProp(s), batteryIn(s), torchPool(() => you.clone().add(new Vector3(0.1, 1.0, 0.25)), 0.9, 0.7));
       break;
     }
     case "A13": out.push(torchPool((F) => s.pose(F - s.from).look.clone().add(new Vector3(-0.04, 0, 0)), 1.6, 0.8)); break;
     case "A15": out.push(smokeRing); break;
-    case "A16": out.push(brushProp(s, () => CHAD_DOOR)); break;
+    case "A16": out.push(brushProp(s)); break;
     case "A17": out.push(cartExt("you")); break;
     case "A18": case "A19": case "A20": case "A21": out.push(cartExt(), trail); break;
-    case "A22": case "A23": out.push(megaProp(s, roof, () => false, true), brushProp(s, roof)); break;
+    case "A22": case "A23": out.push(megaProp(s, () => false, true), brushProp(s)); break;
   }
   return out;
 };

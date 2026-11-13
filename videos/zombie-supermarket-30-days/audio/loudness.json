@@ -1,11 +1,11 @@
 {
- "integrated_lufs": -14.2,
+ "integrated_lufs": -14.25,
  "true_peak_dbtp": -1.3,
  "samples": 3876800,
  "seconds": 80.76666666666667,
  "premaster": {
-  "lufs": -18.72,
-  "dbtp": -0.17
+  "lufs": -18.96,
+  "dbtp": 0.15
  },
  "levels_db": {
   "voice": 0,

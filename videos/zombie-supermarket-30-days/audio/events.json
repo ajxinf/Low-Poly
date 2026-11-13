@@ -29,18 +29,6 @@
    "note": "fast pull-out and crane over the horde (A2 whip)"
   },
   {
-   "word": "sound",
-   "n": 0,
-   "lead": 4,
-   "sfx": "swish",
-   "note": "400 heads tilt at once"
-  },
-  {
-   "f": 266,
-   "sfx": "whoosh",
-   "note": "A2->A3 dissolve"
-  },
-  {
    "word": "megaphone",
    "n": 0,
    "lead": 2,
@@ -74,16 +62,6 @@
    "lead": 1,
    "sfx": "splat",
    "note": "slot slams shut (impact kick)"
-  },
-  {
-   "f": 536,
-   "sfx": "whoosh",
-   "note": "A4->A5 dissolve (night)"
-  },
-  {
-   "f": 685,
-   "sfx": "whoosh",
-   "note": "A5->A6 dissolve (morning)"
   },
   {
    "word": "morning",
@@ -135,18 +113,6 @@
    "note": "last bang"
   },
   {
-   "word": "give",
-   "n": 0,
-   "lead": 0,
-   "sfx": "swish",
-   "note": "horde gives up and drains away"
-  },
-  {
-   "f": 901,
-   "sfx": "whoosh",
-   "note": "A7->A8 dissolve"
-  },
-  {
    "word": "right",
    "n": 0,
    "lead": 2,
@@ -154,26 +120,7 @@
    "note": "Dave turns: 'might be right'"
   },
   {
-   "f": 992,
-   "sfx": "whoosh",
-   "note": "A8->A9 dissolve"
-  },
-  {
    "word": "tape",
-   "n": 0,
-   "lead": 0,
-   "sfx": "swish",
-   "note": "tape strip"
-  },
-  {
-   "word": "toy",
-   "n": 0,
-   "lead": 0,
-   "sfx": "swish",
-   "note": "tape strip"
-  },
-  {
-   "word": "cart",
    "n": 0,
    "lead": 0,
    "sfx": "swish",
@@ -185,16 +132,6 @@
    "lead": 2,
    "sfx": "pop",
    "note": "the cart is a hedgehog"
-  },
-  {
-   "f": 1151,
-   "sfx": "whoosh",
-   "note": "A9->A10 dissolve (the ramp)"
-  },
-  {
-   "f": 1253,
-   "sfx": "whoosh",
-   "note": "A10->A11 dissolve"
   },
   {
    "word": "point",
@@ -209,11 +146,6 @@
    "lead": 6,
    "sfx": "pat",
    "note": "hard cut to the generator insert"
-  },
-  {
-   "f": 1359,
-   "sfx": "whoosh",
-   "note": "A12->A13 dissolve (night, the chart)"
   },
   {
    "word": "day",
@@ -244,11 +176,6 @@
    "note": "click: it's in"
   },
   {
-   "f": 1593,
-   "sfx": "whoosh",
-   "note": "A14->A15 dissolve (dawn)"
-  },
-  {
    "word": "day",
    "n": 3,
    "lead": 2,
@@ -275,13 +202,6 @@
    "lead": -7,
    "sfx": "pat",
    "note": "floodlight 2 off"
-  },
-  {
-   "word": "shutters",
-   "n": 1,
-   "lead": -10,
-   "sfx": "whoosh",
-   "note": "steel shutter rolls up"
   },
   {
    "word": "up",
@@ -347,13 +267,6 @@
    "note": "hard cut to the x-ray insert"
   },
   {
-   "word": "now",
-   "n": 0,
-   "lead": 2,
-   "sfx": "whoosh",
-   "note": "400 heads swing toward the cart"
-  },
-  {
    "word": "chase",
    "n": 0,
    "lead": 0,
@@ -394,6 +307,27 @@
    "lead": 0,
    "sfx": "swish",
    "note": "megaphone shakes in his hands"
+  },
+  {
+   "word": "shutters",
+   "n": 1,
+   "lead": 8,
+   "sfx": "step",
+   "note": "steel shutter rattles up"
+  },
+  {
+   "word": "shutters",
+   "n": 1,
+   "lead": -4,
+   "sfx": "step",
+   "note": "steel shutter rattles up"
+  },
+  {
+   "word": "shutters",
+   "n": 1,
+   "lead": -16,
+   "sfx": "step",
+   "note": "steel shutter rattles up"
   }
  ],
  "music": {

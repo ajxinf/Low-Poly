@@ -4,7 +4,8 @@ import { getInputProps, useCurrentFrame, useVideoConfig } from "remotion";
 import { Box3, DirectionalLight, Matrix3, Matrix4, Mesh, Object3D, PerspectiveCamera, Quaternion, Raycaster, Vector3 } from "three";
 import { OBB } from "three/examples/jsm/math/OBB.js";
 import { CamPose, applyCam } from "./camera";
-import { CONTACT_Y } from "./cast";
+import { CONTACT_Y, handWorld } from "./cast";
+import type { Hand } from "./cast";
 import { CAPTION, CAPTION_FONT, captionPages } from "./Captions";
 import type { CaptionWord } from "./Captions";
 import { layout } from "./figure";
@@ -26,6 +27,7 @@ import { DESIGN } from "./toon";
  */
 export const CLEARANCE = 0.3;
 const FEET_TOL = 0.02, CARD_DEPTH = 0.3, ZFIGHT = 0.25, PROP_EPS = 0.01, FLOAT_TOL = 0.02, BODY_GAP = 0.5;
+const HAND_TOL = 0.12;
 const MAX_SPEED = 25, MAX_ACCEL = 20, MAX_ZOOM = 2.2, SNAP = 25, STILL_PX = 0.5, STILL_RUN = 61;
 // STILL_RUN 12 -> 61 (2026-11-13): refs R11/R13 hold dead still for up to ~50 f on beats, then move fast.
 // measure.py motion blocks (96 px at 540x960): centres as frame fractions.
@@ -70,7 +72,12 @@ export type Shot = {
    */
   moving?: MovingProp[];
 };
-export type MovingProp = { name: string; make: () => Object3D; pose: (o: Object3D, f: number) => boolean | void; touches?: string[]; heldBy?: string };
+/**
+ * `heldBy` + `hand`: the holder and which drawn hand grips it ("none" = not held, only allowed to touch the body, e.g.
+ * sound rings). A held prop's origin is its grip point and must stay within HAND_TOL of that hand every frame
+ * (place it with cast.ts `handWorld`), or it floats beside the character.
+ */
+export type MovingProp = { name: string; make: () => Object3D; pose: (o: Object3D, f: number) => boolean | void; touches?: string[]; heldBy?: string; hand?: Hand | "none" };
 export type Plan = { slug: string; shots: Shot[]; words?: CaptionWord[] };
 export type Fail = { check: Check; shot: string; frame: number; to: number; object: string; note: string; intended?: string };
 
@@ -317,6 +324,13 @@ const sceneChecks = (shot: Shot, scene: Object3D, aspect: number) => {
       for (let f = 0; f < shot.frames; f++) {
         if (m.pose(obj, from + f) === false || !obj.visible) continue;
         obj.updateMatrixWorld(true);
+        const holder = m.heldBy ? cast.find((c) => c.name === m.heldBy) : undefined;
+        if (m.heldBy && !m.hand) r.add("Moving props", shot, f, m.name, `held by "${m.heldBy}" but no \`hand\` declared (left/right/both, or "none" if it only touches the body)`);
+        else if (holder && m.hand && m.hand !== "none") {
+          const h = handWorld(holder.look ?? youLook, holder.state(f).pose, holder.at(f), cams[f].position, m.hand);
+          const grip = new Vector3().setFromMatrixPosition(obj.matrixWorld), d = grip.distanceTo(h);
+          if (d > HAND_TOL) r.add("Moving props", shot, f, `${m.name} vs "${holder.name}" ${m.hand} hand`, `floats ${(d * 100).toFixed(0)} cm from the hand (max ${HAND_TOL * 100}): place it with handWorld()`);
+        }
         const mine = parts([{ name: m.name, root: obj, inv: new Matrix4(), box: new Box3() }]);
         for (const a of mine) {
           for (const pt of ps) {

@@ -29,6 +29,7 @@ const rollerHead = (whose: "yours" | "his"): MovingProp => ({
   pose: (o, f) => void o.position.copy(paintEdge(ROLLER_FOR[whose].s, paintCover(f, whose), whose)),
   touches: [whose === "yours" ? "your shed" : "his shed"],
   heldBy: whose === "yours" ? "you" : "neighbour",
+  hand: "none", // legacy smoke test (before handWorld): placed by hand, not checked
 });
 const rollerPole = (whose: "yours" | "his"): MovingProp => ({
   name: `${whose} roller pole`,
@@ -39,6 +40,7 @@ const rollerPole = (whose: "yours" | "his"): MovingProp => ({
     stretch(o as Mesh, hand, hand.clone().lerp(head, 1 - 0.08 / hand.distanceTo(head)));
   },
   heldBy: whose === "yours" ? "you" : "neighbour",
+  hand: "none", // legacy smoke test (before handWorld): placed by hand, not checked
 });
 const rollerProp = (whose: "yours" | "his") => [rollerHead(whose), rollerPole(whose)];
 
@@ -113,9 +115,10 @@ const cone: MovingProp = {
     drip.visible = m.drip > 0 && m.drip < 1;
   },
   heldBy: "neighbour",
+  hand: "none", // legacy smoke test (before handWorld)
 };
 
-const lemon: MovingProp = { name: "lemonade", make: lemonade, pose: (o) => void o.position.copy(LEMON_AT), heldBy: "you" };
+const lemon: MovingProp = { name: "lemonade", make: lemonade, pose: (o) => void o.position.copy(LEMON_AT), heldBy: "you", hand: "none" }; // legacy smoke test
 
 /** Which props each shot shows (by shot id suffix). */
 export const PROPS: Record<string, MovingProp[]> = {

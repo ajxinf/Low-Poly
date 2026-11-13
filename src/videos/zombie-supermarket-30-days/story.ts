@@ -75,12 +75,23 @@ const youHeap: Role = {
     return st(withSquash(pk([[0, "hold"]], F, 0.2), e.squash), e.expr, F, 1);
   },
 };
+/**
+ * Chad's megaphone poses (props.ts puts the megaphone in his RIGHT hand): never across the chest or face, or the
+ * megaphone cuts through his head card. low = hanging at his side, up = raised out to the side (laughing, flexing),
+ * mouth = held out beside his mouth (bell out to the side).
+ */
+const MEGA: Record<"low" | "up" | "mouth", Pose["arms"]> = {
+  low: [{ at: [0.2, 0.58], grip: "fist" }, { at: [0.3, 0.86], grip: "fist" }],
+  up: [{ at: [0.2, 0.58], grip: "fist" }, { at: [0.78, -0.25], grip: "fist" }],
+  mouth: [{ at: [0.2, 0.58], grip: "fist" }, { at: [0.64, -0.12], grip: "fist" }],
+};
+const chadPose = (arms: keyof typeof MEGA, F: number, extra: Partial<Pose> = {}): Pose => ({ ...posed("hips", F / FPS, -0.2), arms: MEGA[arms], ...extra });
 const chadMock: Role = {
   name: "chad", look: chadLook, at: still(CHAD_ROOF),
   state: (F) => {
     const e = exprAt([[0, "smug"], [BEAT.laughs, "laughing"], [BEAT.that, "smug"], [BEAT.megaphone, "laughing"]], F);
-    const pose = F < BEAT.laughs - LEAD ? "crossed" : F < BEAT.that ? "point" : F < BEAT.megaphone - LEAD ? "crossed" : "panic";
-    return st(withSquash(posed(pose, F / FPS, -0.2), e.squash), e.expr, F, 7, { blink: false });
+    const arms = F < BEAT.laughs - LEAD ? "low" : F < BEAT.that ? "up" : F < BEAT.megaphone - LEAD ? "low" : "up";
+    return st(withSquash(chadPose(arms, F), e.squash), e.expr, F, 7, { blink: false });
   },
 };
 const YOU_SHUTTER = at(CHAD.s + 0.95, FRONT - 0.75, 0.02);
@@ -101,7 +112,7 @@ const chadMorning: Role = {
     const e = exprAt([[0, "smug"], [BEAT.morning, "laughing"], [BEAT.heads, "smug"], [BEAT.give, "laughing"]], F);
     // A little roof dance while the horde bangs below (sway side to side).
     const dance = F >= BEAT.heads && F < BEAT.dave ? Math.sin((F / FPS) * Math.PI * 4) * 6 : 0;
-    const pose = F < BEAT.grabs ? posed("crossed", F / FPS, -0.2) : F < BEAT.heads ? posed("chin", F / FPS, -0.2) : { ...posed("hips", F / FPS, -0.2), sway: dance };
+    const pose = F < BEAT.grabs ? chadPose("low", F) : F < BEAT.heads ? chadPose("mouth", F) : chadPose("up", F, { sway: dance });
     return st(withSquash(pose, e.squash), e.expr, F, 7, { blink: false });
   },
 };
@@ -157,7 +168,9 @@ const chadRoofEnd: Role = {
     const late = F >= BEAT.but;
     // A slow tremble while he's scared (fast flips read as camera jitter in QA); dead still on the silent last line.
     const shake = late ? 0 : Math.sin(F * 0.8) * 2.5;
-    return st({ ...posed("hold", F / FPS, -0.1), sway: shake }, late ? "deadpan" : "scared", F, 7, { fx: { sweat: late ? 0.35 + 0.65 * Math.min((F - BEAT.but) / 60, 1) : ((F % 45) / 45) } });
+    // Left hand hangs with the toothbrush, right hand hugs the megaphone to his belly.
+    const arms: Pose["arms"] = [{ at: [0.2, 0.92] }, { at: [-0.24, 0.5], grip: "mitt" }];
+    return st({ ...posed("hold", F / FPS, -0.1), arms, sway: shake }, late ? "deadpan" : "scared", F, 7, { fx: { sweat: late ? 0.35 + 0.65 * Math.min((F - BEAT.but) / 60, 1) : ((F % 45) / 45) } });
   },
 };
 // The last shot: far below, over Chad's shoulder, you and Dave stroll out into the empty street; a tiny wave.
@@ -274,8 +287,9 @@ const A12_FROM = BEAT.generator1 - 6;
 const A12: S = {
   id: "zombie/A12-generator", from: A12_FROM, frames: BEAT.counting - 18 - A12_FROM + 6, w: "ext-day",
   // Insert: Chad's generator and the neat stack of red cans (hard cut on "generator").
-  pose: creep({ pos: GENERATOR.clone().add(new Vector3(-2.3, 1.0, 1.4)), look: GENERATOR.clone().add(new Vector3(0.2, 0.35, 0.5)), fov: 36 }, BEAT.counting - 18 - A12_FROM + 6, 0.12),
-  dof: DOF.medium(2.4),
+  // Low, from the street side: the generator's panel, gauges and CHAD'S stencil, the red cans beside it.
+  pose: creep({ pos: GENERATOR.clone().add(new Vector3(-3.3, 1.05, 2.7)), look: GENERATOR.clone().add(new Vector3(0.2, 0.6, 0.6)), fov: 44 }, BEAT.counting - 18 - A12_FROM + 6, 0.12),
+  dof: DOF.medium(3.2),
 };
 const A13_FROM = BEAT.counting - 18;
 const chartPoint = (u: number, v: number) => CHART_AT.clone().add(new Vector3(-0.03, (0.5 - v) * 1.34, -(u - 0.5) * 1.9));
@@ -303,7 +317,8 @@ const A15_FROM = ON_DAY30 - 6;
 const A15: S = {
   id: "zombie/A15-generator-dies", from: A15_FROM, frames: BEAT.electric - 12 - A15_FROM + 4, w: "ext-dawn",
   // Dawn, day 30: the generator coughs a sad smoke ring and dies; the floodlights go out one by one.
-  pose: creep({ pos: GENERATOR.clone().add(new Vector3(-4.2, 2.3, 2.6)), look: GENERATOR.clone().add(new Vector3(0.3, 0.6, -0.4)), fov: 44 }, BEAT.electric - A15_FROM, 0.12),
+  // Low from the street side, looking up: the generator against the dawn sky, a floodlight on its pole beyond it.
+  pose: creep({ pos: GENERATOR.clone().add(new Vector3(-3.6, 0.85, -2.9)), look: GENERATOR.clone().add(new Vector3(0.3, 1.25, 0.9)), fov: 50 }, BEAT.electric - A15_FROM, 0.14),
   dof: POST.dof,
 };
 const A16_FROM = BEAT.electric - 12;

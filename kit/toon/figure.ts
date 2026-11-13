@@ -140,6 +140,25 @@ const drawProp = (p: Pen, name: CharState["prop"], arms: Solved[], u: number) =>
   }
 };
 
+/**
+ * Where the hands are drawn (design px, [left, right] as seen on the card), with the same arm solve, torso sway and
+ * reaction squash as drawPerson. Held props must sit here (cast.ts `handWorld`; the QA guard checks `MovingProp.hand`).
+ */
+export const handsOf = (look: Look, pose: Pose): [P2, P2] => {
+  const L = layout(look, pose), B = look.build, { W, HH, u, torsoBot, chin, facing, fwd, stoop } = L;
+  const T = { a: ((B.tw / 2) * W) / 1.06 };
+  const tcx = CX + 3 * u * facing, sy = chin + 0.12 * HH - (pose.shrug ?? 0);
+  const ang = rad(pose.sway + stoop * 4 * fwd), sq = (pose.squash ?? 0) * 0.08;
+  return pose.arms.map((a, i) => {
+    const side = i === 0 ? -1 : 1;
+    const H = solveArm([tcx + side * 0.85 * T.a, sy], side, a, 0.475 * HH).H;
+    // sway: rotate about (CX, torsoBot); squash: scale about (CX, SOLE)
+    const dx = H[0] - CX, dy = H[1] - torsoBot;
+    const x = CX + dx * Math.cos(ang) - dy * Math.sin(ang), y = torsoBot + dx * Math.sin(ang) + dy * Math.cos(ang);
+    return [CX + (x - CX) * (1 + sq), SOLE + (y - SOLE) * (1 - sq)] as P2;
+  }) as [P2, P2];
+};
+
 /** Draws a whole character (front view): legs, back arms, torso + clothing, props, front arms, head, face. */
 export const drawPerson = (p: Pen, look: Look, s: CharState) => {
   const g = p.g, pose = s.pose, L = layout(look, pose), B = look.build;

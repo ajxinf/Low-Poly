@@ -5,6 +5,11 @@ Reads  videos/<slug>/audio/events.json  {"fps", "frames", "events": [{"f", "sfx"
 Writes videos/<slug>/audio/sfx.wav (48 kHz mono float, exact video length; peaks around -3 dBFS before the mix).
 Sounds: step, whoosh, swish, splat, pat, pop, sting. Each event starts on its frame (the transient lands there;
 whooshes are centred on it).
+
+Air sounds (whoosh, swish) are the ones that get annoying (pilot feedback, 2026-11-13): they play quieter than the
+hits (LEVEL_DB) and the table is refused when it overuses them (check_air): at most one whoosh per 20 s, one swish
+per 10 s, and any two air sounds at least 3 s apart. Dissolves get NO sound by default; a whoosh is for a real fast
+camera move (a whip, a fly-through) or an object flying past the lens.
 """
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -89,6 +94,27 @@ def sting():
     return out
 
 
+# Peak level per sound relative to the -3 dBFS hits (air sounds sit under the voice and the hits).
+LEVEL_DB = {"whoosh": -10, "swish": -8}
+AIR = {"whoosh": 20.0, "swish": 10.0}  # max one per this many seconds
+AIR_GAP = 3.0  # s between any two air sounds
+
+
+def check_air(evs, fps, dur):
+    """Refuse an event table that overuses whooshes/swishes (they turn into noise)."""
+    errs = []
+    for k, per in AIR.items():
+        n = sum(e["sfx"] == k for e in evs)
+        if n > max(1, int(dur / per)):
+            errs.append(f"{n} x {k} in {dur:.0f} s (max {max(1, int(dur / per))}: one per {per:.0f} s)")
+    air = sorted(e["f"] for e in evs if e["sfx"] in AIR)
+    for a, b in zip(air, air[1:]):
+        if (b - a) / fps < AIR_GAP:
+            errs.append(f"air sounds at frames {a} and {b} are {(b - a) / fps:.1f} s apart (min {AIR_GAP:.0f} s)")
+    if errs:
+        raise SystemExit("sfx_gen: too many air sounds (whoosh/swish):\n  " + "\n  ".join(errs))
+
+
 SOUNDS = {"step": step, "whoosh": whoosh, "swish": swish, "splat": splat, "pat": pat, "pop": pop, "sting": sting}
 CENTRED = {"whoosh"}
 
@@ -97,9 +123,10 @@ def main(d):
     cfg = events.load(d)  # word-anchored cues resolved (scripts/audio/events.py)
     n = round(cfg["frames"] / cfg["fps"] * SR)
     out = np.zeros(n)
+    check_air(cfg["events"], cfg["fps"], cfg["frames"] / cfg["fps"])
     for e in cfg["events"]:
         s = SOUNDS[e["sfx"]]()
-        s = s / np.max(np.abs(s)) * 10 ** (-3 / 20)  # every sound peaks at -3 dBFS; the mix sets the stem level
+        s = s / np.max(np.abs(s)) * 10 ** ((-3 + LEVEL_DB.get(e["sfx"], 0)) / 20)  # hits peak at -3 dBFS; air sounds lower
         at = round(e["f"] / cfg["fps"] * SR) - (len(s) // 2 if e["sfx"] in CENTRED else 0)
         a, b = max(at, 0), min(at + len(s), n)
         out[a:b] += s[a - at:b - at]

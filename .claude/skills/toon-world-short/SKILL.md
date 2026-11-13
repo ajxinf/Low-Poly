@@ -146,10 +146,15 @@ Redesigned 2026-11-13 (`kit/toon/protagonist.ts`):
    - Event table `videos/<slug>/audio/events.json`, every frame taken from `words.json` or a motion formula:
      `{"fps": 30, "frames": N, "events": [{"f": 206, "sfx": "splat", "note": "why"}],
      "music": {"bpm": 120, "frames": N, "button": <frame of the last word>, "stop": [f0, f1]}}`.
-     Sounds: step, whoosh (centred on its frame, for dissolves), swish, splat, pat, pop, sting.
+     Sounds: step, whoosh (centred on its frame), swish, splat, pat, pop, sting.
+     **Air sounds are rationed** (pilot feedback 2026-11-13: "too many swooshes, annoying"): dissolves and hard cuts
+     get NO sound by default; a whoosh only for a real fast camera move (whip, fly-through) or something flying past
+     the lens, a swish only for a quick physical action (a slot sliding, tape ripping). `sfx_gen.py` plays them
+     quieter than the hits and refuses the table above one whoosh per 20 s, one swish per 10 s, or two air sounds
+     closer than 3 s. Hits (pat, pop, splat, sting, step) carry the rhythm.
      Sync cues to words, not typed frames: `{"word": "laughs", "n": 0, "lead": 2, "sfx": "pop"}`, music
      `button`/`stop` the same way, `"frames": "auto"` (`scripts/audio/events.py` resolves them), so a new voice
-     take moves every cue. Dissolve whooshes keep their shot-plan frames.
+     take moves every cue. A whoosh on a whip keeps its shot-plan frame.
    - `python scripts/audio/sfx_gen.py videos/<slug>` -> `sfx.wav`.
    - `python scripts/audio/music.py videos/<slug>` -> `music.wav` (bed) + `button.wav`.
    - `python scripts/audio/mix.py videos/<slug>` -> `mix.wav` (48 kHz, exact length), `loudness.json` (LUFS, true
@@ -370,6 +375,14 @@ Heavy on time and tokens: use it for the kit, not for every video.
 - 4 GB VRAM: if a render crashes or goes black, lower `--concurrency` to 1 before changing anything else.
 
 ## Readability traps (check every new prop and shot)
+- **Held props sit in the drawn hand.** Place every held prop with `handWorld(look, pose, at, cam, hand)` (kit
+  `cast.ts`; its origin is the grip point) and declare `hand: "left" | "right" | "both"` on the `MovingProp`
+  ("none" for effects that only touch the body). The QA guard fails a held prop more than 12 cm from that hand or
+  without a `hand`. Pick poses for the holding hand that keep big props off the face (crossed arms or a hand at the
+  chin push a megaphone through the head card): see `MEGA` poses in the pilot's `story.ts`.
+- **Small props get a face or a readable detail** (eyes, a beak, ears, a label, wheels): bare boxes and spheres
+  read as blocks, not toys or tools. Keep them light: 6-10 sphere segments, merged with `Kit`, and give a pile of
+  small parts a single collision hull (`delete userData.parts`), or renders and the guard time out.
 - A swing with one rope that disappears behind the character reads as a hanging: two ropes, wide plank, clear frame.
 - Props closer than ~2 m to the lens become huge cut-off blobs; re-check props whenever a camera moves.
 - A foreground object cut by the frame edge must still be recognisable, or remove it.

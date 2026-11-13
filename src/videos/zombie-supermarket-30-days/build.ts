@@ -149,12 +149,12 @@ const chadStore = () => {
     k.add(MAT.metal(), new CylinderGeometry(0.05, 0.06, 1.5, 6), 0.4, H + 0.75, z);
     k.box(MAT.metal(), 0.35, 0.28, 0.45, 0.32, H + 1.6, z);
   }
-  // Generator: green housing, panel, exhaust; sits beside where Chad stands.
-  const gl = GENERATOR.clone().sub(at(CHAD.s, FRONT, 0)), gx = gl.x, gz = gl.z;
-  k.box(MAT.color("#4a7a4e"), 0.8, 0.75, 1.2, gx, H + 0.375, gz);
-  k.box(MAT.color("#2a3a2e"), 0.02, 0.3, 0.5, gx - 0.41, H + 0.45, gz + 0.2);
-  k.add(MAT.metal(), new CylinderGeometry(0.05, 0.05, 0.5, 8), gx + 0.2, H + 1.0, gz - 0.4);
+  const gl = GENERATOR.clone().sub(at(CHAD.s, FRONT, 0));
+  roofLife(k, gl.x, H, gl.z);
   const g = k.build();
+  const gen = generator();
+  gen.position.set(gl.x, H, gl.z);
+  g.add(gen);
   const sign = signFace("CHAD'S HARDWARE", "#2a2a36", "#f2c84a", 8, 1.1);
   sign.position.set(-0.03, SH + 1.25, 0);
   sign.rotation.y = -Math.PI / 2;
@@ -163,6 +163,61 @@ const chadStore = () => {
   members.rotation.y = -Math.PI / 2;
   g.add(sign, members);
   return g;
+};
+
+/**
+ * Chad's generator (origin on the roof under its middle; local -x faces the street): a green housing with a rounded
+ * lid in a steel tube frame on wheels, louvred vents, a fuel cap, a control panel with two gauges and a red switch,
+ * a muffler with a rain-capped pipe, a hand-stencilled CHAD'S and a warning sticker; heavy cables snake off to the
+ * floodlights.
+ */
+const generator = () => {
+  const k = new Kit(), body = MAT.color("#4e8a54"), dark = MAT.color("#2e4a34"), steel = MAT.metal(), black = MAT.color("#24222a");
+  k.box(body, 0.78, 0.62, 1.16, 0, 0.5, 0);
+  k.add(body, new CylinderGeometry(0.39, 0.39, 1.16, 16, 1, false, 0, Math.PI), 0, 0.81, 0, { rx: Math.PI / 2, rz: Math.PI / 2 });
+  for (let i = 0; i < 6; i++) k.box(dark, 0.02, 0.04, 0.6, -0.4, 0.34 + i * 0.07, -0.2); // vents, street side
+  for (const z of [-0.62, 0.62]) {
+    for (const x of [-0.45, 0.45]) k.add(steel, new CylinderGeometry(0.025, 0.025, 1.0, 6), x, 0.6, z);
+    k.add(steel, new CylinderGeometry(0.025, 0.025, 0.9, 6), 0, 1.1, z, { rz: Math.PI / 2 });
+  }
+  for (const x of [-0.45, 0.45]) k.add(steel, new CylinderGeometry(0.025, 0.025, 1.24, 6), x, 1.1, 0, { rx: Math.PI / 2 });
+  for (const z of [-0.5, 0.5]) k.add(black, new CylinderGeometry(0.13, 0.13, 0.08, 14), 0.3, 0.13, z, { rx: Math.PI / 2 });
+  for (const z of [-0.45, 0.45]) k.box(black, 0.12, 0.1, 0.12, -0.3, 0.05, z);
+  k.add(MAT.color("#e2b23a"), new CylinderGeometry(0.07, 0.07, 0.06, 12), 0.05, 1.22, 0.25); // fuel cap
+  k.box(MAT.color("#d8d2c4"), 0.03, 0.3, 0.44, -0.41, 0.52, 0.3); // control panel
+  for (const z of [0.18, 0.42]) {
+    k.add(MAT.color("#f4f0e6"), new CylinderGeometry(0.06, 0.06, 0.02, 14), -0.435, 0.58, z, { rz: Math.PI / 2 });
+    k.box(MAT.color("#c8302e"), 0.01, 0.05, 0.008, -0.447, 0.6, z + 0.01);
+  }
+  k.box(MAT.color("#c8302e"), 0.05, 0.06, 0.04, -0.44, 0.44, 0.3); // switch
+  k.add(steel, new CylinderGeometry(0.09, 0.09, 0.4, 12), 0.2, 1.06, -0.4, { rz: Math.PI / 2 }); // muffler
+  k.add(steel, new CylinderGeometry(0.04, 0.04, 0.55, 8), 0.38, 1.33, -0.4);
+  k.box(steel, 0.12, 0.02, 0.12, 0.38, 1.62, -0.4);
+  for (const dz of [1, -1]) for (let i = 0; i < 5; i++) k.box(black, 0.05, 0.04, 0.42, -0.2 - i * 0.05 + (i % 2) * 0.06, 0.02, dz * (0.7 + i * 0.4)); // cables
+  const g = k.build();
+  const sten = new Mesh(new PlaneGeometry(0.62, 0.16), M("chadStencil", () => new MeshBasicMaterial({ map: scrawlTex(["CHAD'S"], "#4e8a54", "#f4f0e6", 512, 140) })));
+  sten.position.set(-0.395, 0.74, -0.15);
+  sten.rotation.y = -Math.PI / 2;
+  const warn = new Mesh(new PlaneGeometry(0.14, 0.12), M("warnSticker", () => new MeshBasicMaterial({ map: signTex("!", "#f2c84a", "#1e1a24") })));
+  warn.position.set(-0.395, 0.4, -0.45);
+  warn.rotation.y = -Math.PI / 2;
+  g.add(sten, warn);
+  return g;
+};
+
+/** Chad's roof life by the generator: a striped lawn chair, a cooler, an AC unit, vent pipes, crushed cans. */
+const roofLife = (k: Kit, gx: number, H: number, gz: number) => {
+  const alu = MAT.metal(), blue = MAT.color("#2e4ab0"), white = MAT.color("#f4f0e6");
+  const cx = gx + 0.9, cz = gz - 1.0; // beside the generator, inside the roof (z within +-5)
+  for (let i = 0; i < 6; i++) k.box(i % 2 ? blue : white, 0.5, 0.03, 0.09, cx, H + 0.42, cz - 0.25 + i * 0.09);
+  for (let i = 0; i < 5; i++) k.box(i % 2 ? blue : white, 0.03, 0.09, 0.54, cx + 0.27, H + 0.5 + i * 0.09, cz, false);
+  for (const [dx, dz] of [[-0.24, -0.27], [0.24, -0.27], [-0.24, 0.27], [0.24, 0.27]]) k.box(alu, 0.03, 0.42, 0.03, cx + dx, H + 0.21, cz + dz);
+  k.box(MAT.color("#3a8ac8"), 0.5, 0.36, 0.34, gx + 1.0, H + 0.18, gz - 0.1); // cooler
+  k.box(white, 0.52, 0.06, 0.36, gx + 1.0, H + 0.39, gz - 0.1);
+  k.box(MAT.color("#b8bcc4"), 1.1, 0.8, 0.9, gx + 3.4, H + 0.4, gz - 1.0); // AC unit
+  k.add(MAT.color("#6a6e78"), new CylinderGeometry(0.32, 0.32, 0.04, 18), gx + 3.4, H + 0.82, gz - 1.0);
+  for (const [dx, dz] of [[2.2, 1.6], [2.6, 2.1]]) k.add(MAT.metal(), new CylinderGeometry(0.08, 0.08, 0.7, 10), gx + dx, H + 0.35, gz + dz);
+  for (let i = 0; i < 4; i++) k.add(MAT.color(i % 2 ? "#c8302e" : "#d8d2c4"), new CylinderGeometry(0.035, 0.035, 0.05, 8), gx + 0.6 + i * 0.17, H + 0.025, gz - 1.6 + (i % 2) * 0.2);
 };
 
 /** The roll-up shutter (local origin bottom centre on the facade, +y up, faces -x): `open` 0..1 is set by props.ts. */
@@ -206,40 +261,102 @@ export const FUEL_AT = (i: number) => GENERATOR.clone().add(new Vector3(0.25 + (
 // ---------------------------------------------------------------- toys and the hedgehog cart (both sets)
 
 const TOY_COLS = ["#f2c84a", "#4ab0d8", "#e8506a", "#7ac860", "#b06ad0", "#f28a3a", "#f4f0e6"];
-/** One small toy (duck, robot, dino, bear, ball, rocket), origin at its base, ~0.25 m. */
+const ell = (k: Kit, m: ReturnType<typeof MAT.color>, rx: number, ry: number, rz: number, x: number, y: number, z: number) => {
+  const g = new SphereGeometry(1, 10, 7); // hundreds of toys: keep them light
+  g.scale(rx, ry, rz);
+  k.add(m, g, x, y, z);
+};
+/** Two dot eyes with white catch-lights, looking along +z (toys are drawn cute, unlike the cast). */
+const eyes = (k: Kit, x: number, y: number, z: number, gap: number, r: number) => {
+  for (const e of [-1, 1]) {
+    k.add(MAT.color("#1e1a24"), new SphereGeometry(r, 6, 4), x + e * gap, y, z);
+    k.add(MAT.color("#ffffff"), new SphereGeometry(r * 0.35, 4, 3), x + e * gap + r * 0.3, y + r * 0.35, z + r * 0.75);
+  }
+};
+/**
+ * One toy (origin at its base, ~0.25 m at s = 1), facing +z: rubber duck, robot, dinosaur, teddy bear, beach ball,
+ * rocket, toy car. Every one has a face or a readable detail, so a heap reads as toys, not blocks.
+ */
 const toyParts = (k: Kit, kind: number, col: string, x: number, y: number, z: number, s = 1) => {
-  const c = MAT.color(col);
-  switch (kind % 6) {
-    case 0: // duck
-      k.add(c, new SphereGeometry(0.11 * s, 10, 8), x, y + 0.1 * s, z);
-      k.add(c, new SphereGeometry(0.07 * s, 10, 8), x, y + 0.22 * s, z + 0.05 * s);
-      k.add(MAT.color("#f28a3a"), new ConeGeometry(0.03 * s, 0.07 * s, 6), x, y + 0.21 * s, z + 0.13 * s, { rx: Math.PI / 2 });
+  const c = MAT.color(col), S = (v: number) => v * s;
+  switch (kind % 7) {
+    case 0: { // rubber duck
+      const yel = MAT.color("#f2c84a"), wing = MAT.color("#e8b830");
+      ell(k, yel, S(0.12), S(0.09), S(0.14), x, y + S(0.09), z);
+      ell(k, yel, S(0.075), S(0.075), S(0.075), x, y + S(0.21), z + S(0.06));
+      ell(k, MAT.color("#f28a3a"), S(0.045), S(0.018), S(0.04), x, y + S(0.195), z + S(0.135)); // beak
+      for (const e of [-1, 1]) ell(k, wing, S(0.03), S(0.05), S(0.08), x + e * S(0.11), y + S(0.1), z - S(0.01));
+      eyes(k, x, y + S(0.235), z + S(0.115), S(0.035), S(0.014));
       break;
-    case 1: // robot
-      k.box(c, 0.16 * s, 0.18 * s, 0.12 * s, x, y + 0.09 * s, z);
-      k.box(MAT.metal(), 0.12 * s, 0.1 * s, 0.1 * s, x, y + 0.23 * s, z);
-      k.add(MAT.color("#e8506a"), new SphereGeometry(0.025 * s, 6, 5), x, y + 0.31 * s, z);
+    }
+    case 1: { // robot
+      k.box(c, S(0.16), S(0.17), S(0.12), x, y + S(0.13), z);
+      k.box(MAT.color("#b8bcc4"), S(0.14), S(0.11), S(0.11), x, y + S(0.27), z);
+      k.box(MAT.color("#24222a"), S(0.11), S(0.04), S(0.01), x, y + S(0.28), z + S(0.056)); // visor
+      for (const e of [-1, 1]) k.add(MAT.glow("#7fe8ff", 2.2), new SphereGeometry(S(0.011), 6, 4), x + e * S(0.028), y + S(0.28), z + S(0.062));
+      k.add(MAT.metal(), new CylinderGeometry(S(0.006), S(0.006), S(0.07), 5), x, y + S(0.36), z);
+      k.add(MAT.color("#e8506a"), new SphereGeometry(S(0.02), 8, 6), x, y + S(0.4), z);
+      k.box(MAT.color("#f2c84a"), S(0.07), S(0.05), S(0.01), x, y + S(0.14), z + S(0.062)); // chest panel
+      for (const e of [-1, 1]) {
+        k.add(MAT.color("#b8bcc4"), new CylinderGeometry(S(0.02), S(0.02), S(0.12), 6), x + e * S(0.1), y + S(0.13), z, { rz: e * 0.3 });
+        k.box(MAT.color("#24222a"), S(0.05), S(0.05), S(0.07), x + e * S(0.04), y + S(0.025), z);
+      }
       break;
-    case 2: // dino
-      k.box(MAT.color("#7ac860"), 0.12 * s, 0.14 * s, 0.26 * s, x, y + 0.1 * s, z);
-      k.box(MAT.color("#7ac860"), 0.1 * s, 0.1 * s, 0.12 * s, x, y + 0.22 * s, z + 0.14 * s);
-      k.add(MAT.color("#5aa848"), new ConeGeometry(0.05 * s, 0.22 * s, 6), x, y + 0.12 * s, z - 0.2 * s, { rx: -Math.PI / 2.4 });
+    }
+    case 2: { // dinosaur
+      const g = MAT.color("#6ac060"), belly = MAT.color("#d8e890");
+      ell(k, g, S(0.08), S(0.08), S(0.13), x, y + S(0.13), z);
+      ell(k, belly, S(0.06), S(0.055), S(0.1), x, y + S(0.11), z + S(0.02));
+      ell(k, g, S(0.06), S(0.055), S(0.075), x, y + S(0.25), z + S(0.13));
+      k.add(g, new ConeGeometry(S(0.05), S(0.2), 8), x, y + S(0.11), z - S(0.2), { rx: -Math.PI / 2.3 });
+      for (let i = 0; i < 4; i++) k.add(MAT.color("#f28a3a"), new ConeGeometry(S(0.018), S(0.05), 5), x, y + S(0.21) - i * S(0.012), z + S(0.05) - i * S(0.06));
+      for (const [dx, dz] of [[-0.05, 0.06], [0.05, 0.06], [-0.05, -0.06], [0.05, -0.06]]) k.add(g, new CylinderGeometry(S(0.025), S(0.028), S(0.08), 7), x + S(dx), y + S(0.04), z + S(dz));
+      eyes(k, x, y + S(0.28), z + S(0.18), S(0.03), S(0.012));
       break;
-    case 3: // bear
-      k.add(MAT.color("#a8784a"), new SphereGeometry(0.1 * s, 10, 8), x, y + 0.1 * s, z);
-      k.add(MAT.color("#a8784a"), new SphereGeometry(0.075 * s, 10, 8), x, y + 0.24 * s, z);
-      for (const e of [-1, 1]) k.add(MAT.color("#8a5a34"), new SphereGeometry(0.03 * s, 6, 5), x + e * 0.06 * s, y + 0.3 * s, z);
+    }
+    case 3: { // teddy bear
+      const fur = MAT.color(col === "#f4f0e6" ? "#e8dcc4" : "#b07a4a"), pale = MAT.color("#ecd2a8");
+      ell(k, fur, S(0.1), S(0.11), S(0.09), x, y + S(0.11), z);
+      ell(k, pale, S(0.065), S(0.07), S(0.03), x, y + S(0.11), z + S(0.07)); // belly patch
+      ell(k, fur, S(0.08), S(0.075), S(0.075), x, y + S(0.27), z);
+      for (const e of [-1, 1]) {
+        ell(k, fur, S(0.03), S(0.03), S(0.02), x + e * S(0.06), y + S(0.34), z); // ears
+        ell(k, pale, S(0.017), S(0.017), S(0.012), x + e * S(0.06), y + S(0.34), z + S(0.012));
+        ell(k, fur, S(0.035), S(0.06), S(0.035), x + e * S(0.1), y + S(0.14), z + S(0.02)); // arms
+        ell(k, fur, S(0.04), S(0.035), S(0.05), x + e * S(0.055), y + S(0.03), z + S(0.03)); // feet
+      }
+      ell(k, pale, S(0.035), S(0.028), S(0.03), x, y + S(0.25), z + S(0.065)); // snout
+      k.add(MAT.color("#1e1a24"), new SphereGeometry(S(0.012), 6, 4), x, y + S(0.26), z + S(0.094));
+      eyes(k, x, y + S(0.295), z + S(0.06), S(0.03), S(0.011));
       break;
-    case 4: // ball
-      k.add(c, new SphereGeometry(0.1 * s, 12, 9), x, y + 0.1 * s, z);
+    }
+    case 4: { // beach ball: two colours and a white band
+      k.add(c, new SphereGeometry(S(0.1), 14, 10), x, y + S(0.1), z);
+      k.add(MAT.color("#f4f0e6"), new TorusGeometry(S(0.1), S(0.012), 6, 20), x, y + S(0.1), z);
+      k.add(MAT.color(col === "#4ab0d8" ? "#f2c84a" : "#4ab0d8"), new TorusGeometry(S(0.07), S(0.03), 6, 20), x, y + S(0.1), z, { ry: Math.PI / 2 });
       break;
-    default: // rocket
-      k.add(c, new CylinderGeometry(0.05 * s, 0.05 * s, 0.22 * s, 8), x, y + 0.11 * s, z);
-      k.add(MAT.color("#e8506a"), new ConeGeometry(0.05 * s, 0.1 * s, 8), x, y + 0.27 * s, z);
+    }
+    case 5: { // rocket
+      k.add(MAT.color("#f4f0e6"), new CylinderGeometry(S(0.05), S(0.055), S(0.22), 12), x, y + S(0.13), z);
+      k.add(MAT.color("#e8506a"), new ConeGeometry(S(0.05), S(0.1), 12), x, y + S(0.29), z);
+      k.add(MAT.color("#4ab0d8"), new CylinderGeometry(S(0.022), S(0.022), S(0.01), 10), x, y + S(0.17), z + S(0.05), { rx: Math.PI / 2 });
+      for (let i = 0; i < 3; i++) {
+        const a = (i / 3) * Math.PI * 2;
+        k.box(c, S(0.01), S(0.08), S(0.06), x + Math.sin(a) * S(0.06), y + S(0.05), z + Math.cos(a) * S(0.06));
+      }
+      break;
+    }
+    default: { // toy car
+      k.box(c, S(0.14), S(0.06), S(0.24), x, y + S(0.07), z);
+      k.box(c, S(0.12), S(0.06), S(0.12), x, y + S(0.13), z - S(0.02));
+      k.box(MAT.color("#9ad0ec"), S(0.122), S(0.04), S(0.1), x, y + S(0.135), z - S(0.02));
+      for (const [dx, dz] of [[-0.075, 0.07], [0.075, 0.07], [-0.075, -0.07], [0.075, -0.07]])
+        k.add(MAT.color("#24222a"), new CylinderGeometry(S(0.035), S(0.035), S(0.03), 12), x + S(dx), y + S(0.035), z + S(dz), { rz: Math.PI / 2 });
+    }
   }
 };
 
-const HEAP_KINDS = [0, 0, 0, 3, 3, 3, 4, 4, 1, 2, 5];
+const HEAP_KINDS = [0, 0, 3, 3, 1, 2, 4, 5, 6];
 /** A rubber duck to hold (cold open), origin at its middle. */
 export const duckToy = () => {
   const k = new Kit();
@@ -249,7 +366,7 @@ export const duckToy = () => {
 /** The toy mountain around "you" by the front window: a ring of toys up to ~0.7 m with a gap where you stand. */
 export const toyHeap = () => {
   const k = new Kit(), r = rng(212);
-  for (let i = 0; i < 240; i++) {
+  for (let i = 0; i < 160; i++) {
     const a = r() * Math.PI * 2, d = 0.35 + Math.sqrt(r()) * 1.5;
     const front = Math.cos(a) > 0.55 && d < 0.9; // keep the camera side of your feet clear-ish
     if (front) continue;
@@ -278,7 +395,7 @@ const cartBody = (k: Kit) => {
  * up like a flag and the crayon DO NOT PUSH sign on the front. `taped` 0..1 = how many toys are on so far.
  */
 export const hedgehogCart = (taped = 1, sign = true) => {
-  const k = new Kit(), r = rng(1212), N = Math.round(110 * taped);
+  const k = new Kit(), tk = new Kit(), r = rng(1212), N = Math.round(85 * taped);
   cartBody(k);
   for (let i = 0; i < N; i++) {
     const face = Math.floor(r() * 5), u = r() - 0.5, v = r();
@@ -288,13 +405,17 @@ export const hedgehogCart = (taped = 1, sign = true) => {
     else if (face === 2) [x, z] = [u * 0.6, 0.48];
     else if (face === 3) [x, z] = [u * 0.6, -0.4];
     else [x, y, z] = [u * 0.55, 0.95 + r() * 0.25, (r() - 0.5) * 0.85];
-    toyParts(k, HEAP_KINDS[Math.floor(r() * HEAP_KINDS.length)], TOY_COLS[i % TOY_COLS.length], x, y - 0.1, z, 0.5 + r() * 0.3);
+    toyParts(tk, HEAP_KINDS[Math.floor(r() * HEAP_KINDS.length)], TOY_COLS[i % TOY_COLS.length], x, y - 0.1, z, 0.5 + r() * 0.3);
   }
   // The dinosaur tail flag (always on top).
   k.add(MAT.color("#7ac860"), new ConeGeometry(0.045, 0.42, 7), 0.05, 1.4, 0.1);
   // Tape strips.
   for (let i = 0; i < 10 * taped; i++) k.box(MAT.color("#d8c8a0"), 0.62, 0.035, 0.05, 0, 0.6 + i * 0.05, -0.42 + ((i * 0.37) % 0.9));
   const g = k.build();
+  // The toys collide as one hull per material, not one box per eye and ear (the guard tests every part every frame).
+  const toys = tk.build();
+  toys.traverse((m) => void delete m.userData.parts);
+  g.add(toys);
   if (sign) {
     const s = scrawl(["DO NOT", "PUSH"], "#d8b07a", "#c8302e", 0.5, 0.36);
     s.name = "sign";
