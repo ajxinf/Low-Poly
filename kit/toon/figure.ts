@@ -104,10 +104,14 @@ const hand = (p: Pen, s: Solved, u: number) => {
 
 const drawProp = (p: Pen, name: CharState["prop"], arms: Solved[], u: number) => {
   if (!name) return;
-  const [l, r] = [arms[0].H, arms[1].H], mx = (l[0] + r[0]) / 2, my = (l[1] + r[1]) / 2, w = 3 * u;
+  const [l, r] = [arms[0].H, arms[1].H], w = 3 * u;
+  // Between the hands when they meet; when one hand is busy elsewhere (eating, pointing, waving: hands > 45u apart)
+  // the prop stays in the LOWER hand, never floating at the midpoint (pilot defect 2026-11-14: a can on the chest).
+  const apart = Math.hypot(r[0] - l[0], r[1] - l[1]) > 45 * u, low = l[1] >= r[1] ? l : r;
+  const mx = apart ? low[0] : (l[0] + r[0]) / 2, my = apart ? low[1] : (l[1] + r[1]) / 2;
   const rect = (x: number, y: number, rw: number, rh: number): P2[] => [[x, y], [x + rw, y], [x + rw, y + rh], [x, y + rh]];
   if (name === "box") {
-    const bw = Math.max(Math.abs(r[0] - l[0]) - 4 * u, 44 * u);
+    const bw = apart ? 44 * u : Math.max(Math.abs(r[0] - l[0]) - 4 * u, 44 * u);
     p.poly(rect(mx - bw / 2, my - 26 * u, bw, 36 * u), "#d8a868", w);
     p.poly(rect(mx - 4 * u, my - 26 * u, 8 * u, 36 * u), "#f0dca8");
     p.stroke([[mx - bw / 2, my - 17 * u], [mx + bw / 2, my - 17 * u]], 1.6 * u);

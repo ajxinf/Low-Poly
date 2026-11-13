@@ -1,7 +1,7 @@
 import { useFrame, useThree } from "@react-three/fiber";
-import { useLayoutEffect, useMemo } from "react";
+import { useLayoutEffect, useMemo, useRef } from "react";
 import {
-  AddEquation, CanvasTexture, CustomBlending, DoubleSide, DstColorFactor, Group, InstancedBufferAttribute, InstancedMesh,
+  AddEquation, Box3, CanvasTexture, CustomBlending, DoubleSide, DstColorFactor, Group, InstancedBufferAttribute, InstancedMesh,
   LinearFilter, LinearMipmapLinearFilter, Matrix4, Object3D, PlaneGeometry, SRGBColorSpace, ShaderMaterial, UniformsLib,
   UniformsUtils, Vector3, ZeroFactor,
 } from "three";
@@ -151,8 +151,15 @@ void main() {
 const tmp = new Object3D(), HIDE = new Matrix4().makeScale(0, 0, 0);
 
 /** `avoid`: the lens position; extras within `clear` m of it (on the ground plane) are hidden, never a face in the lens. */
-export const Crowd: React.FC<{ spec: CrowdSpec; f: number; avoid?: Vector3; clear?: number }> = ({ spec, f, avoid, clear = 3 }) => {
-  useThree();
+/**
+ * `keepOff`: moving things the crowd must stand clear of (a cart, a hero): instances inside a radius are pushed to its
+ * edge. Props are automatic: every ground collider with a footprint under 6 m (cars, benches, bins, lamp posts) pushes
+ * instances out of its footprint (pilot defect 2026-11-14: zombies stood inside a parked car). Buildings are not
+ * obstacles here (crowds may enter doorways); keep `place` out of walls yourself.
+ */
+export const Crowd: React.FC<{ spec: CrowdSpec; f: number; avoid?: Vector3; clear?: number; keepOff?: { pos: Vector3; r: number }[] }> = ({ spec, f, avoid, clear = 3, keepOff }) => {
+  const scene = useThree((s) => s.scene);
+  const rects = useRef<{ x0: number; x1: number; z0: number; z1: number; top: number }[] | null>(null);
   const p = useMemo(() => {
     const { texture, cols, rows } = atlasOf(spec.looks, spec.states);
     const w = DESIGN.W / DESIGN.PX_PER_M, h = DESIGN.H / DESIGN.PX_PER_M;
@@ -194,8 +201,38 @@ export const Crowd: React.FC<{ spec: CrowdSpec; f: number; avoid?: Vector3; clea
     p.blobs.layers.set(SKY);
   }, [p]);
   useFrame(() => {
+    if (!rects.current) {
+      const out: { x0: number; x1: number; z0: number; z1: number; top: number }[] = [], PAD = 0.3; // half a card's width
+      scene.updateMatrixWorld(true);
+      scene.traverse((o) => {
+        if (!o.userData.collider) return;
+        const b = new Box3().setFromObject(o);
+        if (b.isEmpty() || b.min.y > 0.6 || Math.max(b.max.x - b.min.x, b.max.z - b.min.z) > 6) return;
+        out.push({ x0: b.min.x - PAD, x1: b.max.x + PAD, z0: b.min.z - PAD, z1: b.max.z + PAD, top: b.max.y });
+      });
+      rects.current = out;
+    }
     for (let i = 0; i < spec.count; i++) {
       const q = spec.place(i, f);
+      if (!q.hidden) {
+        const p = q.pos;
+        for (const b of rects.current)
+          if (p.y < b.top && p.x > b.x0 && p.x < b.x1 && p.z > b.z0 && p.z < b.z1) {
+            const dx0 = p.x - b.x0, dx1 = b.x1 - p.x, dz0 = p.z - b.z0, dz1 = b.z1 - p.z, m = Math.min(dx0, dx1, dz0, dz1);
+            if (m === dx0) p.x = b.x0;
+            else if (m === dx1) p.x = b.x1;
+            else if (m === dz0) p.z = b.z0;
+            else p.z = b.z1;
+          }
+        for (const k of keepOff ?? []) {
+          const dx = p.x - k.pos.x, dz = p.z - k.pos.z, d = Math.hypot(dx, dz);
+          if (d < k.r && Math.abs(p.y - k.pos.y) < 1.5) {
+            const s = d > 1e-3 ? k.r / d : 1;
+            p.x = k.pos.x + (d > 1e-3 ? dx * s : k.r);
+            p.z = k.pos.z + dz * s;
+          }
+        }
+      }
       if (q.hidden || (avoid && Math.hypot(q.pos.x - avoid.x, q.pos.z - avoid.z) < clear)) {
         p.cards.setMatrixAt(i, HIDE);
         p.blobs.setMatrixAt(i, HIDE);

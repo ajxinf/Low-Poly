@@ -404,6 +404,11 @@ Heavy on time and tokens: use it for the kit, not for every video.
   ("none" for effects that only touch the body). The QA guard fails a held prop more than 12 cm from that hand or
   without a `hand`. Pick poses for the holding hand that keep big props off the face (crossed arms or a hand at the
   chin push a megaphone through the head card): see `MEGA` poses in the pilot's `story.ts`.
+- **Nothing floats, nothing overlaps** (pilot defects 2026-11-14): piles are stacked from the floor up (`toyPile`
+  builds columns; never give pile items random heights); a drawn hand prop (`prop: "can"`...) follows the lower hand
+  when the hands are apart (kit figure.ts), so check it in any one-handed pose; crowds are pushed out of ground props
+  automatically and off moving things you pass as `keepOff` (kit `Crowd`): pass the cart, vehicle or hero that moves
+  through a crowd.
 - **Never stack people in one line of sight.** Cards are flat: a character straight behind another vanishes (pilot:
   Dave behind you). Stage them apart on screen. QA guard "Cast overlap" fails a nearer card, or a held prop, that
   covers more than 25 % of another character's face.

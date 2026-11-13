@@ -16,7 +16,7 @@ import { Stamp } from "../../../kit/toon/Stamp";
 import { ToonWorld } from "../../../kit/toon/world";
 import { EXT_OPTS, INT_EXTRAS, IN, at } from "./build";
 import { propsFor } from "./props";
-import { BEAT, HORDE, words } from "./roles";
+import { BEAT, HORDE, cartAt, words } from "./roles";
 import { FRAMES, INSERT, PLAN, S, SHOTS, WORLD, XF } from "./story";
 
 // zombie-supermarket-30-days: the pilot Short. Each shot is its own Sequence + canvas; a shot that starts before the
@@ -46,7 +46,7 @@ const ShotView: React.FC<{ s: S }> = ({ s }) => {
       <ToonWorld preset={light} sunDir={W.sun} shadow={ext ? SHADOW.ext : SHADOW.int} />
       <Street preset={preset} light={light} opts={ext ? EXT_OPTS : INT_OPTS} />
       {extras.map((o, i) => <primitive key={i} object={o} />)}
-      {s.crowd && <Crowd spec={HORDE} f={f} avoid={s.pose(lf).pos} />}
+      {s.crowd && <Crowd spec={HORDE} f={f} avoid={s.pose(lf).pos} keepOff={[{ pos: cartAt(f), r: 1.0 }]} />}
       {s.motes && <Dust center={s.motes.center} size={s.motes.size} color={s.motes.color} strength={0.9} count={260} />}
       {ext && <Dust center={at(32, 0, 3)} size={new Vector3(16, 6, 30)} color={s.w === "ext-dawn" ? "#ffd8a8" : "#fff4dc"} strength={0.8} count={420} />}
       {moving.map((p) => <Moving key={p.name} prop={p} f={f} />)}

@@ -118,13 +118,18 @@ export const duckToy = () => {
  */
 export const toyPile = ({ count = 160, radius = 1.5, seed = 212 } = {}) => {
   const k = new Kit(), r = rng(seed);
-  for (let i = 0; i < count; i++) {
+  // Columns, not random heights (pilot defect 2026-11-14: toys hung in the air): each spot stacks toys from the floor
+  // up to the mound's height there, each one resting on the one below (LAYER = a toy's height at this size).
+  const LAYER = 0.15;
+  for (let n = 0; n < count; ) {
     const a = r() * Math.PI * 2, d = 0.35 + Math.sqrt(r()) * radius;
     const front = Math.cos(a) > 0.55 && d < 0.9; // keep the camera side of your feet clear-ish
-    if (front) continue;
-    const y = Math.max(0, (radius + 0.1 - d) * 0.4) * r();
-    const kind = TOY_KINDS[Math.floor(r() * TOY_KINDS.length)]; // mostly round, soft toys (ducks, bears, balls)
-    toyParts(k, kind, TOY_COLS[Math.floor(r() * TOY_COLS.length)], Math.sin(a) * d, y, Math.cos(a) * d - 0.2, 0.55 + r() * 0.35);
+    const layers = 1 + Math.floor((Math.max(0, radius + 0.1 - d) * 0.4 * r()) / LAYER);
+    for (let j = 0; j < layers && n < count; j++, n++) {
+      if (front) continue;
+      const kind = TOY_KINDS[Math.floor(r() * TOY_KINDS.length)];
+      toyParts(k, kind, TOY_COLS[Math.floor(r() * TOY_COLS.length)], Math.sin(a) * d + (r() - 0.5) * 0.05, j * LAYER, Math.cos(a) * d - 0.2 + (r() - 0.5) * 0.05, 0.55 + r() * 0.35);
+    }
   }
   return k.build();
 };
