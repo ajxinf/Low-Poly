@@ -213,6 +213,30 @@ The look values below make a frame pretty; these rules make the frames tell the 
 - **Rough stills before the build**: block each shot as a quick still (`scripts/stills.mjs`) and check it reads
   with the sound off: who wants what, and what just changed.
 
+## Shoot the gag (zombie pilot critique, 2026-11-13: "half the gags never reach the screen")
+The first pilot showed the PLACE where each gag would happen, wide and small, and the voice told the joke alone. Rules:
+- **One gag shot per line, on its word**: the slot slams on "only" in a close insert, the bubble pops on "batteries",
+  the face goes ring-eyed on "up". Write the gag shot into the plan before anything else; cover it close (MCU/CU or a
+  macro insert), then cut away. A line whose gag is not on screen is a bug.
+- **Faces big**: the speaking or reacting character's head is at least 15 % of the frame width (MCU ~35 %), unless
+  the shot is an establishing / reveal / crowd wide marked `wide: true`. People far away (on a roof, across a
+  street) get `telephoto(from, who, head, span)` (kit camera.ts), not a wide. QA "Subject size" enforces it.
+- **Short shots**: 1-3 s, cut on the punch word; no shot over 4 s, mean at or under 3 s (QA "Pacing").
+- **Hands do things**: `actionPose("knock" | "tape" | "wave" | "bang", t)` and the still poses `eat`, `kick`, `knock`,
+  `tape`, `wave`, `bang` (kit poses.ts); faces `grin` and `smirk` besides the rest. Held props sit in the hand
+  (`handWorld`, QA "Moving props").
+- **Hits get a shake**: `impact(pose, frame)` (kit camera.ts) on slams, crashes and kicks, declared in `kicks`.
+- **Every window shows the outside**: `streetViewTex` + `windowViews` (kit build/views.ts), day and night.
+- **Sets say what they are**: set dressing that names the place's role at phone size (a fortress gets barbed wire,
+  sandbags, a MEMBERS ONLY board: kit build/storyprops.ts `barbedWire`, `sandbags`; signs via build/signs.ts).
+  Toys from build/toys.ts (`toyParts`, `toyPile`, `duckToy`, `dinoToy`).
+- **Crowds clump**: `clusteredSpots` (kit crowd.tsx), per-instance `scale` 0.88-1.1, two or more idle states
+  (reaching arms), and the payoff of a crowd is shown (a shop filling to the ceiling), not cut away from.
+- **Dawn/golden light rakes across the set from the side or front** (sun az ~150 from the main lens), not from behind:
+  a backlit dawn turned the whole street violet.
+- **The ending mirrors the opening**: the same framing (a telephoto close-up of the rival), now silent.
+- **Sound**: horde scenes get a `groan` bed, crashes a `crash`; the music `build` cue (events.json) starts the climax.
+
 ## Staging and camera (from the 2026-11-14 stress-test comparison; `src/videos/_stress-test` is the worked example)
 - **Frame with `frameOn(at, from, size)`** (`kit/toon/camera.ts`). Sizes are calibrated to our cards (heads are
   0.5 m wide): `cu` head ~45 % of the frame width (head + torso, the reference "close-up"), `mcu`, `ms`, `fs`, `ws`.

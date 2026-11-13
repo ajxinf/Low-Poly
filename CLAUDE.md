@@ -10,7 +10,7 @@ Windows 11 laptop: i5-11400H, RTX 3050 4 GB VRAM, 16 GB RAM. Commands must work 
 ## Stack
 - Remotion + `@remotion/three` (React Three Fiber). Every motion (characters, camera, shaders) must be driven by `useCurrentFrame()`, never by clocks or `useFrame` time.
 - ElevenLabs **Eleven v4** TTS (one narrator voice, audio tags only on beats). API key in `.env` as `ELEVENLABS_API_KEY` (never commit it).
-- Assets: CC0 only (Kenney, Quaternius, similar). Record each asset's source + license in `assets/CREDITS.md`.
+- Assets: CC0 only (Kenney, Quaternius, similar); fonts may be SIL OFL 1.1 (approved 2026-11-14: Nunito for captions). Record each asset's source + license in `assets/CREDITS.md`.
 - Sound: synthesized SFX + original score (Python scripts). No commercial music.
 
 ## Pipeline (audio-first)

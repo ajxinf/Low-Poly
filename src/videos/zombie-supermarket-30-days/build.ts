@@ -1,11 +1,15 @@
 import {
-  BoxGeometry, BufferAttribute, BufferGeometry, CanvasTexture, ConeGeometry, DoubleSide, CylinderGeometry, Group, Mesh, MeshBasicMaterial, Object3D, PlaneGeometry,
+  BoxGeometry, CanvasTexture, ConeGeometry, CylinderGeometry, Group, Mesh, MeshBasicMaterial, Object3D, PlaneGeometry,
   SRGBColorSpace, SphereGeometry, TorusGeometry, Vector3,
 } from "three";
 import { Kit, M, MAT } from "../../../kit/toon/build/kit";
 import { StreetOpts, spine } from "../../../kit/toon/build/street";
 import { signTex } from "../../../kit/toon/build/textures";
 import { glowSprite } from "../../../kit/toon/glow";
+import { scrawl, scrawlTex, signFace } from "../../../kit/toon/build/signs";
+import { TOY_COLS, TOY_KINDS, battery, dinoToy, duckToy, shakeBox, toyParts, toyPile } from "../../../kit/toon/build/toys";
+import { lantern, megaphone, toothbrush } from "../../../kit/toon/build/storyprops";
+import { STORE_PANES, streetViewTex, windowViews as paneViews } from "../../../kit/toon/build/views";
 import { rng } from "../../../kit/toon/paint";
 
 /**
@@ -44,42 +48,6 @@ const named = (o: Object3D, name: string, p: Vector3, door?: number) => {
   if (door) o.userData.door = door;
   return o;
 };
-/** Unlit sign face (readability rule: lit signs go grey from the side). */
-const signFace = (text: string, bg: string, fg: string, w: number, h: number) =>
-  new Mesh(new PlaneGeometry(w, h), M(`sign${text}${bg}`, () => new MeshBasicMaterial({ map: signTex(text, bg, fg) })));
-
-/** A hand-painted / crayon sign drawn on a canvas (wobbly letters on cardboard or plywood). */
-export const scrawlTex = (lines: string[], bg: string, ink: string, w = 512, h = 256) => {
-  const c = document.createElement("canvas");
-  c.width = w;
-  c.height = h;
-  const g = c.getContext("2d")!;
-  g.fillStyle = bg;
-  g.fillRect(0, 0, w, h);
-  const r = rng(lines.join("").length * 13);
-  g.fillStyle = ink;
-  g.textAlign = "center";
-  g.textBaseline = "middle";
-  const fs = Math.min(h / (lines.length + 0.6), (w / Math.max(...lines.map((l) => l.length))) * 1.45);
-  g.font = `900 ${fs}px "Comic Sans MS", "Chalkboard SE", sans-serif`;
-  lines.forEach((l, i) => {
-    const y = h / 2 + (i - (lines.length - 1) / 2) * fs * 1.05;
-    [...l].forEach((ch, j) => {
-      const x = w / 2 + (j - (l.length - 1) / 2) * fs * 0.68;
-      g.save();
-      g.translate(x, y + (r() - 0.5) * fs * 0.12);
-      g.rotate((r() - 0.5) * 0.22);
-      g.fillText(ch, 0, 0);
-      g.restore();
-    });
-  });
-  const t = new CanvasTexture(c);
-  t.colorSpace = SRGBColorSpace;
-  return t;
-};
-const scrawl = (lines: string[], bg: string, ink: string, w: number, h: number) =>
-  new Mesh(new PlaneGeometry(w, h), M(`scrawl${lines.join("|")}`, () => new MeshBasicMaterial({ map: scrawlTex(lines, bg, ink) })));
-
 // ---------------------------------------------------------------- EXT: the supermarket front with the dock
 
 /** FRESHMART front: local origin on the facade line at the building's middle (s 31), local +x = toward the street. */
@@ -295,123 +263,6 @@ export const FUEL_AT = (i: number) => GENERATOR.clone().add(new Vector3(0.25 + (
 
 // ---------------------------------------------------------------- toys and the hedgehog cart (both sets)
 
-const TOY_COLS = ["#f2c84a", "#4ab0d8", "#e8506a", "#7ac860", "#b06ad0", "#f28a3a", "#f4f0e6"];
-const ell = (k: Kit, m: ReturnType<typeof MAT.color>, rx: number, ry: number, rz: number, x: number, y: number, z: number) => {
-  const g = new SphereGeometry(1, 10, 7); // hundreds of toys: keep them light
-  g.scale(rx, ry, rz);
-  k.add(m, g, x, y, z);
-};
-/** Two dot eyes with white catch-lights, looking along +z (toys are drawn cute, unlike the cast). */
-const eyes = (k: Kit, x: number, y: number, z: number, gap: number, r: number) => {
-  for (const e of [-1, 1]) {
-    k.add(MAT.color("#1e1a24"), new SphereGeometry(r, 6, 4), x + e * gap, y, z);
-    k.add(MAT.color("#ffffff"), new SphereGeometry(r * 0.35, 4, 3), x + e * gap + r * 0.3, y + r * 0.35, z + r * 0.75);
-  }
-};
-/**
- * One toy (origin at its base, ~0.25 m at s = 1), facing +z: rubber duck, robot, dinosaur, teddy bear, beach ball,
- * rocket, toy car. Every one has a face or a readable detail, so a heap reads as toys, not blocks.
- */
-const toyParts = (k: Kit, kind: number, col: string, x: number, y: number, z: number, s = 1) => {
-  const c = MAT.color(col), S = (v: number) => v * s;
-  switch (kind % 7) {
-    case 0: { // rubber duck
-      const yel = MAT.color("#f2c84a"), wing = MAT.color("#e8b830");
-      ell(k, yel, S(0.12), S(0.09), S(0.14), x, y + S(0.09), z);
-      ell(k, yel, S(0.075), S(0.075), S(0.075), x, y + S(0.21), z + S(0.06));
-      ell(k, MAT.color("#f28a3a"), S(0.045), S(0.018), S(0.04), x, y + S(0.195), z + S(0.135)); // beak
-      for (const e of [-1, 1]) ell(k, wing, S(0.03), S(0.05), S(0.08), x + e * S(0.11), y + S(0.1), z - S(0.01));
-      eyes(k, x, y + S(0.235), z + S(0.115), S(0.035), S(0.014));
-      break;
-    }
-    case 1: { // robot
-      k.box(c, S(0.16), S(0.17), S(0.12), x, y + S(0.13), z);
-      k.box(MAT.color("#b8bcc4"), S(0.14), S(0.11), S(0.11), x, y + S(0.27), z);
-      k.box(MAT.color("#24222a"), S(0.11), S(0.04), S(0.01), x, y + S(0.28), z + S(0.056)); // visor
-      for (const e of [-1, 1]) k.add(MAT.glow("#7fe8ff", 2.2), new SphereGeometry(S(0.011), 6, 4), x + e * S(0.028), y + S(0.28), z + S(0.062));
-      k.add(MAT.metal(), new CylinderGeometry(S(0.006), S(0.006), S(0.07), 5), x, y + S(0.36), z);
-      k.add(MAT.color("#e8506a"), new SphereGeometry(S(0.02), 8, 6), x, y + S(0.4), z);
-      k.box(MAT.color("#f2c84a"), S(0.07), S(0.05), S(0.01), x, y + S(0.14), z + S(0.062)); // chest panel
-      for (const e of [-1, 1]) {
-        k.add(MAT.color("#b8bcc4"), new CylinderGeometry(S(0.02), S(0.02), S(0.12), 6), x + e * S(0.1), y + S(0.13), z, { rz: e * 0.3 });
-        k.box(MAT.color("#24222a"), S(0.05), S(0.05), S(0.07), x + e * S(0.04), y + S(0.025), z);
-      }
-      break;
-    }
-    case 2: { // dinosaur
-      const g = MAT.color("#6ac060"), belly = MAT.color("#d8e890");
-      ell(k, g, S(0.08), S(0.08), S(0.13), x, y + S(0.13), z);
-      ell(k, belly, S(0.06), S(0.055), S(0.1), x, y + S(0.11), z + S(0.02));
-      ell(k, g, S(0.06), S(0.055), S(0.075), x, y + S(0.25), z + S(0.13));
-      k.add(g, new ConeGeometry(S(0.05), S(0.2), 8), x, y + S(0.11), z - S(0.2), { rx: -Math.PI / 2.3 });
-      for (let i = 0; i < 4; i++) k.add(MAT.color("#f28a3a"), new ConeGeometry(S(0.018), S(0.05), 5), x, y + S(0.21) - i * S(0.012), z + S(0.05) - i * S(0.06));
-      for (const [dx, dz] of [[-0.05, 0.06], [0.05, 0.06], [-0.05, -0.06], [0.05, -0.06]]) k.add(g, new CylinderGeometry(S(0.025), S(0.028), S(0.08), 7), x + S(dx), y + S(0.04), z + S(dz));
-      eyes(k, x, y + S(0.28), z + S(0.18), S(0.03), S(0.012));
-      break;
-    }
-    case 3: { // teddy bear
-      const fur = MAT.color(col === "#f4f0e6" ? "#e8dcc4" : "#b07a4a"), pale = MAT.color("#ecd2a8");
-      ell(k, fur, S(0.1), S(0.11), S(0.09), x, y + S(0.11), z);
-      ell(k, pale, S(0.065), S(0.07), S(0.03), x, y + S(0.11), z + S(0.07)); // belly patch
-      ell(k, fur, S(0.08), S(0.075), S(0.075), x, y + S(0.27), z);
-      for (const e of [-1, 1]) {
-        ell(k, fur, S(0.03), S(0.03), S(0.02), x + e * S(0.06), y + S(0.34), z); // ears
-        ell(k, pale, S(0.017), S(0.017), S(0.012), x + e * S(0.06), y + S(0.34), z + S(0.012));
-        ell(k, fur, S(0.035), S(0.06), S(0.035), x + e * S(0.1), y + S(0.14), z + S(0.02)); // arms
-        ell(k, fur, S(0.04), S(0.035), S(0.05), x + e * S(0.055), y + S(0.03), z + S(0.03)); // feet
-      }
-      ell(k, pale, S(0.035), S(0.028), S(0.03), x, y + S(0.25), z + S(0.065)); // snout
-      k.add(MAT.color("#1e1a24"), new SphereGeometry(S(0.012), 6, 4), x, y + S(0.26), z + S(0.094));
-      eyes(k, x, y + S(0.295), z + S(0.06), S(0.03), S(0.011));
-      break;
-    }
-    case 4: { // beach ball: two colours and a white band
-      k.add(c, new SphereGeometry(S(0.1), 14, 10), x, y + S(0.1), z);
-      k.add(MAT.color("#f4f0e6"), new TorusGeometry(S(0.1), S(0.012), 6, 20), x, y + S(0.1), z);
-      k.add(MAT.color(col === "#4ab0d8" ? "#f2c84a" : "#4ab0d8"), new TorusGeometry(S(0.07), S(0.03), 6, 20), x, y + S(0.1), z, { ry: Math.PI / 2 });
-      break;
-    }
-    case 5: { // rocket
-      k.add(MAT.color("#f4f0e6"), new CylinderGeometry(S(0.05), S(0.055), S(0.22), 12), x, y + S(0.13), z);
-      k.add(MAT.color("#e8506a"), new ConeGeometry(S(0.05), S(0.1), 12), x, y + S(0.29), z);
-      k.add(MAT.color("#4ab0d8"), new CylinderGeometry(S(0.022), S(0.022), S(0.01), 10), x, y + S(0.17), z + S(0.05), { rx: Math.PI / 2 });
-      for (let i = 0; i < 3; i++) {
-        const a = (i / 3) * Math.PI * 2;
-        k.box(c, S(0.01), S(0.08), S(0.06), x + Math.sin(a) * S(0.06), y + S(0.05), z + Math.cos(a) * S(0.06));
-      }
-      break;
-    }
-    default: { // toy car
-      k.box(c, S(0.14), S(0.06), S(0.24), x, y + S(0.07), z);
-      k.box(c, S(0.12), S(0.06), S(0.12), x, y + S(0.13), z - S(0.02));
-      k.box(MAT.color("#9ad0ec"), S(0.122), S(0.04), S(0.1), x, y + S(0.135), z - S(0.02));
-      for (const [dx, dz] of [[-0.075, 0.07], [0.075, 0.07], [-0.075, -0.07], [0.075, -0.07]])
-        k.add(MAT.color("#24222a"), new CylinderGeometry(S(0.035), S(0.035), S(0.03), 12), x + S(dx), y + S(0.035), z + S(dz), { rz: Math.PI / 2 });
-    }
-  }
-};
-
-const HEAP_KINDS = [0, 0, 3, 3, 1, 2, 4, 5, 6];
-/** A rubber duck to hold (cold open), origin at its middle. */
-export const duckToy = () => {
-  const k = new Kit();
-  toyParts(k, 0, "#f2c84a", 0, -0.12, 0, 1.1);
-  return k.build();
-};
-/** The toy mountain around "you" by the front window: a ring of toys up to ~0.7 m with a gap where you stand. */
-export const toyHeap = () => {
-  const k = new Kit(), r = rng(212);
-  for (let i = 0; i < 160; i++) {
-    const a = r() * Math.PI * 2, d = 0.35 + Math.sqrt(r()) * 1.5;
-    const front = Math.cos(a) > 0.55 && d < 0.9; // keep the camera side of your feet clear-ish
-    if (front) continue;
-    const y = Math.max(0, (1.6 - d) * 0.4) * r();
-    const kind = HEAP_KINDS[Math.floor(r() * HEAP_KINDS.length)]; // mostly round, soft toys (ducks, bears, balls)
-    toyParts(k, kind, TOY_COLS[Math.floor(r() * TOY_COLS.length)], Math.sin(a) * d, y, Math.cos(a) * d - 0.2, 0.55 + r() * 0.35);
-  }
-  return k.build();
-};
-
 /** A shopping cart (local +z = its front, handle at -z), origin at the floor. */
 const cartBody = (k: Kit) => {
   const wire = MAT.metal();
@@ -440,7 +291,7 @@ export const hedgehogCart = (taped = 1, sign = true) => {
     else if (face === 2) [x, z] = [u * 0.6, 0.48];
     else if (face === 3) [x, z] = [u * 0.6, -0.4];
     else [x, y, z] = [u * 0.55, 0.95 + r() * 0.25, (r() - 0.5) * 0.85];
-    toyParts(tk, HEAP_KINDS[Math.floor(r() * HEAP_KINDS.length)], TOY_COLS[i % TOY_COLS.length], x, y - 0.1, z, 0.5 + r() * 0.3);
+    toyParts(tk, TOY_KINDS[Math.floor(r() * TOY_KINDS.length)], TOY_COLS[i % TOY_COLS.length], x, y - 0.1, z, 0.5 + r() * 0.3);
   }
   // The dinosaur tail flag (always on top).
   k.add(MAT.color("#7ac860"), new ConeGeometry(0.045, 0.42, 7), 0.05, 1.4, 0.1);
@@ -462,50 +313,6 @@ export const hedgehogCart = (taped = 1, sign = true) => {
     g.add(s);
   }
   return g;
-};
-
-/** A dinosaur toy with an open battery hatch (S14 close-up, held). Origin at its middle. */
-export const dinoToy = () => {
-  const k = new Kit();
-  toyParts(k, 2, "#7ac860", 0, -0.15, 0, 1.6);
-  k.box(MAT.color("#2a2a30"), 0.02, 0.1, 0.14, 0.1, -0.02, 0);
-  return k.build();
-};
-/** An AA battery, origin at its middle. */
-export const battery = () => {
-  const k = new Kit();
-  k.add(MAT.color("#2a2a30"), new CylinderGeometry(0.022, 0.022, 0.09, 10), 0, 0, 0);
-  k.add(MAT.color("#e2b23a"), new CylinderGeometry(0.0225, 0.0225, 0.03, 10), 0, 0.035, 0);
-  return k.build();
-};
-/** A toy box printed SHAKE ME! (macro insert). Origin at its base. */
-export const shakeBox = () => {
-  const g = new Group();
-  const k = new Kit();
-  k.box(MAT.color("#4ab0d8"), 0.32, 0.4, 0.14, 0, 0.2, 0);
-  g.add(k.build());
-  const f = signFace("SHAKE ME!", "#f2c84a", "#c8302e", 0.28, 0.12);
-  f.position.set(0, 0.3, 0.071);
-  g.add(f);
-  return g;
-};
-/** Megaphone (local +z = the bell's open end), origin at the grip. */
-export const megaphone = () => {
-  const k = new Kit();
-  // Red body, white bell face and rim: reads as a megaphone at phone size (a pale cone didn't).
-  k.add(MAT.color("#d8342c"), new CylinderGeometry(0.17, 0.05, 0.42, 14), 0, 0.08, 0.2, { rx: Math.PI / 2 });
-  k.add(MAT.color("#f4f0e6"), new CylinderGeometry(0.155, 0.155, 0.01, 14), 0, 0.08, 0.415, { rx: Math.PI / 2 });
-  k.add(MAT.color("#f4f0e6"), new TorusGeometry(0.17, 0.025, 6, 18), 0, 0.08, 0.41);
-  k.add(MAT.color("#24222a"), new CylinderGeometry(0.05, 0.05, 0.06, 10), 0, 0.08, -0.01, { rx: Math.PI / 2 });
-  k.box(MAT.color("#2a2a30"), 0.05, 0.14, 0.06, 0, -0.02, 0.03);
-  return k.build();
-};
-/** Toothbrush, origin at the handle middle. */
-export const toothbrush = () => {
-  const k = new Kit();
-  k.box(MAT.color("#4ab0d8"), 0.02, 0.16, 0.02, 0, 0, 0);
-  k.box(MAT.color("#f4f0e6"), 0.03, 0.04, 0.025, 0, 0.09, 0.015);
-  return k.build();
 };
 
 // ---------------------------------------------------------------- INT set pieces
@@ -622,115 +429,17 @@ export const INT_EXTRAS = (night: boolean) => [
  * to CHAD'S HARDWARE (right of the doors, where Dave keeps watch) with his floodlights, generator and Chad on the
  * roof, the horde in the street. Unlit planes just inside each pane; one canvas spans all six panes.
  */
-const PANES: [number, number][] = [[-11.4, -8.5], [-7.9, -4.9], [-4.3, -1.9], [1.9, 4.3], [4.9, 7.9], [8.5, 11.4]];
-const viewTex = (night: boolean) => {
-  const W = 2304, Hh = 260, c = document.createElement("canvas");
-  c.width = W;
-  c.height = Hh;
-  const g = c.getContext("2d")!, r = rng(night ? 9 : 8);
-  const sky = g.createLinearGradient(0, 0, 0, Hh);
-  sky.addColorStop(0, night ? "#141c44" : "#6aa0e0");
-  sky.addColorStop(1, night ? "#3a3a6a" : "#d8e6f2");
-  g.fillStyle = sky;
-  g.fillRect(0, 0, W, Hh);
-  if (!night)
-    for (let i = 0; i < 9; i++) {
-      g.fillStyle = "rgba(255,255,255,0.85)";
-      g.beginPath();
-      g.ellipse(r() * W, 20 + r() * 40, 50 + r() * 60, 12 + r() * 8, 0, 0, Math.PI * 2);
-      g.fill();
-    }
-  else
-    for (let i = 0; i < 60; i++) {
-      g.fillStyle = "#e8eaff";
-      g.fillRect(r() * W, r() * 90, 2, 2);
-    }
-  const X = (x: number) => ((x + 12) / 24) * W, base = Hh * 0.72;
-  // The row across the street.
-  for (let x = -12; x < 12; ) {
-    const w = 2.4 + r() * 2.2, h = 70 + r() * 70;
-    const cols = night ? ["#3a3050", "#2e3a52", "#4a3444"] : ["#9a5a4a", "#c4b48a", "#8aa494", "#a8786a", "#d8ccb4"];
-    g.fillStyle = cols[Math.floor(r() * cols.length)];
-    g.fillRect(X(x), base - h, X(x + w) - X(x) - 2, h);
-    for (let wy = base - h + 12; wy < base - 18; wy += 24)
-      for (let wx = X(x) + 8; wx < X(x + w) - 20; wx += 26) {
-        g.fillStyle = night ? (r() < 0.25 ? "#ffc070" : "#1a1a2a") : "#3a4458";
-        g.fillRect(wx, wy, 12, 14);
-      }
-    x += w;
-  }
-  // CHAD'S HARDWARE, straight across from the right-hand windows.
-  const c0 = X(-8.0), c1 = X(-4.6), top = base - 120; // canvas x for world x is X(-x) (see windowViews uv)
-  g.fillStyle = night ? "#5a2e2a" : "#8e5446";
-  g.fillRect(c0, top, c1 - c0, base - top);
-  g.fillStyle = "#2a2a36";
-  g.fillRect(c0 + 6, top + 30, c1 - c0 - 12, 26);
-  g.fillStyle = "#f2c84a";
-  g.font = "900 22px Arial Black, sans-serif";
-  g.textAlign = "center";
-  g.fillText("CHAD'S HARDWARE", (c0 + c1) / 2, top + 51);
-  g.fillStyle = "#8a8e98";
-  g.fillRect(c0 + 60, top + 66, c1 - c0 - 120, base - top - 66);
-  g.fillStyle = "#4e8a54";
-  g.fillRect(c0 + 20, top - 18, 34, 18); // generator
-  g.fillStyle = "#f2efe6";
-  g.fillRect((c0 + c1) / 2 - 6, top - 34, 12, 22); // Chad
-  g.fillStyle = "#2e4ab0";
-  g.fillRect((c0 + c1) / 2 - 7, top - 40, 14, 6);
-  for (const fx of [c0 + 8, c1 - 8]) {
-    g.fillStyle = night ? "#fff6d8" : "#e8e4d0";
-    g.beginPath();
-    g.arc(fx, top - 22, night ? 9 : 5, 0, Math.PI * 2);
-    g.fill();
-    if (night) {
-      const glow = g.createRadialGradient(fx, top - 22, 4, fx, top - 22, 70);
-      glow.addColorStop(0, "rgba(255,240,200,0.7)");
-      glow.addColorStop(1, "rgba(255,240,200,0)");
-      g.fillStyle = glow;
-      g.fillRect(fx - 70, top - 92, 140, 140);
-    }
-  }
-  // The street and the horde.
-  g.fillStyle = night ? "#2a2840" : "#5a5464";
-  g.fillRect(0, base, W, Hh - base);
-  for (let i = 0; i < 160; i++) {
-    const x = r() * W, y = base + 6 + r() * (Hh - base - 10);
-    g.fillStyle = night ? "#4a6a4a" : "#6a7a6a";
-    g.fillRect(x - 3, y, 6, 9);
-    g.fillStyle = night ? "#6a8a6a" : "#9cb88c";
-    g.beginPath();
-    g.arc(x, y - 3, 4, 0, Math.PI * 2);
-    g.fill();
-  }
-  const t = new CanvasTexture(c);
-  t.colorSpace = SRGBColorSpace;
-  return t;
-};
-const windowViews = (night: boolean) => {
-  const pos: number[] = [], uv: number[] = [], z = 3.83, y0 = 0.9, y1 = 3.6;
-  for (const [x0, x1] of PANES)
-    for (const [x, y] of [[x0, y0], [x1, y0], [x1, y1], [x0, y0], [x1, y1], [x0, y1]]) {
-      pos.push(x, y, z);
-      uv.push((12 - x) / 24, (y - y0) / (y1 - y0)); // looking out (+z), world +x is screen LEFT: u runs the other way
-    }
-  const geo = new BufferGeometry();
-  geo.setAttribute("position", new BufferAttribute(new Float32Array(pos), 3));
-  geo.setAttribute("uv", new BufferAttribute(new Float32Array(uv), 2));
-  return new Mesh(geo, M(`view${night}`, () => new MeshBasicMaterial({ map: viewTex(night), side: DoubleSide, color: night ? "#ffffff" : "#e8e4dc" })));
-};
 /** Battery lantern on the pallet (the night scene's warm practical). */
 export const LANTERN = IN(7.2 - 0.3, 8.8 - 0.35, 0.13);
-const lantern = () => {
-  const k = new Kit();
-  k.box(MAT.metal(), 0.16, 0.04, 0.16, 0, 0.02, 0);
-  k.box(MAT.glow("#ffc070", 4), 0.13, 0.18, 0.13, 0, 0.13, 0);
-  k.box(MAT.metal(), 0.16, 0.03, 0.16, 0, 0.235, 0);
-  k.add(MAT.metal(), new TorusGeometry(0.06, 0.008, 4, 10), 0, 0.29, 0);
-  return k.build();
-};
 const placedAt = (o: Object3D, p: Vector3) => (o.position.copy(p), o);
 const toyHeapHolder = () => {
   const g = new Group().add(toyHeap());
   g.userData.decor = true; // toys around the feet are the gag (guard: not a collider for cards)
   return g;
 };
+
+export const toyHeap = () => toyPile();
+export { battery, dinoToy, duckToy, megaphone, scrawlTex, shakeBox, toothbrush };
+/** The street across from FRESHMART through its front windows: CHAD'S HARDWARE with Chad, his generator and floods. */
+const windowViews = (night: boolean) =>
+  paneViews(STORE_PANES, streetViewTex({ night, landmark: { name: "CHAD'S HARDWARE", x0: 4.6, x1: 8.0, roofFigure: { body: "#f2efe6", cap: "#2e4ab0" }, floodlights: true, generator: true } }), { tint: night ? "#ffffff" : "#e8e4dc" });

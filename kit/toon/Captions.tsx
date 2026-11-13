@@ -1,6 +1,22 @@
 import { createTikTokStyleCaptions } from "@remotion/captions";
 import { useMemo } from "react";
-import { AbsoluteFill, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, cancelRender, continueRender, delayRender, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+
+/**
+ * Nunito (variable weight 200-1000, SIL OFL 1.1, public/fonts/, credited in assets/CREDITS.md): the caption and stamp
+ * face, loaded once at import; every render waits for it (delayRender), so captions never fall back to a system font
+ * and the QA guard's caption-width check measures the real glyphs.
+ */
+if (typeof document !== "undefined") {
+  const handle = delayRender("Loading the caption font (Nunito)");
+  new FontFace("Nunito", `url(${staticFile("fonts/Nunito-wght.ttf")}) format("truetype")`, { weight: "200 1000" })
+    .load()
+    .then((f) => {
+      document.fonts.add(f);
+      continueRender(handle);
+    })
+    .catch((e) => cancelRender(e));
+}
 
 /**
  * Burned-in word captions (SKILL "Captions", LOOK_SPEC identity 3): 1-2 words at a time from words.json, white bold
@@ -10,8 +26,7 @@ import { AbsoluteFill, useCurrentFrame, useVideoConfig } from "remotion";
  */
 export type CaptionWord = { text: string; start: number; end: number };
 
-// shortcut: system fonts until Nunito Black (OFL) is bundled in public/ and recorded in assets/CREDITS.md.
-export const CAPTION_FONT = '"Nunito Black", "Segoe UI Black", "Arial Rounded MT Bold", "Arial Black", sans-serif';
+export const CAPTION_FONT = '"Nunito", "Segoe UI Black", "Arial Rounded MT Bold", "Arial Black", sans-serif';
 /** Sizes as fractions of the frame width: font, outline, max line width (longer groups wrap; the guard checks). */
 // Larger and heavier than v1 (refs: big bold words, thick black outline, firm drop shadow; 2026-11-14 stress test).
 export const CAPTION = { size: 0.066, stroke: 0.017, maxWidth: 0.84, maxLines: 2 };

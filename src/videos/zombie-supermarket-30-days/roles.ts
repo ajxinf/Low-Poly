@@ -2,6 +2,7 @@ import { Vector3 } from "three";
 import { CharState, Look, blinkAt, posed, reactSquash, runPose } from "../../../kit/toon/cast";
 import type { PoseName } from "../../../kit/toon/poses";
 import type { CaptionWord } from "../../../kit/toon/Captions";
+import { clusteredSpots } from "../../../kit/toon/crowd";
 import type { CrowdSpec } from "../../../kit/toon/crowd";
 import { BUILDS, capHair } from "../../../kit/toon/extras";
 import type { Expr } from "../../../kit/toon/face";
@@ -201,17 +202,9 @@ const ZSTATES: CharState[] = [
 const N_Z = 400;
 const zr = rng(400);
 /** Home spots: the street and both walks from s 8 to 58, keeping the ramp-to-door lane (s 29.5-34.5) clear. */
-// Crowds clump (pilot critique: an even spread read as confetti): 16 clusters, people gaussian around each.
-const CLUSTERS = Array.from({ length: 16 }, () => ({ s: 9 + zr() * 48, x: (zr() - 0.5) * 2 * (FRONT - 1.2), r: 1.2 + zr() * 2.2 }));
-const gauss = () => (zr() + zr() + zr() - 1.5) / 1.5;
-const HOME = Array.from({ length: N_Z }, (_, i) => {
-  let s = 0, x = 0, n = 0;
-  do {
-    const c = CLUSTERS[Math.floor(zr() * CLUSTERS.length)], loose = zr() < 0.18;
-    s = loose ? 8 + zr() * 50 : c.s + gauss() * c.r;
-    x = loose ? (zr() - 0.5) * 2 * (FRONT - 0.7) : Math.max(-FRONT + 0.7, Math.min(FRONT - 0.7, c.x + gauss() * c.r));
-    n++;
-  } while (((Math.abs(s - DOCK.s) < 3.4 && x > -FRONT + 0.6) || s < 7 || s > 59) && n < 60); // keep the lane (cameras, cart) clear
+// Crowds clump (kit clusteredSpots); the ramp-to-door lane stays clear for the cameras and the cart.
+const SPOTS = clusteredSpots(N_Z, { area: { s0: 8, s1: 58, x0: -FRONT + 0.7, x1: FRONT - 0.7 }, keepOut: (s, x) => Math.abs(s - DOCK.s) < 3.4 && x > -FRONT + 0.6 });
+const HOME = SPOTS.map(({ s, x }, i) => {
   return { s, x, phase: zr() * 100, look: i % ZLOOKS.length, speed: 3.1 + zr() * 1.4, delay: Math.floor(zr() * 26), kind: zr(), scale: 0.88 + zr() * 0.22, reach: zr() < 0.35 };
 });
 /** Pile slots inside Chad's shop, in arrival order: rows across the opening, four deep, stacked to the ceiling. */

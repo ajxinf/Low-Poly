@@ -37,7 +37,7 @@ const SAFE_X: [number, number] = [0.08, 0.92], CAPTION_Y: [number, number] = [0.
 export const CHECKS = [
   "Camera clearance", "Feet on the ground", "Card penetration", "Props through props", "Camera curve",
   "Subject in frame", "Caption vs face", "Caption width", "Reaction timing", "Light continuity", "Shadows",
-  "Moving props", "Scale", "Cast overlap",
+  "Moving props", "Scale", "Cast overlap", "Subject size", "Pacing",
 ] as const;
 export type Check = (typeof CHECKS)[number];
 export type Span = [number, number];
@@ -55,6 +55,8 @@ export type Shot = {
   subject?: string;
   /** Shot-local frame from which the subject must be in frame (a subject that enters, or a crane that reveals it). */
   subjectFrom?: number;
+  /** An establishing / reveal / crowd shot: exempt from "Subject size" (the place, not the face, is the subject). */
+  wide?: boolean;
   /** Scene + time of day: shots with the same tag must share the light. */
   scene?: string;
   light?: keyof typeof LIGHTS;
@@ -195,6 +197,10 @@ const covered = (a: SBox, b: SBox) =>
   (Math.max(0, Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0)) * Math.max(0, Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0))) / Math.max((b.x1 - b.x0) * (b.y1 - b.y0), 1e-9);
 /** A face may be covered at most this much by a nearer card or a held prop (pilot: Dave hidden behind you). */
 const FACE_COVER = 0.25;
+/** Subject head width (fraction of the frame width) on the median frame of a non-wide shot; MCU ~0.35, MS ~0.25, FS ~0.13. */
+const SUBJECT_MIN = 0.15;
+/** Longest shot (frames at 30 fps); the plan's mean shot must also stay at or under MEAN_SHOT. */
+const MAX_SHOT = 120, MEAN_SHOT = 90;
 const inSpans = (f: number, spans: Span[] | undefined, pad: number) => !!spans?.some(([a, b]) => f >= a - pad && f <= b + pad);
 
 // ---------- scene checks (need the built three scene)
@@ -438,6 +444,9 @@ const bodyBox = (c: CastSpec, f: number, cam: PerspectiveCamera) => {
 const planChecks = (plan: Plan, fps: number, aspect: number) => {
   const r = new Report();
   const W = 1080, H = W / aspect;
+  // Pacing, whole plan: the mean shot stays at or under MEAN_SHOT frames (refs cut every 2-3 s).
+  const mean = plan.shots.reduce((t, x) => t + x.frames, 0) / Math.max(plan.shots.length, 1);
+  if (plan.shots.length > 1 && mean > MEAN_SHOT) r.add("Pacing", plan.shots[0], 0, "plan", `mean shot ${(mean / fps).toFixed(1)} s (max ${(MEAN_SHOT / fps).toFixed(1)} s): more, shorter shots`);
   for (const shot of plan.shots) {
     const from = shot.from ?? 0, n = shot.frames, cast = shot.cast ?? [];
     const poses = Array.from({ length: n }, (_, f) => shot.pose(f));
@@ -480,6 +489,19 @@ const planChecks = (plan: Plan, fps: number, aspect: number) => {
           r.add("Subject in frame", shot, f, `"${subj.name}" head`, `head box x ${b.x0.toFixed(2)}-${b.x1.toFixed(2)}, y ${b.y0.toFixed(2)}-${b.y1.toFixed(2)} (needs x in ${SAFE_X.join("-")}, y in 0-1)`);
       });
     }
+
+    // Subject size (zombie pilot critique: faces carry the joke; speakers framed as specks lost it): the subject's head
+    // is at least SUBJECT_MIN of the frame width on the median frame, unless the shot is marked `wide`.
+    if (subj && !shot.wide) {
+      r.ran.add("Subject size");
+      const w = cams.map((cam, f) => (f < (shot.subjectFrom ?? 0) ? NaN : headBox(subj, f, cam))).filter((b): b is ReturnType<typeof headBox> => typeof b === "object" && b.front).map((b) => b.x1 - b.x0).sort((a, b) => a - b);
+      const med = w.length ? w[Math.floor(w.length / 2)] : 0;
+      if (med < SUBJECT_MIN) r.add("Subject size", shot, 0, `"${subj.name}" head`, `median head width ${(med * 100).toFixed(0)} % of the frame (min ${SUBJECT_MIN * 100} %): frame closer (MCU/CU), use telephoto(), or mark the shot \`wide\``);
+    }
+
+    // Pacing (critique: 5 s holds while the punchline was spoken): a shot runs at most MAX_SHOT frames.
+    r.ran.add("Pacing");
+    if (shot.frames > MAX_SHOT) r.add("Pacing", shot, 0, "shot length", `${(shot.frames / fps).toFixed(1)} s (max ${(MAX_SHOT / fps).toFixed(1)} s): cut on the punch word, split it`);
 
     // Cast overlap: a nearer card never covers another character's face (cards are flat: two people in one line of
     // sight read as one blob). Stage them apart on screen or crop one out.

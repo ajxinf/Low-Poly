@@ -1,5 +1,5 @@
 import { Vector3 } from "three";
-import { ShotSize, arc, drift, frameOn, pullOut, pushIn, reframe, shot, smootherstep } from "../../../kit/toon/camera";
+import { ShotSize, arc, drift, frameOn, impact, pullOut, pushIn, reframe, shot, smootherstep, telephoto } from "../../../kit/toon/camera";
 import { actionPose, blinkAt, posed, reactSquash, walkPose } from "../../../kit/toon/cast";
 import type { CharState, Look } from "../../../kit/toon/cast";
 import { DOF, Dof, POST } from "../../../kit/toon/Composer";
@@ -51,32 +51,18 @@ export type S = Shot & { from: number; frames: number; dof: Dof; w: World; crowd
 // ---------------------------------------------------------------- helpers
 
 const H = (look: Look) => headHeight(look) + 0.17;
-/** frameOn for a character standing at any height (frameOn assumes the ground at y 0): framed at y 0, lifted by pos.y. */
-const fo = (pos: Vector3, from: Vector3, size: ShotSize, look: Look = youLook, o: Parameters<typeof frameOn>[3] = {}) => {
-  const f = frameOn(pos.clone().setY(0), from.clone().setY(0), size, { head: H(look), ...o }), up = new Vector3(0, pos.y, 0);
-  return { ...f, pos: f.pos.add(up), look: f.look.add(up) };
-};
+/** frameOn with the character's own head height (frameOn handles characters standing above the ground). */
+const fo = (pos: Vector3, from: Vector3, size: ShotSize, look: Look = youLook, o: Parameters<typeof frameOn>[3] = {}) => frameOn(pos, from, size, { head: H(look), ...o });
 /** A hold: a barely-there push (refs hold still on beats, then move fast). */
 const creep = (p: { pos: Vector3; look: Vector3; fov: number }, frames: number, k = 0.05) =>
   shot(p, [pushIn(k * p.pos.distanceTo(p.look)), drift(0.03 * p.pos.distanceTo(p.look))], frames);
-/** Telephoto from across the street, framing a character on Chad's roof: `span` m of frame height around the chest. */
-const tele = (from: Vector3, who: Vector3, look: Look, span: number) => {
-  const target = who.clone().setY(who.y + H(look) - 0.1 - span * 0.18);
-  return { pos: from, look: target, fov: (2 * Math.atan(span / 2 / from.distanceTo(target)) * 180) / Math.PI };
-};
+const tele = (from: Vector3, who: Vector3, look: Look, span: number) => telephoto(from, who, H(look), span);
 type Role = { name: string; look: Look; at: (F: number) => Vector3; state: (F: number) => CharState };
 const inShot = (from: number, roles: Role[]): CastSpec[] => roles.map((r) => ({ name: r.name, look: r.look, at: (f) => r.at(f + from), state: (f) => r.state(f + from) }));
 const still = (p: Vector3) => () => p;
 const st = (pose: Pose, expr: Expr, F: number, seed: number, extra: Partial<CharState> = {}): CharState => ({ pose, expr, blink: blinkAt(F, FPS, seed), fx: {}, ...extra });
 const withSquash = (p: Pose, squash: number): Pose => ({ ...p, squash });
-const kickAt = (f: number, at: number, amp = 0.025) => {
-  const k = f - at;
-  return k >= 0 && k < 7 ? amp * (1 - k / 7) * (k % 2 ? -1 : 1) : 0;
-};
-const shake = (pose: (f: number) => { pos: Vector3; look: Vector3; fov: number; roll: number }, at: number, amp = 0.025) => (f: number) => {
-  const p = pose(f), k = kickAt(f, at, amp);
-  return { ...p, pos: p.pos.clone().add(new Vector3(k, k, 0)), look: p.look.clone().add(new Vector3(k, k, 0)) };
-};
+const shake = impact;
 
 // ---------------------------------------------------------------- roles (composition frames)
 
@@ -212,20 +198,20 @@ const shots: S[] = [
   sh("B01-duck", 0, W_.talking - 6, "int-day", { pose: creep(fo(HEAP, IN(2.6, -8.3), "mcu", youLook, { side: 0.2 }), 70, 0.2), cast: inShot(0, [youHeap]), subject: "you", dof: DOF.medium(2.0), motes: motes(HEAP, "#ffe6c0") }),
   // "212 talking toys": a low macro dolly along the pile.
   sh("B02-toys", W_.talking - 6, BEAT.street, "int-day", { pose: shot({ pos: HEAP.clone().add(new Vector3(-1.9, 0.42, 1.0)), look: HEAP.clone().add(new Vector3(-0.2, 0.25, -0.4)), fov: 44 }, [drift(1.1), pushIn(0.3)], 60), dof: DOF.closeup(1.2) }),
-  // "the guy across the street laughs at you": Chad close on a long lens, laughing; then the fast pull-out over the horde.
-  sh("B03-chad-laughs", BEAT.street, 270, "ext-day", {
+  // "the guy across the street laughs at you": Chad close on a long lens, laughing at you.
+  sh("B03-chad-laughs", BEAT.street, BEAT.because - 2, "ext-day", { pose: creep(tele(ACROSS, CHAD_ROOF, chadLook, 2.0), 50, 0.04), cast: inShot(BEAT.street, [chadMock]), subject: "chad", crowd: true, dof: POST.dof }),
+  // "Because outside, 400 zombies hunt by sound": a fast pull-out and crane up over the horde (whip, blurred).
+  sh("B03b-horde", BEAT.because - 2, 270, "ext-day", {
     pose: (f) => {
-      const base = tele(ACROSS, CHAD_ROOF, chadLook, 2.2), a = BEAT.because - BEAT.street;
-      const p = reframe(creep(base, 150, 0.04), { pos: at(13, -2.5, 15), look: at(38, 0.5, 0), fov: 52 }, a, a + 30)(f);
-      const k = Math.max(f - (a + 30), 0) * 0.035;
+      const p = reframe(creep(tele(ACROSS, CHAD_ROOF, chadLook, 2.6), 104, 0.02), { pos: at(13, -2.5, 15), look: at(38, 0.5, 0), fov: 52 }, 0, 30)(f);
+      const k = Math.max(f - 30, 0) * 0.035;
       return { ...p, pos: p.pos.clone().add(new Vector3(0, k * 0.5, -k)) };
     },
-    whips: [[BEAT.because - BEAT.street, BEAT.because - BEAT.street + 30]],
-    cast: inShot(BEAT.street, [chadMock]), subject: "chad", crowd: true, dof: POST.dof,
-    allow: { "Subject in frame": "the pull-out leaves Chad behind on purpose: the horde is the subject after 'because'" },
+    whips: [[0, 30]], crowd: true, wide: true, dof: POST.dof,
   }),
   // "That guy is Chad": up the fortress: sandbags, MEMBERS ONLY, steel, barbed wire, to Chad on the roof.
   sh("B04-fortress", 262, BEAT.hardware - 2, "ext-day", {
+    wide: true, // a reveal of the fortress: the place is the subject until Chad tops the crane
     pose: (f) => {
       const t = smootherstep(Math.min(Math.max((f - 2) / 70, 0), 1));
       const a = { pos: at(CHAD.s + 2.4, 1.6, 1.0), look: at(CHAD.s + 3.9, FRONT, 1.7) }, b = { pos: at(CHAD.s + 1.4, -1.6, 4.4), look: ROOF_HEAD.clone() };
@@ -316,10 +302,12 @@ const shots: S[] = [
   // (INSERT: the x-ray of a toy, 2D in Video.tsx, W_.youSee .. BEAT.now - 6)
   // Line 18. "...now that cart is the loudest thing in town": 400 heads swing toward it.
   sh("B29-heads", BEAT.now - 6, BEAT.and400 + 2, "ext-dawn", { pose: creep({ pos: at(40, 3.5, 9), look: at(32, 2.2, 0.5), fov: 50 }, 90, 0.08), crowd: true, dof: POST.dof }),
-  // Line 19. The stampede; the cart crashes in (impact shake on "door"), the shop fills to the ceiling.
-  sh("B30-stampede", BEAT.and400 - 4, BEAT.chadRoof + 4, "ext-dawn", {
-    pose: shake(shot({ pos: at(20, -1.5, 1.6), look: at(32, 4.5, 1.6), fov: 50 }, [pullOut(4), arc(-8, 0.8)], 150), BEAT.door2 - (BEAT.and400 - 4), 0.05),
-    kicks: [[BEAT.door2 - (BEAT.and400 - 4), BEAT.door2 - (BEAT.and400 - 4) + 7]], crowd: true, dof: POST.dof,
+  // Line 19. The stampede: the whole street pours toward Chad's open door.
+  sh("B30-stampede", BEAT.and400 - 4, BEAT.ball, "ext-dawn", { pose: shot({ pos: at(20, -1.5, 1.6), look: at(32, 4.5, 1.6), fov: 50 }, [pullOut(3), arc(-6, 0.8)], 90), crowd: true, wide: true, dof: POST.dof }),
+  // "...straight through Chad's open door": the doorway; the cart crashes in (impact shake), the shop fills to the ceiling.
+  sh("B30b-crash", BEAT.ball, BEAT.chadRoof + 4, "ext-dawn", {
+    pose: shake(creep({ pos: at(CHAD.s - 2.2, FRONT - 6.2, 2.4), look: CHAD_DOOR.clone().setY(1.5), fov: 48 }, 70, 0.1), BEAT.door2 - BEAT.ball, 0.05),
+    kicks: [[BEAT.door2 - BEAT.ball, BEAT.door2 - BEAT.ball + 7]], crowd: true, wide: true, dof: POST.dof,
   }),
   // Line 20. Chad made it to the roof, clutching the megaphone, trembling.
   sh("B31-chad-roof", BEAT.chadRoof, BEAT.but, "ext-dawn", { pose: creep({ pos: at(CHAD.s - 2.4, 3.2, 8.2), look: ROOF_HEAD.clone().add(new Vector3(0, -0.4, 0)), fov: 30 }, 90, 0.1), cast: inShot(BEAT.chadRoof, [chadRoofEnd]), subject: "chad", crowd: true, dof: DOF.medium(4.2) }),

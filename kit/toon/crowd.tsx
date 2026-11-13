@@ -10,6 +10,7 @@ import { drawPerson } from "./figure";
 import type { CharState, Look } from "./figure";
 import { NOINK, SKY } from "./ink";
 import { AERIAL, shared } from "./shade";
+import { rng } from "./paint";
 import { DESIGN, Pen } from "./toon";
 
 /**
@@ -26,6 +27,30 @@ export type CrowdSpec = {
   count: number;
   /** Instance i at composition frame f: soles position, state index, look index, hidden. */
   place: (i: number, f: number) => { pos: Vector3; state: number; look: number; hidden?: boolean; scale?: number };
+};
+
+/**
+ * Where a crowd stands (zombie pilot critique: an even spread read as confetti): `clusters` gaussian groups of 1.2-3.4 m
+ * radius plus a `loose` share of stragglers, inside `area` (street arc length s, lateral x), never where `keepOut`
+ * says (camera lanes, a doorway). Pair it with per-instance `scale` (0.88-1.1) and two or more idle states.
+ */
+export const clusteredSpots = (
+  n: number,
+  { area, clusters = 16, loose = 0.18, keepOut = () => false, seed = 400 }: { area: { s0: number; s1: number; x0: number; x1: number }; clusters?: number; loose?: number; keepOut?: (s: number, x: number) => boolean; seed?: number },
+) => {
+  const r = rng(seed), clamp = (v: number, a: number, b: number) => Math.min(Math.max(v, a), b);
+  const gauss = () => (r() + r() + r() - 1.5) / 1.5;
+  const C = Array.from({ length: clusters }, () => ({ s: area.s0 + r() * (area.s1 - area.s0), x: area.x0 + r() * (area.x1 - area.x0), rad: 1.2 + r() * 2.2 }));
+  return Array.from({ length: n }, () => {
+    let s = 0, x = 0, tries = 0;
+    do {
+      const c = C[Math.floor(r() * C.length)];
+      const free = r() < loose;
+      s = free ? area.s0 + r() * (area.s1 - area.s0) : clamp(c.s + gauss() * c.rad, area.s0, area.s1);
+      x = free ? area.x0 + r() * (area.x1 - area.x0) : clamp(c.x + gauss() * c.rad, area.x0, area.x1);
+    } while (keepOut(s, x) && ++tries < 60);
+    return { s, x };
+  });
 };
 
 const CELL_RES = 0.36; // design px -> atlas px (the hero card draws at 2.0)

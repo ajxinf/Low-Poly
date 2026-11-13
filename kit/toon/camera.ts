@@ -105,7 +105,12 @@ export type ShotSize = keyof typeof SHOT_SIZE;
  * at eye level by default. `size` sets the distance from the fov so the framed span fills the frame height; the
  * eyes land about a third down the frame.
  */
-export const frameOn = (at: Vector3, from: Vector3, size: ShotSize, o: { fov?: number; head?: number; height?: number; side?: number } = {}) => {
+export const frameOn = (at: Vector3, from: Vector3, size: ShotSize, o: { fov?: number; head?: number; height?: number; side?: number } = {}): { pos: Vector3; look: Vector3; fov: number } => {
+  // Characters above the ground (a roof, a ramp, a stage): frame as if on the ground, then lift by their height.
+  if (at.y !== 0) {
+    const f = frameOn(at.clone().setY(0), from.clone().setY(0), size, o), up = new Vector3(0, at.y, 0);
+    return { ...f, pos: f.pos.add(up), look: f.look.add(up) };
+  }
   const fov = o.fov ?? (size === "cu" ? 34 : size === "mcu" ? 38 : size === "ms" ? 42 : 48), head = o.head ?? 1.55;
   const span = SHOT_SIZE[size], dist = span / 2 / Math.tan((fov * Math.PI) / 360);
   // Eyes about a third down the frame for every size (refs), never looking below the knees.
@@ -114,6 +119,25 @@ export const frameOn = (at: Vector3, from: Vector3, size: ShotSize, o: { fov?: n
   const right = new Vector3(-dir.z, 0, dir.x);
   const pos = at.clone().addScaledVector(dir, dist).addScaledVector(right, o.side ?? 0).setY(o.height ?? lookY - 0.12); // slightly below the look point: a gentle low angle (refs), not eye level
   return { pos, look: at.clone().setY(lookY), fov };
+};
+
+/**
+ * Telephoto close-up from far away (across a street, up at a roof): looks at `who`'s chest so `span` m of frame height
+ * shows (1.7-2.2 = MCU, 1.4 = CU) and derives the fov from the distance. `head` = head-top height of the character.
+ * The long lens flattens the background and keeps the face big (zombie pilot critique: roof shots read as specks).
+ */
+export const telephoto = (from: Vector3, who: Vector3, head: number, span: number) => {
+  const target = who.clone().setY(who.y + head - 0.1 - span * 0.18);
+  return { pos: from.clone(), look: target, fov: (2 * Math.atan(span / 2 / from.distanceTo(target)) * 180) / Math.PI };
+};
+
+/**
+ * Impact shake on a hit at shot-local frame `at` (refs: 6-8 f, sign flips every frame, decays): wraps a pose function.
+ * Declare the span in the shot's `kicks` so QA expects it.
+ */
+export const impact = (pose: (f: number) => CamPose, at: number, amp = 0.025, len = 7) => (f: number): CamPose => {
+  const p = pose(f), k = f - at, d = k >= 0 && k < len ? amp * (1 - k / len) * (k % 2 ? -1 : 1) : 0;
+  return { ...p, pos: p.pos.clone().add(new Vector3(d, d, 0)), look: p.look.clone().add(new Vector3(d, d, 0)) };
 };
 
 /**

@@ -373,7 +373,7 @@ export const propsFor = (s: S): MovingProp[] => {
     case "B23": out.push(smokeRing); break;
     case "B25": out.push(brushProp(s)); break;
     case "B26": out.push(cartExt("you")); break;
-    case "B27": case "B28": case "B29": case "B30": out.push(cartExt(), trail); break;
+    case "B27": case "B28": case "B29": case "B30": case "B30b": out.push(cartExt(), trail); break;
     case "B31": case "B33": out.push(megaProp(s, () => false, true), brushProp(s)); break;
   }
   return out;
