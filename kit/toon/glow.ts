@@ -31,13 +31,18 @@ const toCam = new Vector3();
 
 /** A soft glow `size` m across at `pos`, `strength` x its colour (linear; above ~1 the bloom adds to it). */
 export const glowSprite = (pos: Vector3, color: string, size: number, strength: number) => {
-  const m = new SpriteMaterial({ map: glowTex, color: new Color(color).multiplyScalar(strength), blending: AdditiveBlending, depthWrite: false, fog: false, toneMapped: false });
+  const m = new SpriteMaterial({ map: glowTex, color: new Color(color).multiplyScalar(strength), blending: AdditiveBlending, transparent: true, depthWrite: false, fog: false, toneMapped: false });
   const s = new Sprite(m);
   s.scale.setScalar(size);
   s.layers.set(SKY);
   s.raycast = () => {};
   s.onBeforeRender = (_r, _s, cam: Camera) => {
-    toCam.setFromMatrixPosition(cam.matrixWorld).sub(pos).normalize();
+    toCam.setFromMatrixPosition(cam.matrixWorld).sub(pos);
+    // A lens near (or inside) a halo washes the whole frame (pilot: generator shot 2 m from a floodlight): fade the
+    // glow out as the camera comes within ~2 of its sizes.
+    const d = toCam.length(), t = Math.min(Math.max((d - size * 0.9) / (size * 1.6), 0), 1);
+    m.opacity = t * t * (3 - 2 * t);
+    toCam.normalize();
     s.position.copy(pos).addScaledVector(toCam, size * 0.45);
     s.updateMatrixWorld();
   };

@@ -380,6 +380,15 @@ Heavy on time and tokens: use it for the kit, not for every video.
   ("none" for effects that only touch the body). The QA guard fails a held prop more than 12 cm from that hand or
   without a `hand`. Pick poses for the holding hand that keep big props off the face (crossed arms or a hand at the
   chin push a megaphone through the head card): see `MEGA` poses in the pilot's `story.ts`.
+- **Never stack people in one line of sight.** Cards are flat: a character straight behind another vanishes (pilot:
+  Dave behind you). Stage them apart on screen. QA guard "Cast overlap" fails a nearer card, or a held prop, that
+  covers more than 25 % of another character's face.
+- **Glows fade near the lens** (kit `glowSprite`, automatic): still keep cameras a few metres from lamps and
+  floodlights. `video_qa.py` WASH flags washed-out runs (bright, no darks) such as a lens inside a halo.
+- **Captions**: the outline is its own layer behind the letters (`Captions.tsx`); never put a text stroke on the
+  letters themselves, it eats thin glyphs ("!" read as "?"). Check punctuation-heavy words (`boy!"`) in a still.
+- **Effects scale with the shot**: size rings, trails and bursts for the lens that sees them (a telephoto turned
+  1.8 m sound rings into bands across the frame).
 - **Small props get a face or a readable detail** (eyes, a beak, ears, a label, wheels): bare boxes and spheres
   read as blocks, not toys or tools. Keep them light: 6-10 sphere segments, merged with `Kit`, and give a pile of
   small parts a single collision hull (`delete userData.parts`), or renders and the guard time out.

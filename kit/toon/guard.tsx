@@ -37,7 +37,7 @@ const SAFE_X: [number, number] = [0.08, 0.92], CAPTION_Y: [number, number] = [0.
 export const CHECKS = [
   "Camera clearance", "Feet on the ground", "Card penetration", "Props through props", "Camera curve",
   "Subject in frame", "Caption vs face", "Caption width", "Reaction timing", "Light continuity", "Shadows",
-  "Moving props", "Scale",
+  "Moving props", "Scale", "Cast overlap",
 ] as const;
 export type Check = (typeof CHECKS)[number];
 export type Span = [number, number];
@@ -189,6 +189,12 @@ const headBox = (c: CastSpec, f: number, cam: PerspectiveCamera) => {
   const pts = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([i, j]) => screen(cam, p.clone().addScaledVector(r, head.x + i * head.a).setY(p.y + head.y + j * head.b)));
   return { x0: Math.min(...pts.map((q) => q.x)), x1: Math.max(...pts.map((q) => q.x)), y0: Math.min(...pts.map((q) => q.y)), y1: Math.max(...pts.map((q) => q.y)), front: pts.every((q) => q.front) };
 };
+type SBox = { x0: number; x1: number; y0: number; y1: number };
+/** Fraction of box b covered by box a. */
+const covered = (a: SBox, b: SBox) =>
+  (Math.max(0, Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0)) * Math.max(0, Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0))) / Math.max((b.x1 - b.x0) * (b.y1 - b.y0), 1e-9);
+/** A face may be covered at most this much by a nearer card or a held prop (pilot: Dave hidden behind you). */
+const FACE_COVER = 0.25;
 const inSpans = (f: number, spans: Span[] | undefined, pad: number) => !!spans?.some(([a, b]) => f >= a - pad && f <= b + pad);
 
 // ---------- scene checks (need the built three scene)
@@ -331,6 +337,21 @@ const sceneChecks = (shot: Shot, scene: Object3D, aspect: number) => {
           const grip = new Vector3().setFromMatrixPosition(obj.matrixWorld), d = grip.distanceTo(h);
           if (d > HAND_TOL) r.add("Moving props", shot, f, `${m.name} vs "${holder.name}" ${m.hand} hand`, `floats ${(d * 100).toFixed(0)} cm from the hand (max ${HAND_TOL * 100}): place it with handWorld()`);
         }
+        // A held prop never covers someone else's face (a megaphone hiding the hero waving below). Only held props: set
+        // pieces in front of a face are staging (a shutter rising on a reveal), and their bounding box overstates them.
+        if (m.hand && m.hand !== "none") {
+          const bb = new Box3().setFromObject(obj), cam = cams[f];
+          if (!bb.isEmpty()) {
+            const pts = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => screen(cam, new Vector3(i & 1 ? bb.max.x : bb.min.x, i & 2 ? bb.max.y : bb.min.y, i & 4 ? bb.max.z : bb.min.z)));
+            const pb = { x0: Math.min(...pts.map((q) => q.x)), x1: Math.max(...pts.map((q) => q.x)), y0: Math.min(...pts.map((q) => q.y)), y1: Math.max(...pts.map((q) => q.y)) };
+            const near = bb.getCenter(new Vector3()).distanceTo(cam.position);
+            for (const c of cast) {
+              if (c.name === m.heldBy || !pts.every((q) => q.front) || c.at(f).distanceTo(cam.position) < near) continue;
+              const k = covered(pb, headBox(c, f, cam));
+              if (k > FACE_COVER) r.add("Cast overlap", shot, f, `${m.name} over "${c.name}" face`, `covers ${(k * 100).toFixed(0)} % of the face (max ${FACE_COVER * 100} %)`);
+            }
+          }
+        }
         const mine = parts([{ name: m.name, root: obj, inv: new Matrix4(), box: new Box3() }]);
         for (const a of mine) {
           for (const pt of ps) {
@@ -459,6 +480,22 @@ const planChecks = (plan: Plan, fps: number, aspect: number) => {
           r.add("Subject in frame", shot, f, `"${subj.name}" head`, `head box x ${b.x0.toFixed(2)}-${b.x1.toFixed(2)}, y ${b.y0.toFixed(2)}-${b.y1.toFixed(2)} (needs x in ${SAFE_X.join("-")}, y in 0-1)`);
       });
     }
+
+    // Cast overlap: a nearer card never covers another character's face (cards are flat: two people in one line of
+    // sight read as one blob). Stage them apart on screen or crop one out.
+    if (cast.length > 1) {
+      r.ran.add("Cast overlap");
+      cams.forEach((cam, f) => {
+        for (const a of cast)
+          for (const b of cast) {
+            if (a === b || a.at(f).distanceTo(cam.position) >= b.at(f).distanceTo(cam.position)) continue;
+            const hb = headBox(b, f, cam), ba = bodyBox(a, f, cam);
+            if (!hb.front || hb.x1 < 0 || hb.x0 > 1 || hb.y1 < 0 || hb.y0 > 1) continue;
+            const k = covered(ba, hb);
+            if (k > FACE_COVER) r.add("Cast overlap", shot, f, `"${a.name}" over "${b.name}" face`, `covers ${(k * 100).toFixed(0)} % of the face (max ${FACE_COVER * 100} %)`);
+          }
+      });
+    } else r.na["Cast overlap"] = "fewer than two characters";
 
     // Caption vs face: while a caption is on screen, no head in the caption band.
     if (plan.words?.length && cast.length) {

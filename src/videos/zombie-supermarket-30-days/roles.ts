@@ -11,7 +11,7 @@ import { bottoms, campCollar, cap, headLayers, layers, nameTag, pattern } from "
 import type { Pen } from "../../../kit/toon/toon";
 import type { Head } from "../../../kit/toon/face";
 import WORDS from "../../../videos/zombie-supermarket-30-days/voice/words.json";
-import { CHAD, CHAD_DOOR, DOCK, FRONT, RAMP_FOOT, RAMP_TOP, at } from "./build";
+import { CHAD, DOCK, FRONT, RAMP_FOOT, RAMP_TOP, at } from "./build";
 
 // Who is who, and every beat locked to words.json (composition frames, 30 fps).
 export const FPS = 30;
@@ -237,7 +237,8 @@ const zombie = (i: number, f: number) => {
   if (f >= BEAT.and400) {
     const t = (f - BEAT.and400 - h.delay) / FPS;
     if (t <= 0) return { pos: home.add(wob), state: c2(h.kind), look: h.look };
-    const door = CHAD_DOOR.clone().setY(0);
+    // Spread across the whole shutter opening, not one point (they stacked into one blob in the pilot).
+    const door = at(CHAD.s + (((i * 0.618) % 1) - 0.5) * (CHAD.shutterW - 0.8), FRONT + 0.2, 0);
     const d = home.distanceTo(door), run = Math.min(t * h.speed, d);
     if (run >= d - 0.4) return { pos: door, state: Z.idle, look: h.look, hidden: true };
     const pos = home.clone().lerp(door, run / d);

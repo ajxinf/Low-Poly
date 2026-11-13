@@ -72,7 +72,7 @@ const megaProp = (s: S, atMouth: (F: number) => boolean, clutched = false): Movi
     o.scale.setScalar(clutched ? 0.8 : 1);
     const cam = camOf(s, F), toCam = cam.clone().sub(o.position).setY(0).normalize();
     const r = new Vector3(toCam.z, 0, -toCam.x);
-    if (clutched) o.lookAt(o.position.clone().add(r)); // hugged sideways across the belly
+    if (clutched) o.lookAt(o.position.clone().sub(r)); // hugged across the belly, bell to screen left (away from you two)
     else o.lookAt(o.position.clone().add(toCam.multiplyScalar(0.6)).add(r.multiplyScalar(0.8)).add(new Vector3(0, atMouth(F) ? 0.15 : -0.5, 0)));
   },
   heldBy: "chad",
@@ -172,9 +172,10 @@ const soundRings = (s: S, starts: number[]): MovingProp => ({
       any = true;
       // Rings travel toward the street (the camera side) and grow.
       const dir = cam.clone().sub(mouth).normalize();
-      m.position.copy(mouth).addScaledVector(dir, 0.4 + 3.5 * t);
+      // Small and short-lived (a telephoto shot turned 1.8 m rings into bands across the frame).
+      m.position.copy(mouth).addScaledVector(dir, 0.25 + 1.1 * t);
       m.lookAt(m.position.clone().add(dir));
-      m.scale.setScalar(0.25 + 1.6 * t);
+      m.scale.setScalar(0.12 + 0.45 * t);
       ((m as Mesh).material as ShaderMaterial).uniforms.uA.value = 1 - t;
     });
     return any;

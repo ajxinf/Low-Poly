@@ -43,6 +43,25 @@ export const Captions: React.FC<{ words: CaptionWord[] }> = ({ words }) => {
   const page = pages[i];
   if (!page || (i === pages.length - 1 && ms > page.startMs + page.durationMs + 300)) return null;
   const size = CAPTION.size * width;
+  // Two stacked copies in one grid cell: the outline layer behind (thick stroke, dark fill), the letters on top with
+  // no stroke. A stroke drawn over the fill (Chrome ignores paint-order on HTML text) ate thin glyphs: "!" read as
+  // "?" in the pilot. Never draw the outline on the letters themselves.
+  const text = (outline: boolean) =>
+    page.tokens.map((t, k) => {
+      const m = t.text.match(KEY);
+      if (!m) return <span key={k}>{t.text}</span>;
+      const pop = ms - t.fromMs >= 0 && ms - t.fromMs < (4 / fps) * 1000;
+      const [before, after] = t.text.split(m[0]);
+      return (
+        <span key={k}>
+          {before}
+          <span style={{ color: outline ? undefined : KEY_COLOR, display: "inline-block", transform: `scale(${pop ? 1.08 : 1})` }}>{m[1]}</span>
+          {after}
+        </span>
+      );
+    });
+  // Explicit stacking: a layer with a filter paints after unpositioned siblings, so z-index decides, not DOM order.
+  const layer: React.CSSProperties = { gridArea: "1 / 1", position: "relative", maxWidth: CAPTION.maxWidth * width, whiteSpace: "normal", textAlign: "center" };
   return (
     <AbsoluteFill style={{ justifyContent: "flex-start", alignItems: "center" }}>
       <div
@@ -50,32 +69,17 @@ export const Captions: React.FC<{ words: CaptionWord[] }> = ({ words }) => {
           position: "absolute",
           top: "70%",
           transform: "translateY(-50%)",
+          display: "grid",
           fontFamily: CAPTION_FONT,
           fontWeight: 900,
           fontSize: size,
           lineHeight: 1.1,
-          color: "#ffffff",
-          WebkitTextStroke: `${CAPTION.stroke * width}px #141014`,
-          paintOrder: "stroke fill",
-          filter: `drop-shadow(0 ${0.005 * width}px ${0.002 * width}px rgba(0,0,0,0.75))`,
-          maxWidth: CAPTION.maxWidth * width, // wraps inside the safe area instead of running off-frame
-          whiteSpace: "normal",
-          textAlign: "center",
         }}
       >
-        {page.tokens.map((t, k) => {
-          const m = t.text.match(KEY);
-          if (!m) return <span key={k}>{t.text}</span>;
-          const pop = ms - t.fromMs >= 0 && ms - t.fromMs < (4 / fps) * 1000;
-          const [before, after] = t.text.split(m[0]);
-          return (
-            <span key={k}>
-              {before}
-              <span style={{ color: KEY_COLOR, display: "inline-block", transform: `scale(${pop ? 1.08 : 1})` }}>{m[1]}</span>
-              {after}
-            </span>
-          );
-        })}
+        <div aria-hidden style={{ ...layer, zIndex: 0, color: "#141014", WebkitTextStroke: `${CAPTION.stroke * width}px #141014`, filter: `drop-shadow(0 ${0.005 * width}px ${0.002 * width}px rgba(0,0,0,0.75))` }}>
+          {text(true)}
+        </div>
+        <div style={{ ...layer, zIndex: 1, color: "#ffffff" }}>{text(false)}</div>
       </div>
     </AbsoluteFill>
   );

@@ -140,7 +140,8 @@ const youTape: Role = {
   },
 };
 // Beside the cart (it stands behind you in the background), seen from the left of the store.
-const YOU_DINO = CART_IN.clone().add(new Vector3(-1.0, 0, -0.2)), DAVE_DINO = CART_IN.clone().add(new Vector3(-1.2, 0, -1.4));
+// Dave stands screen-right of you, a step back (straight behind you his card vanished behind yours).
+const YOU_DINO = CART_IN.clone().add(new Vector3(-1.0, 0, -0.2)), DAVE_DINO = CART_IN.clone().add(new Vector3(-0.75, 0, 1.25));
 const youDino: Role = {
   name: "you", look: youLook, at: still(YOU_DINO),
   state: (F) => st(posed("hold", F / FPS, 0.2), F < BEAT.very - LEAD ? "worried" : "scared", F, 3, { fx: { sweat: Math.min(Math.max((F - BEAT.battery) / 40, 0), 1) } }),
@@ -176,11 +177,11 @@ const chadRoofEnd: Role = {
 // The last shot: far below, over Chad's shoulder, you and Dave stroll out into the empty street; a tiny wave.
 const youStroll: Role = {
   // On FRESHMART's front walk (the near street is hidden by Chad's roof edge from up here), screen right of Chad.
-  name: "you", look: youLook, at: (F) => at(35.7 - (F - BEAT.but) * 0.004, -5.1, 0.02),
+  name: "you", look: youLook, at: (F) => at(36.4 - (F - BEAT.but) * 0.004, -5.1, 0.02),
   state: (F) => (F < BEAT.doesnt - 6 ? st(walkPose((F - BEAT.but) * 0.012, 1, -0.5), "smug", F, 3) : st({ ...posed("point", F / FPS, 0.6), arms: [{ at: [0.2, 0.92] }, { at: [0.55, -0.35], grip: "open" }] }, "smug", F, 3)),
 };
 const daveStroll: Role = {
-  name: "dave", look: daveLook, at: (F) => at(36.5 - (F - BEAT.but) * 0.004, -4.6, 0.02),
+  name: "dave", look: daveLook, at: (F) => at(37.3 - (F - BEAT.but) * 0.004, -4.6, 0.02),
   state: (F) => st(walkPose((F - BEAT.but) * 0.012, 1, -0.5), "relieved", F, 4, { prop: "can" }),
 };
 

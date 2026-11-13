@@ -16,6 +16,8 @@ Checks (frame numbers are 0-based):
   LIGHTJUMP brightness or colour cast shifts > threshold between neighbouring frames inside one shot
   CRUSH     > 6 % of the frame is crushed black (L < 0.05) outside flashes/fades
   CLIP      > 4 % of the frame is clipped white (L > 0.98) outside flashes
+  WASH      washed-out frame: bright with no darks (L mean > WASH_MEAN and p25 > WASH_P25), e.g. a lens inside a
+            light's glow or haze (pilot generator shot, 2026-11-13); 3+ frames in a row
   EDGEPOP   a large object appears/disappears at the frame edge between two frames (culling / near-plane clip)
 Writes <out>/report.md, <out>/flags.json and one 3-frame strip per flag (before / flagged / after).
 """
@@ -73,6 +75,7 @@ while True:
     L = lab[..., 0] / 255
     stats.append(dict(L=float(L.mean()), a=float(lab[..., 1].mean() - 128), b=float(lab[..., 2].mean() - 128),
                       crush=float((L < 0.05).mean()), clip=float((L > 0.98).mean()),
+                      p25=float(np.percentile(L, 25)),
                       sharp=float(cv2.Laplacian(g, cv2.CV_32F).var())))
 n = len(frames)
 
@@ -161,6 +164,19 @@ for i in range(2, n - 2):
         flag("CRUSH", i, f"{stats[i]['crush']:.0%} crushed black: lift darks, keep colour in shadows")
     if stats[i]["clip"] > 0.04 and i not in flash:
         flag("CLIP", i, f"{stats[i]['clip']:.0%} clipped white: lower exposure or bloom")
+
+# WASH: a run of frames with no darks and little contrast (outside flashes and dissolves).
+# Measured on the pilot: washed generator frames mean .73-.80 / p25 .62-.74; every good frame mean <= .52 / p25 <= .32.
+WASH_MEAN, WASH_P25 = 0.65, 0.5
+run = []
+for i in range(n):
+    w = stats[i]["L"] > WASH_MEAN and stats[i]["p25"] > WASH_P25 and i not in flash
+    if w:
+        run.append(i)
+    if (not w or i == n - 1) and len(run) >= 3:
+        flag("WASH", run[0], f"washed out for {len(run)} f (L mean {stats[run[0]]['L']:.2f}, p25 {stats[run[0]]['p25']:.2f}): a lens in a glow or haze, or over-exposure")
+    if not w:
+        run = []
 
 # EDGEPOP: big change concentrated in an edge strip while the centre stays stable
 for i in range(1, n):
