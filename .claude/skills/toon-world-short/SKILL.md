@@ -170,6 +170,8 @@ Redesigned 2026-11-13 (`kit/toon/protagonist.ts`):
     mux with `npx remotion ffmpeg -i out/<slug>/video.mp4 -i videos/<slug>/audio/mix.wav -map 0:v:0 -map 1:a:0 -c:v copy -c:a aac -b:a 320k out/<slug>/final.mp4`.
     QA: run the **video-qa** skill (scene checks before rendering, `scripts/video_qa.py` + `short_qa.py` +
     `measure.py` on the final, then a fresh reviewer agent). Fix everything, then a final verifier audit.
+10b. **Review**: run the `video-review` skill (QA + three audience critics, fixes, re-review); it writes
+    `videos/<slug>/REVIEW.md`. Deliver only at READY TO PUBLISH or READY WITH MINOR IMPROVEMENTS.
 11. **Deliver**: SendUserFile `final.mp4`; 3 title options; description with "Narration: AI voice" (+ sources for
     history); add minutes per step to `videos/TIMELOG.md`; mark the topic done in `BACKLOG.md`; commit and push.
 

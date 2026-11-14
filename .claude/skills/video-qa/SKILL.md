@@ -5,6 +5,8 @@ description: Find visual defects in a Stickrified short before it ships - camera
 
 # Video QA (three layers)
 
+This is also module 1 (Technical QA) of the `video-review` skill, which adds the audience critics on top.
+
 Run all three layers before every final render, and layer 2 again on the final mp4. Fix everything flagged, or
 mark it as intended in the plan, then re-run. Report results to the user as a short table: layer, check, result.
 
