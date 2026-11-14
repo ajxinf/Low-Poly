@@ -1,9 +1,9 @@
 {
   "slug": "ice-house-mountain",
-  "title": "What if you were stranded on a frozen mountain with an influencer?",
+  "title": "What if you were stranded on a frozen mountain with a pilot who goes by the book?",
   "pillar": "Scenario",
-  "formula": "Contradiction hook (escaping the cold inside ice, mocked as a freezer) -> why (crash, forty below, a week to rescue) -> rival with the 'perfect' version (heated tent, live stream) -> weird prep with measured progress (hour stamps, roof hole, sunken door) -> the mocker's comfort vs yours -> blizzard setback for him -> status flip at ~80% -> hidden plan explained mid-storm -> knock -> loop: room in the freezer",
-  "loop": "Line 1: the only other survivor calls your ice house a freezer. Last: he asks, very quietly, if there's room in the freezer (same word, the mocker now begging).",
+  "formula": "Strange act (digging a ditch inside your own door) -> why (crash, forty below, a week to rescue) -> the doubter with the 'perfect' shelter (Captain Ruth, 40 years flying, the steel plane and the manual) -> weird prep with measured progress (hour stamps, roof hole, the ditch) -> the manual against you -> blizzard setback -> status flip at ~75%: her own steel pulls the heat out of her -> mechanism explained -> knock -> loop: the ditch",
+  "loop": "Line 1: you're digging a ditch inside your own front door. Last: Ruth asks, very quietly, if she can sit in your ditch (the doubter now wants the thing she called crazy).",
   "voiceId": "zfc8CJQpe8Kqyl0vvCzo",
   "model": "eleven_v4",
   "facts": [
@@ -14,12 +14,12 @@
   ],
   "lines": [
     {
-      "narration": "You're building a house out of ice, and the only other survivor calls it a *freezer*.",
+      "narration": "You're digging a ditch inside your own front *door*.",
       "audioTag": "fast-paced, energetic storyteller",
-      "scene": "Cold open, white mountain ridge at golden hour: you in your rust jacket, sliding a snow block onto a half-built dome. Ten metres away, a glowing orange high-tech tent; Brock points his phone at you, laughing.",
-      "camera": "Low angle push-in past the half dome to you, rack focus to Brock",
+      "scene": "Wide on a snow dome at dusk; you, waist-deep in a trench that runs under the doorway, flinging snow out.",
+      "camera": "Low push-in along the trench",
       "onScreenText": "",
-      "gag": "Brock's phone has a ring light clipped to it"
+      "gag": "You slide down it on your belly like a penguin"
     },
     {
       "narration": "Because your plane is stuck on a mountain, it's forty below, and rescue is a week *away*.",
@@ -30,22 +30,22 @@
       "gag": "The bent propeller slowly droops"
     },
     {
-      "narration": "The other survivor is Brock. He has a $3,000 heated tent, and he's live *streaming*.",
-      "spoken": "The other survivor is Brock. He has a three-thousand-dollar heated tent, and he's live streaming.",
+      "narration": "The other survivor is Captain Ruth. She's flown for 40 years, and she has a *manual*.",
       "audioTag": "playful",
-      "scene": "Brock: puffy neon jacket, frosted tips, sunglasses on his head, phone on a selfie stick. His tent glows orange, a battery heater humming inside, a sign on the flap: 'BROCK HQ'.",
-      "camera": "Glide around the tent to Brock posing",
+      "scene": "Ruth in a flight cap and scarf, sitting in the plane's open door, licking a finger to turn a page.",
+      "camera": "Telephoto from your dome to the plane",
       "onScreenText": "",
-      "gag": "The tent has a doormat that says 'BROCK HQ'"
+      "gag": "The manual is as thick as a phone book, with 200 sticky notes",
+      "spoken": "The other survivor is Captain Ruth. She's flown for forty years, and she has a manual."
     },
     {
-      "narration": "\"Bro's building a freezer,\" he tells 40,000 followers, and they *love* it.",
-      "spoken": "\"Bro's building a freezer,\" he tells forty thousand followers, and they love it.",
+      "narration": "She taps page 12. \"Stay with the *aircraft*.\"",
       "audioTag": "",
-      "scene": "Phone screen POV: Brock's selfie with you small in the background; laughing emojis flood up the screen; a live counter reads 40,000.",
-      "camera": "Push into the phone screen",
+      "scene": "Insert on the page, then Ruth's flat face.",
+      "camera": "Hard cut insert, then MCU",
       "onScreenText": "",
-      "gag": "Laughing emojis flood the stream"
+      "gag": "Page 12 has a drawing of a smiling plane",
+      "spoken": "She taps page twelve. \"Stay with the aircraft.\""
     },
     {
       "narration": "But you keep cutting snow blocks. Hour 1, ten. Hour 3, forty. By sunset, a *dome*.",
@@ -54,47 +54,48 @@
       "scene": "Three dissolves on the same framing as the sun drops: a ring of ten blocks, a waist-high spiral, a finished dome glowing pink in the dusk.",
       "camera": "Locked framing with a slow creep-in across three dissolves",
       "onScreenText": "HOUR 1",
-      "gag": "Each dissolve, Brock in the background has a new snack"
+      "gag": "Each dissolve, Ruth in the plane door has moved three sticky notes further into the manual"
     },
     {
-      "narration": "Then it gets weirder. You poke a hole in the roof, on *purpose*.",
+      "narration": "So you poke a hole in the roof, on *purpose*.",
       "audioTag": "mischievous",
-      "scene": "You on top of the dome jabbing a stick through the roof; a little puff of snow pops out.",
-      "camera": "Low angle on you against the dusk sky",
+      "scene": "You punch up through the dome with a ski pole; across the snow Ruth looks up from the manual.",
+      "camera": "Inside the dome looking up, then a reverse wide",
       "onScreenText": "",
-      "gag": "The puff of snow lands on Brock's sunglasses"
+      "gag": "The puff of snow lands on Ruth's reading glasses"
     },
     {
-      "narration": "And you dig the door lower than the floor, like a little *ditch*.",
+      "narration": "And the door? You dig it lower than the floor, like a little *ditch*.",
       "audioTag": "",
-      "scene": "Cross-section cut-away of the igloo: the sleeping shelf high inside, the tunnel entrance dug down below it like a ditch.",
-      "camera": "Side-on cut-away, slow push along the tunnel",
+      "scene": "The tunnel entrance sinks below floor level; cross-section cut-away of the dome.",
+      "camera": "Cross-section cut-away",
       "onScreenText": "",
-      "gag": "You slide down the ditch on your belly like a penguin"
+      "gag": "The callback: you belly-slide down it again, slower"
     },
     {
-      "narration": "Brock zooms in. \"Now his freezer has a *basement*.\"",
+      "narration": "Ruth flips to page 40. \"Do not sleep in a *hole*.\"",
       "audioTag": "",
-      "scene": "Phone POV zooming on your boots disappearing into the tunnel; more laughing emojis.",
-      "camera": "Fast digital zoom inside the phone frame",
+      "scene": "Insert on the manual, then Ruth raising one eyebrow.",
+      "camera": "Insert, then CU",
       "onScreenText": "",
-      "gag": "The chat spams 'BASEMENT' with skull emojis"
+      "gag": "Page 40 is a drawing of you",
+      "spoken": "Ruth flips to page forty. \"Do not sleep in a hole.\""
     },
     {
-      "narration": "That night, Brock sleeps in his *shorts*.",
+      "narration": "That night, the plane's steel walls tick as they *freeze*.",
       "audioTag": "",
-      "scene": "Night, deep blue snow under stars: Brock's tent glows warm orange; through the fabric, his silhouette in shorts, fanning himself.",
-      "camera": "Slow push toward the glowing tent",
+      "scene": "Night: the plane under stars, frost creeping across its windows.",
+      "camera": "Slow push on the fuselage",
       "onScreenText": "",
-      "gag": "His silhouette is fanning himself"
+      "gag": "Each tick pops a tiny 'tick' card off the hull"
     },
     {
-      "narration": "You sleep in your jacket, next to one tiny *candle*.",
+      "narration": "You sleep next to one tiny *candle*.",
       "audioTag": "",
-      "scene": "Inside the dome: blue ice walls, you curled up on the shelf in your jacket, one candle flame making the walls glow gold.",
-      "camera": "Slow pull-out from the candle flame to you",
+      "scene": "Inside the dome, warm candlelight on the ice blocks.",
+      "camera": "Top-down on you curled up by the candle",
       "onScreenText": "",
-      "gag": "Your breath makes little clouds"
+      "gag": "Your breath makes little clouds shaped like the candle flame"
     },
     {
       "narration": "Then, on day 3, a blizzard hits, and it doesn't *stop*.",
@@ -106,20 +107,28 @@
       "gag": "The plane's bent propeller spins the wrong way in the wind"
     },
     {
-      "narration": "The wind howls for two days. His tent poles bend, then snap. One. Two. *Three*.",
+      "narration": "The wind howls for two days. The plane rocks. Snow fills every vent. One. Two. *Three*.",
       "audioTag": "tense, building",
-      "scene": "Brock's tent bowing in the wind; one pole snaps, then another, then a third, the glow flickering.",
-      "camera": "Hard cuts closer on each snap",
+      "scene": "Storm: the plane rocking, vents packing with snow one by one.",
+      "camera": "Three hard-cut inserts, one per vent",
       "onScreenText": "",
-      "gag": "Each snap makes Brock's frosted tips stand straight up"
+      "gag": "Each vent clogs with a cartoon 'thunk' of snow"
     },
     {
-      "narration": "His heater dies, and his fancy tent wraps around him like a *burrito*.",
+      "narration": "And steel does what steel does. It pulls the heat out of everything it *touches*.",
       "audioTag": "",
-      "scene": "The tent goes dark and collapses onto Brock, folding around him until only his face sticks out of a fabric roll.",
-      "camera": "Tilt down with the collapsing tent, push-in on his face",
+      "scene": "Inside the cabin: frost spreading from the walls toward Ruth, wrapped in every blanket.",
+      "camera": "Slow arc around Ruth, frost racing in",
       "onScreenText": "",
-      "gag": "Brock rolled up in his tent like a burrito, sunglasses still on his head"
+      "gag": "Ruth's breath freezes into a little ice sculpture of a plane"
+    },
+    {
+      "narration": "Her blankets freeze to the *wall*.",
+      "audioTag": "",
+      "scene": "Ruth peels away from the wall; the blanket stays there, frozen in her shape.",
+      "camera": "Hard cut on 'wall'",
+      "onScreenText": "",
+      "gag": "Ruth tries to stand and the blanket stays stuck, upright like a ghost"
     },
     {
       "narration": "Meanwhile, inside your house of ice, you just took off your *jacket*.",
@@ -163,22 +172,20 @@
       "gag": "Snow dust sprinkles into your mug"
     },
     {
-      "narration": "It's Brock, still in the burrito, phone at 1%. His chat is one word, over and *over*.",
-      "spoken": "It's Brock, still in the burrito, phone at one percent. His chat is one word, over and over.",
+      "narration": "It's Ruth, holding the manual, open to a page called *igloos*.",
       "audioTag": "",
-      "scene": "POV from inside the tunnel: Brock's face at the entrance, rolled in his tent, ice in his eyebrows, phone held up. On the screen the chat scrolls: 'FREEZER FREEZER FREEZER'.",
-      "camera": "POV from the tunnel, push into the phone screen",
+      "scene": "Ruth at the tunnel mouth, frosted eyebrows, manual held up like a menu.",
+      "camera": "Your POV from inside the dome",
       "onScreenText": "",
-      "gag": "The chat scrolls 'FREEZER' forever"
+      "gag": "The sticky note on that page says 'SKIP'"
     },
     {
-      "narration": "He asks, very quietly, if there's room in the *freezer*.",
-      "spoken": "[deadpan] He asks, very quietly, if there's room in the freezer.",
-      "audioTag": "",
-      "scene": "Close-up on Brock: chattering teeth, icicle on his nose, puppy eyes. Same framing as the cold open's laugh, now begging. Behind him, the storm.",
-      "camera": "Push-in on Brock's face, end on the word",
+      "narration": "She asks, very quietly, if she can sit in your *ditch*.",
+      "audioTag": "deadpan",
+      "scene": "Ruth, already crouched in the ditch before you answer.",
+      "camera": "CU on Ruth's face, the dome glowing behind her",
       "onScreenText": "",
-      "gag": "An icicle hangs off Brock's nose"
+      "gag": "An icicle hangs off Ruth's nose"
     }
   ]
 }

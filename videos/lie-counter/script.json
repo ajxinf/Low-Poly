@@ -2,8 +2,8 @@
   "slug": "lie-counter",
   "title": "In this world, every lie you've ever told floats above your head.",
   "pillar": "'In this world...' fiction",
-  "formula": "Strange act (3 weeks of silence) -> rule + goal (the girl at zero) -> rival with a 'perfect' number who mocks you (planted: he never takes off his hat) -> your plan, rule taken literally against you (a nod counts) -> it works, rival loses the date -> big test with the rival watching -> the truth raises your number (it counts what's true) -> rival's laugh knocks his hat off: his real number -> loop: 'hasn't said a single word since'",
-  "loop": "Line 1: you haven't said a single word in 3 weeks. Last: Brad hasn't said a single word since (your silence passes to the rival who mocked it).",
+  "formula": "Strange act (3 weeks of silence) -> rule + goal (the girl at zero) -> rival with a 'perfect' number who mocks you (planted: he never takes off his hat) -> your plan, rule taken literally against you (a nod counts) -> it works, rival loses the date -> big test with the rival watching -> the truth raises your number (it counts what's true) -> rival's laugh knocks her beehive off: her real number -> loop: you finally speak, and there's no ding",
+  "loop": "Line 1: you haven't said a single word in 3 weeks. Last: for the first time in 3 weeks you speak, and the counter stays silent (no ding): the silence flips from you to the rule.",
   "voiceId": "zfc8CJQpe8Kqyl0vvCzo",
   "model": "eleven_v4",
   "facts": [
@@ -37,21 +37,21 @@
       "gag": "Her 0 glows like a halo; a choir card pops"
     },
     {
-      "narration": "And Brad from accounting is at 12. He never takes off his hat, and he never lets you *forget* it.",
-      "spoken": "And Brad from accounting is at twelve. He never takes off his hat, and he never lets you forget it.",
+      "narration": "And Pam from HR is at 12. She never takes her hair down, and she never lets you *forget* it.",
       "audioTag": "playful",
-      "scene": "Brad leans on your desk: slick hair, shiny suit, a very tall top hat; a neat '12' glows right at the top of the hat. He taps your 4,000 with a pen.",
-      "camera": "Low angle on Brad, tilt up his tall hat",
+      "scene": "Pam leans on your desk: cardigan, reading glasses on a chain, a towering beehive; a neat '12' glows right at the top of the beehive. She taps your 4,000 with a pen.",
+      "camera": "Low angle on Pam, tilt up her tall beehive",
       "onScreenText": "12",
-      "gag": "Brad's top hat is absurdly tall, like a chimney"
+      "gag": "Pam's beehive is absurdly tall, like a chimney",
+      "spoken": "And Pam from HR is at twelve. She never takes her hair down, and she never lets you forget it."
     },
     {
-      "narration": "\"Nice number, liar,\" he says, and asks the coffee girl out right in front of *you*.",
+      "narration": "\"Nice number, liar,\" she says, and sets the coffee girl up on a date with her *nephew*.",
       "audioTag": "",
-      "scene": "Coffee shop: Brad leans over the counter, hat brushing the ceiling lamp, winking at her; you stand behind him in the queue.",
-      "camera": "Over your shoulder, push past you to Brad",
+      "scene": "Coffee shop: Pam leans over the counter, beehive brushing the ceiling lamp, showing her a photo of her nephew; you stand behind Pam in the queue.",
+      "camera": "Over your shoulder, push past you to Pam",
       "onScreenText": "",
-      "gag": "Brad's hat knocks the lamp swinging"
+      "gag": "Pam's beehive knocks the lamp swinging"
     },
     {
       "narration": "So you've made a plan: no talking, no lies, no new *numbers*.",
@@ -73,8 +73,8 @@
       "narration": "You don't say a word. You just nod. Ding. 4,001. Turns out a nod *counts*.",
       "spoken": "You don't say a word. You just nod. [deadpan] Ding. Four thousand and one. Turns out a nod counts.",
       "audioTag": "",
-      "scene": "Your head dips once; your number rolls from 4,000 to 4,001 like an old scoreboard; across the office, Brad slow-claps.",
-      "camera": "Punch close-up on the nod, tilt up to the number, whip to Brad",
+      "scene": "Your head dips once; your number rolls from 4,000 to 4,001 like an old scoreboard; across the office, Pam slow-claps.",
+      "camera": "Punch close-up on the nod, tilt up to the number, whip to Pam",
       "onScreenText": "4,001",
       "gag": "The ding is as loud as a church bell; coffee cups shake"
     },
@@ -87,20 +87,20 @@
       "gag": "Someone hangs their coat on you"
     },
     {
-      "narration": "But it works. She notices you never brag, never flatter, never fake, and she cancels on Brad to have dinner with *you*.",
+      "narration": "But it works. She notices you never brag, never fake, and she cancels on the nephew to have dinner with *you*.",
       "audioTag": "excited",
-      "scene": "Coffee shop: she slides you a cup with 'DINNER?' on the sleeve; in the background Brad reads a text, his jaw drops.",
-      "camera": "Insert on the cup, rack focus to Brad's face",
+      "scene": "Coffee shop: she slides you a cup with 'DINNER?' on the sleeve; in the background Pam reads a text, her jaw drops.",
+      "camera": "Insert on the cup, rack focus to Pam's face",
       "onScreenText": "",
-      "gag": "Brad's face fills red from the chin up to the hat"
+      "gag": "Pam's face fills red from the chin up into the beehive"
     },
     {
       "narration": "Then, at dinner, she asks the question you've been dreading: \"Do you like my *band*?\"",
       "audioTag": "nervous",
-      "scene": "Candle-lit restaurant at night. Behind her, a poster: four people with kazoos, 'THE KAZOO-NAMI, LIVE'. At the next table, Brad, alone, grinning, staring at your number.",
-      "camera": "Over her shoulder to you, then push to the poster, then Brad",
+      "scene": "Candle-lit restaurant at night. Behind her, a poster: four people with kazoos, 'THE KAZOO-NAMI, LIVE'. At the next table, Pam, alone, grinning, staring at your number.",
+      "camera": "Over her shoulder to you, then push to the poster, then Pam",
       "onScreenText": "",
-      "gag": "Brad has a napkin tucked in, ready to enjoy the show"
+      "gag": "Pam is at the next table with a napkin tucked in, ready to enjoy the show"
     },
     {
       "narration": "Her band is four people with *kazoos*.",
@@ -137,21 +137,21 @@
       "gag": "You're wearing her band's T-shirt in the flashback"
     },
     {
-      "narration": "Brad laughs so hard, his hat falls *off*.",
+      "narration": "Pam laughs so hard, her beehive falls *off*.",
       "audioTag": "",
-      "scene": "Brad doubled over, slapping the table; the tall top hat tips and tumbles off his head in slow motion.",
+      "scene": "Pam doubled over, slapping the table; the beehive tips and tumbles off her head in slow motion.",
       "camera": "Follow the hat down in slow motion",
       "onScreenText": "",
-      "gag": "The hat lands on the lobster in the tank"
+      "gag": "The beehive lands on the lobster in the tank"
     },
     {
-      "narration": "The 12 was painted on the hat. Brad is at *9,000*.",
-      "spoken": "The twelve was painted on the hat. Brad is at nine thousand.",
+      "narration": "The 12 was pinned to the beehive. Pam is at *9,000*.",
       "audioTag": "",
-      "scene": "Insert: the fallen hat, a '12' painted on its side in glow paint. Tilt up: above Brad's bare head, a giant glowing '9,000' unfolds, so big it bends against the ceiling. The whole restaurant turns to look.",
+      "scene": "Insert: the fallen beehive, a '12' pinned to its side. Tilt up: above Pam's flat real hair, a giant glowing '9,000' unfolds, so big it bends against the ceiling. The whole restaurant turns to look.",
       "camera": "Insert on the hat, then fast tilt up to the 9,000",
       "onScreenText": "9,000",
-      "gag": "Brad's 9,000 is so big it scrapes the ceiling"
+      "gag": "Pam's 9,000 is so big it scrapes the ceiling",
+      "spoken": "The twelve was pinned to the beehive. Pam is at nine thousand."
     },
     {
       "narration": "She looks at his number, then at yours, and grins. \"You *love* it.\"",
@@ -162,13 +162,21 @@
       "gag": "She hands you your own kazoo"
     },
     {
-      "narration": "Brad hasn't said a single word *since*.",
-      "spoken": "[deadpan] Brad hasn't said a single word since.",
-      "audioTag": "",
-      "scene": "Close-up: Brad at his desk next morning, lips pressed shut, a cartoon zipper across his mouth, his 9,000 glowing above him; behind him, you and her play kazoos.",
-      "camera": "Push-in on Brad's face, end on the word",
+      "narration": "So, after 3 weeks, you say it out loud: \"I *love* it.\"",
+      "spoken": "So, after three weeks, you say it out loud: \"I love it.\"",
+      "audioTag": "warm",
+      "scene": "Your MCU across the table; she holds up a kazoo. Your zipper from the cold open is drawn open.",
+      "camera": "Slow push on you",
       "onScreenText": "",
-      "gag": "The zipper on Brad's mouth matches yours from the cold open"
+      "gag": "The zipper on your mouth unzips by itself"
+    },
+    {
+      "narration": "No *ding*.",
+      "audioTag": "deadpan",
+      "scene": "Your 4,002 above your head, perfectly still; the restaurant waits; nothing happens.",
+      "camera": "Hold on the number, then a tiny push",
+      "onScreenText": "",
+      "gag": "Every customer is braced, fingers in their ears, for a ding that never comes"
     }
   ]
 }

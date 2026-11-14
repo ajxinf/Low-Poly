@@ -384,6 +384,12 @@ Heavy on time and tokens: use it for the kit, not for every video.
    means telling every owner that reads it.
 
 ## Gotchas
+- **Dissolves fade over the real overlap**, never a fixed constant: `<Dissolve len={prevEnd - s.from}>`. The pilot faded
+  over XF = 10 on 4-8 frame overlaps, so the new shot was part-transparent over black after the old one ended: a dark
+  blink after every dissolve (f539 dropped to 6 % luma).
+- **2D inserts** mounted outside the shot list go in `Plan.inserts` ([from, to]) so `plan.json` lists their cuts.
+- **Hand-check `words.json`** against the waveform: Eleven v4's aligner can put a sentence-final word in the pause
+  after it (pilot: "door.", "town." 0.26 s late). A word span at < -40 dB in the voice is the tell.
 - **Disk**: every Remotion bundle copies `public/` into `%TEMP%\remotion-webpack-bundle-*` and never deletes it. Set
   `$env:TEMP`/`$env:TMP` to `C:\remotion-tmp` (or a bigger drive) before rendering, keep `public/` small, and when
   nothing is rendering delete old `remotion-webpack-bundle-*` and `puppeteer_dev_chrome_profile-*` folders there

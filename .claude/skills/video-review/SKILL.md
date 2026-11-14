@@ -77,6 +77,9 @@ at 4. Script-only reviews give no QA score ("n/a").
 - **Nobody hears the audio.** Audio judgments come from `words.json` timings, `events.json`/`cues.md`,
   `loudness.json` and the tag clips; say so in the audio lines.
 - Watching = reading frame sheets and key frames (`qa/frames/`), never playback, never a summary.
+- **Before calling something missing, open every sheet of that shot** (`<shot>_01..NN`). Pilot round 1: two critics
+  read only B25_01 and called Chad's shock and toothbrush missing; both land on "up" in B25_02. In consolidation,
+  the lead re-checks every "missing" claim from a critic that sampled sheets.
 - A prompt or plan edit is not a changed video: footage changes only after the re-render, and re-review reads the
   new render.
 - No analytics in the repo means performance lines are predictions from what is on screen, labelled as such.
