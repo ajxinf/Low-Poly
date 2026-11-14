@@ -4,7 +4,7 @@ import { AbsoluteFill, Audio, Easing, Sequence, getRemotionEnvironment, interpol
 import { Vector3 } from "three";
 import { PRESETS } from "../../../kit/toon/build/presets";
 import { Street } from "../../../kit/toon/build/street";
-import { Captions } from "../../../kit/toon/Captions";
+import { CAPTION_FONT, Captions } from "../../../kit/toon/Captions";
 import { Character } from "../../../kit/toon/cast";
 import { Composer } from "../../../kit/toon/Composer";
 import { Crowd } from "../../../kit/toon/crowd";
@@ -17,10 +17,10 @@ import { ToonWorld } from "../../../kit/toon/world";
 import { EXT_OPTS, INT_EXTRAS, IN, at } from "./build";
 import { propsFor } from "./props";
 import { BEAT, HORDE, cartAt, words } from "./roles";
-import { FRAMES, INSERT, PLAN, S, SHOTS, WORLD, XF } from "./story";
+import { FRAMES, INSERT, PLAN, S, SHOTS, WORLD } from "./story";
 
 // zombie-supermarket-30-days: the pilot Short. Each shot is its own Sequence + canvas; a shot that starts before the
-// previous one ends dissolves in over XF frames, one that starts after it is a hard cut. The 2D x-ray insert is a hard
+// previous one ends dissolves in over the overlap, one that starts after it is a hard cut. The 2D x-ray insert is a hard
 // cut of its own. Story props come from props.ts (the same `pose` drives the render and the QA guard).
 export const ZOMBIE_FRAMES = FRAMES;
 const INT_OPTS = { seed: 30 };
@@ -56,8 +56,10 @@ const ShotView: React.FC<{ s: S }> = ({ s }) => {
   );
 };
 
-const Dissolve: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const opacity = interpolate(useCurrentFrame(), [0, XF], [0, 1], { extrapolateRight: "clamp", easing: Easing.inOut(Easing.quad) });
+/** Fades in over `len` = the real overlap with the previous shot. Review C5: a fixed XF (10) on 4-8 frame overlaps left
+ * the new shot part-transparent over black once the old one ended: a dark blink after every dissolve (f539, f2207). */
+const Dissolve: React.FC<{ children: React.ReactNode; len: number }> = ({ children, len }) => {
+  const opacity = interpolate(useCurrentFrame(), [0, Math.max(1, len)], [0, 1], { extrapolateRight: "clamp", easing: Easing.inOut(Easing.quad) });
   return <AbsoluteFill style={{ opacity }}>{children}</AbsoluteFill>;
 };
 
@@ -71,9 +73,9 @@ const ToyXRay: React.FC = () => {
   const f = useCurrentFrame();
   const shake = Math.sin(f * 1.7) * 3.2, on = Math.abs(Math.sin(f * 1.7)) > 0.6;
   const line = { stroke: "#cfefff", strokeWidth: 1.4, fill: "none", strokeLinejoin: "round" as const };
-  const label = { fontSize: 3.6, fill: "#9fe4ff", fontWeight: 800, letterSpacing: 0.3 };
+  const label = { fontSize: 3.6, fill: "#9fe4ff", fontWeight: 900, letterSpacing: 0.3, fontFamily: CAPTION_FONT };
   return (
-    <g transform={`translate(${shake * 0.5} 0)`}>
+    <g transform={`translate(${shake * 0.5} -34)`}>
       <defs>
         <radialGradient id="duckBody" cx="45%" cy="40%" r="65%">
           <stop offset="0%" stopColor="#7fd4ff" stopOpacity="0.35" />
@@ -85,7 +87,7 @@ const ToyXRay: React.FC = () => {
       <path d="M30 108 q8 -10 18 -2" {...line} strokeDasharray="1.5 1.5" />
       <rect x={30} y={110} width={22} height={10} rx={2} {...line} fill="#7fd4ff22" />
       <rect x={30} y={110} width={10} height={10} rx={1.5} {...line} />
-      <text x={41} y={117.5} fontSize={4.6} fill="#e8f8ff" textAnchor="middle" fontWeight={900}>AA</text>
+      <text x={41} y={117.5} fontSize={4.6} fill="#e8f8ff" textAnchor="middle" fontWeight={900} fontFamily={CAPTION_FONT}>AA</text>
       <rect x={52} y={98} width={18} height={10} rx={1} {...line} fill="#2a8a5a44" />
       {[0, 1, 2].map((k) => <rect key={k} x={54 + k * 5.4} y={100} width={3.6} height={3} fill="#cfefff" />)}
       <path d="M53 106 h16 M55 104 v2 M61 104 v2 M67 104 v2" stroke="#9fe4ff" strokeWidth={0.6} />
@@ -98,10 +100,10 @@ const ToyXRay: React.FC = () => {
       {on && [0, 1, 2].map((k) => <path key={k} d={`M${80 + k * 5} ${113 - k * 2} q5 9 0 18`} stroke="#ffd36a" strokeWidth={1.4} fill="none" />)}
       <path d="M40 130 l-3 8 h8 M58 132 l-2 8 h8" {...line} />
       <text x={22} y={146} {...label}>BATTERY</text>
-      <text x={60} y={90} {...label}>MOTION SWITCH</text>
-      <text x={58} y={140} {...label}>SPEAKER</text>
-      <path d="M30 143 L 36 121 M70 88 L 52 94 M66 136 L 70 129" stroke="#9fe4ff" strokeWidth={0.5} />
-      <text x={50} y={158} fontSize={6.5} fill="#cfefff" textAnchor="middle" fontWeight={800}>SHAKE = SOUND</text>
+      <text x={8} y={84} {...label}>MOTION SWITCH</text>
+      <text x={70} y={146} {...label}>SPEAKER</text>
+      <path d="M30 143 L 36 121 M30 86 L 45 93 M76 141 L 72 129" stroke="#9fe4ff" strokeWidth={0.5} />
+      <text x={50} y={194} fontSize={6.5} fill="#cfefff" textAnchor="middle" fontWeight={900} fontFamily={CAPTION_FONT}>SHAKE = SOUND</text>
     </g>
   );
 };
@@ -111,7 +113,7 @@ export const ZombieSupermarket: React.FC = () => (
     <QAPlan plan={PLAN} />
     {SHOTS.map((s, i) => (
       <Sequence key={s.id} from={s.from} durationInFrames={s.frames}>
-        {i > 0 && s.from < SHOTS[i - 1].from + SHOTS[i - 1].frames ? <Dissolve><ShotView s={s} /></Dissolve> : <ShotView s={s} />}
+        {i > 0 && s.from < SHOTS[i - 1].from + SHOTS[i - 1].frames ? <Dissolve len={SHOTS[i - 1].from + SHOTS[i - 1].frames - s.from}><ShotView s={s} /></Dissolve> : <ShotView s={s} />}
       </Sequence>
     ))}
     <Sequence from={INSERT.from} durationInFrames={INSERT.to - INSERT.from}>

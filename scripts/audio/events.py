@@ -32,6 +32,7 @@ def load(d):
         if m.get("frames") == "auto": m["frames"] = cfg["frames"]
         m["button"] = frame(m["button"])
         if m.get("stop"): m["stop"] = [frame(x) for x in m["stop"]]
+        if m.get("stops"): m["stops"] = [[frame(x) for x in s] for s in m["stops"]]  # extra drop-outs (a whisper)
         if m.get("build") is not None: m["build"] = frame(m["build"])
     return cfg
 

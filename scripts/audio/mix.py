@@ -89,7 +89,8 @@ def main(d):
           f"voice vs button on the last word: {gap['voice_button_gap_db']:.1f} dB")
     assert abs(i + 14) <= 0.5 and tp <= -1.0, "master outside -14 +-0.5 LUFS / -1 dBTP"
     assert gap["voice_music_gap_db"] >= MIN_GAP_DB, f"FAIL: voice only {gap['voice_music_gap_db']:.1f} dB over the music (needs >= {MIN_GAP_DB})"
-    assert gap["voice_button_gap_db"] > 0, "FAIL: the button is louder than the voice on the last word"
+    # The toon skill's rule (15 dB); this only checked > 0, so the pilot shipped at 3.3 dB (review H4).
+    assert gap["voice_button_gap_db"] >= MIN_GAP_DB, f"FAIL: button only {gap['voice_button_gap_db']:.1f} dB under the last word (needs >= {MIN_GAP_DB}): lower music.button_db"
 
 
 def voice_gap(voice, mus, words):

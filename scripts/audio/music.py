@@ -79,8 +79,9 @@ def main(d):
         t += beat / 2
         i += 1
     # Comic drop-out (the impact gets silence), 20 ms ramps.
-    if cfg.get("stop"):
-        a, b = (int(x / fps * SR) for x in cfg["stop"])
+    # "stops": more drop-outs, e.g. under a whispered line the bed would bury (pilot review H4: "gently").
+    for span in ([cfg["stop"]] if cfg.get("stop") else []) + cfg.get("stops", []):
+        a, b = (int(x / fps * SR) for x in span)
         g = np.ones(len(out))
         r = int(0.02 * SR)
         g[a:b] = 0

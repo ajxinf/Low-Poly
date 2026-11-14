@@ -80,7 +80,8 @@ export type Shot = {
  * (place it with cast.ts `handWorld`), or it floats beside the character.
  */
 export type MovingProp = { name: string; make: () => Object3D; pose: (o: Object3D, f: number) => boolean | void; touches?: string[]; heldBy?: string; hand?: Hand | "none" };
-export type Plan = { slug: string; shots: Shot[]; words?: CaptionWord[] };
+/** `inserts`: 2D cut-aways mounted outside the shot list ([from, to] composition frames): layer 2 gets their cuts. */
+export type Plan = { slug: string; shots: Shot[]; words?: CaptionWord[]; inserts?: Span[] };
 export type Fail = { check: Check; shot: string; frame: number; to: number; object: string; note: string; intended?: string };
 
 class Report {
@@ -605,6 +606,9 @@ export const exportPlan = (plan: Plan) => {
     if (s < end) xfade.push([s, end]);
     else cuts.push(s);
   }
+  // An insert is a hard cut in and out (pilot review: the x-ray's cuts showed as unplanned POPs).
+  for (const [a, b] of plan.inserts ?? []) cuts.push(a, b);
+  cuts.sort((x, y) => x - y);
   const abs = (k: "whips" | "kicks" | "flash") => shots.flatMap((s) => (s[k] ?? []).map(([a, b]) => [a + (s.from ?? 0), b + (s.from ?? 0)] as Span));
   return { cuts, xfade, flash: abs("flash"), kicks: abs("kicks"), whips: abs("whips"), shots: shots.map((s) => ({ id: s.id, from: s.from ?? 0, frames: s.frames })) };
 };

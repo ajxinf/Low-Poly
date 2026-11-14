@@ -8,7 +8,7 @@ import { BUILDS, capHair } from "../../../kit/toon/extras";
 import type { Expr } from "../../../kit/toon/face";
 import { rng } from "../../../kit/toon/paint";
 import type { Pose } from "../../../kit/toon/poses";
-import { bottoms, campCollar, cap, headLayers, layers, nameTag, pattern } from "../../../kit/toon/wardrobe";
+import { bottoms, campCollar, cap, headLayers, layers, nameTag, pattern, shadesUp } from "../../../kit/toon/wardrobe";
 import type { Pen } from "../../../kit/toon/toon";
 import type { Torso } from "../../../kit/toon/figure";
 import type { Head } from "../../../kit/toon/face";
@@ -56,7 +56,7 @@ export const BEAT = {
   dave: wordAt("dave", 1),
   daveMight: wordAt("dave", 2),
   right: wordAt("right"),
-  then: wordAt("then"),
+  then: wordAt("so", 1), // L9 "So you tape" (was "Then it gets weirder", cut in review round 1)
   tape: wordAt("tape"),
   hedgehog: wordAt("hedgehog"),
   park: wordAt("park"),
@@ -75,7 +75,7 @@ export const BEAT = {
   generator2: wordAt("generator", 1),
   coughs: wordAt("coughs"),
   dies: wordAt("dies"),
-  electric: wordAt("electric"),
+  electric: wordAt("electric", 1), // L15; the first "electric" is the L3 plant
   up: wordAt("up", 1),
   thats: wordAt("that's"),
   kick: wordAt("kick"),
@@ -148,7 +148,8 @@ export const chadLook: Look = {
   hair: headLayers(capHair("#4a3428", 0.3, 0.5), cap("#2e4ab0", true)),
   face: shades,
 };
-/** Chad at dawn on day 30: blue pinstripe pyjamas, bed hair, no shades (ring-eyed shock reads). */
+/** Chad at dawn on day 30: blue pinstripe pyjamas, bed hair, shades pushed up on his head (his signature stays on, or
+ * he reads as "you": review round 1), eyes bare so the ring-eyed shock reads. */
 export const chadPyjamas: Look = {
   ...chadLook,
   jacket: "#b8cfee",
@@ -157,7 +158,7 @@ export const chadPyjamas: Look = {
   shoes: "#6a4a3a",
   sneakers: false,
   outfit: layers(pattern("pinstripe", "#b8cfee", "#5a7ab0"), campCollar("#e8f0fa"), bottoms("#b8cfee", 0.9)),
-  hair: capHair("#4a3428", 0.42, 0.4, 5),
+  hair: headLayers(capHair("#4a3428", 0.42, 0.4, 5), shadesUp("#1e2a44", "#3a5a7a")),
   face: undefined,
 };
 /** Dave from the night shift: lanky teen, spiky hair, green FRESHMART vest over a white collar, name tag. */
@@ -168,7 +169,7 @@ export const daveLook: Look = {
   pants: "#3a3446",
   shoes: "#e8e0d0",
   sneakers: true,
-  outfit: layers(campCollar("#f4f0e6"), nameTag("DAVE"), pensPocket, bottoms("#3a3446", 0.86)),
+  outfit: layers(campCollar("#f4f0e6"), nameTag("DAVE", undefined, 0.08), pensPocket, bottoms("#3a3446", 0.86)),
   hair: capHair("#6a4630", 0.46, 0.38, 7),
 };
 
@@ -189,8 +190,9 @@ export const Z = { idle: 0, sway: 1, tiltL: 2, tiltR: 3, runA: 4, runB: 5, bang:
 const ZSTATES: CharState[] = [
   zs({ ...posed("idle", 0, 0), tilt: 6, sway: -2 }, "tired"),
   zs({ ...posed("idle", 1.3, 0.3), tilt: -5, sway: 3 }, "tired"),
-  zs({ ...posed("idle", 0, -1), tilt: 16 }, "neutral", { ringEyes: true }),
-  zs({ ...posed("idle", 0, 1), tilt: -16 }, "neutral", { ringEyes: true }),
+  // Head-turns read at phone size: big tilt, shocked ring eyes (review C2: a neutral face read as asleep).
+  zs({ ...posed("idle", 0, -1), tilt: 22 }, "shocked", { ringEyes: true }),
+  zs({ ...posed("idle", 0, 1), tilt: -22 }, "shocked", { ringEyes: true }),
   zs(armsUp(runPose(0.25)), "laughing"),
   zs(armsUp(runPose(1.35)), "laughing"),
   zs({ ...posed("panic", 0), tilt: 8 }, "angry"),
@@ -258,14 +260,14 @@ const zombie = (i: number, f: number) => {
     const state = moving ? ((Math.floor(f / 5) + i) % 2 ? Z.runA : Z.runB) : go >= 1 && back <= 0 ? (f >= BEAT.bang - 2 && f < BEAT.give ? Z.bang : Z.idle) : milling;
     return { pos, state, look: h.look };
   }
-  // Line 18: on "now" every head swings toward the cart.
-  if (f >= BEAT.now - 2 && f < BEAT.and400) {
+  // Lines 17-18: on "scream" every head snaps toward the cart (review C2: they slept through it on "now").
+  if (f >= BEAT.scream - 2 && f < BEAT.and400) {
     const c = cartAt(f);
-    return { pos: home.add(wob), state: f >= BEAT.now - 2 + (h.delay % 6) ? (c.x < home.x ? Z.tiltL : Z.tiltR) : milling, look: h.look };
+    return { pos: home.add(wob), state: f >= BEAT.scream - 2 + (h.delay % 6) ? (c.x < home.x ? Z.tiltL : Z.tiltR) : milling, look: h.look };
   }
   // Line 19: everyone chases the cart through Chad's open door; inside the door they vanish (the shop fills).
   if (f >= BEAT.and400) {
-    const t = (f - BEAT.and400 - h.delay) / FPS;
+    const t = (f - BEAT.and400 + 4 - 0.3 * h.delay) / FPS;
     if (t <= 0) return { pos: home.add(wob), state: c2(h.kind), look: h.look };
     // Spread across the whole shutter opening, not one point (they stacked into one blob in the pilot).
     const door = at(CHAD.s + (((i * 0.618) % 1) - 0.5) * (CHAD.shutterW - 0.8), FRONT + 0.2, 0);

@@ -107,8 +107,9 @@ export const overalls = (col: string, patch: string): Layer => (p, t) => {
 };
 
 /** Shop / staff name tag (text is drawn, so it reads in close-ups). */
-export const nameTag = (text: string, col = WHITE): Layer => (p, t) => {
-  const { cx, chin, u, a } = t, x = cx + 0.45 * a, y = chin + 34 * u;
+/** `dx`: tag centre as a fraction of the torso half-width (0.45 runs off a thin torso: Dave's DAVE read "VE"). */
+export const nameTag = (text: string, col = WHITE, dx = 0.45): Layer => (p, t) => {
+  const { cx, chin, u, a } = t, x = cx + dx * a, y = chin + 34 * u;
   p.poly(rect(x - 14 * u, y, 28 * u, 11 * u), col, 1.2 * u);
   p.g.save();
   p.g.fillStyle = INK;

@@ -81,6 +81,8 @@ vec3 grade(vec3 src, vec2 uv) {
   // Grain from the frame number (deterministic per render tab), strongest in the mids, none in pure ink or white.
   float gy = dot(c, vec3(0.2126, 0.7152, 0.0722));
   c += uGrain * (grainHash(vec3(gl_FragCoord.xy, uFrame)) - 0.5) * 4.0 * gy * (1.0 - gy);
+  // 1-LSB dither before the 8-bit output: smooth sky gradients banded (pilot review L1).
+  c += (grainHash(vec3(gl_FragCoord.xy, uFrame + 17.0)) - 0.5) / 255.0;
   return mix(src, clamp(c, 0.0, 1.0), uGAmount);
 }`;
 

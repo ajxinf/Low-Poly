@@ -396,10 +396,34 @@
     "lead": 4
    }
   ],
-  "button_db": -14,
+  "button_db": -26,
   "build": {
    "word": "kick",
    "lead": 20
-  }
+  },
+  "stops": [
+   [
+    {
+     "word": "very",
+     "lead": 4
+    },
+    {
+     "word": "day",
+     "n": 3,
+     "lead": 6
+    }
+   ],
+   [
+    {
+     "word": "doesn't",
+     "lead": 2
+    },
+    {
+     "word": "sound",
+     "n": 1,
+     "lead": -30
+    }
+   ]
+  ]
  }
 }

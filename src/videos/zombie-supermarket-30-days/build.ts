@@ -30,7 +30,7 @@ export const DOCK = { s: 32, w: 3.2, h: 3.0, floor: 1.2, landing: 0.9, run: 3.1 
 export const CHAD = { s0: 27, s1: 37, s: 32, depth: 10, h: 6, shutterW: 5, shutterH: 3.4, recess: 3 };
 /** Chad's spot on his roof (facing the street) and the generator beside him. */
 export const ROOF_Y = CHAD.h;
-export const CHAD_ROOF = at(CHAD.s + 0.4, FRONT + 0.6, ROOF_Y); // near the edge: a low angle from the street still sees his legs
+export const CHAD_ROOF = at(CHAD.s + 0.4, FRONT + 0.85, ROOF_Y); // near the edge (0.85 m: at 0.6 the hanging megaphone sat in the edge wire)
 export const GENERATOR = at(CHAD.s - 2.4, FRONT + 1.6, ROOF_Y);
 export const FLOODS = [at(CHAD.s0 + 0.6, FRONT + 0.4, ROOF_Y + 1.6), at(CHAD.s1 - 0.6, FRONT + 0.4, ROOF_Y + 1.6)];
 /** Inside Chad's doorway (pyjama reveal). */
@@ -101,7 +101,7 @@ const supermarketFront = () => {
 /** CHAD'S HARDWARE: local origin on the facade line at s 32, local +x = into the store (away from the street). */
 const chadStore = () => {
   const k = new Kit(), { depth: D, h: H, shutterW: SW, shutterH: SH, recess: R } = CHAD, L = CHAD.s1 - CHAD.s0;
-  const brick = MAT.color("#8e5446"), trim = MAT.color("#3a3a46"), concrete = MAT.color("#a8a090");
+  const brick = MAT.color("#5a6078"), trim = MAT.color("#3a3a46"), concrete = MAT.color("#a8a090");
   k.box(brick, D - R, H, L, R + (D - R) / 2, H / 2, 0); // back block
   for (const sz of [-1, 1]) k.box(brick, R, H, L / 2 - SW / 2, R / 2, H / 2, sz * (SW / 2 + (L / 2 - SW / 2) / 2)); // side piers
   k.box(brick, R, H - SH, SW, R / 2, SH + (H - SH) / 2, 0); // over the opening
@@ -227,6 +227,7 @@ export const shutter = () => {
   const hole = new Mesh(new BoxGeometry(0.02, 0.16, 0.5), M("slotDark", () => new MeshBasicMaterial({ color: "#14101a" })));
   // Two sunglass lenses and a bridge (one blue bar read as stripes in the slot close-up).
   const shades = new Group();
+  shades.name = "slotShades"; // hidden while the lid is shut (they drew over the closed cover: review M8)
   for (const z of [-0.075, 0.075]) {
     const lens = new Mesh(new CylinderGeometry(0.05, 0.05, 0.012, 16), M("slotLens", () => new MeshBasicMaterial({ color: "#1e2a44" })));
     lens.rotation.z = Math.PI / 2;
@@ -355,7 +356,7 @@ export const chartTex = (crossed: number) => {
       g.moveTo(cx + 44, cy - 46);
       g.lineTo(cx - 46, cy + 44);
       g.stroke();
-    } else {
+    } else if (i === 29) {
       g.lineWidth = 7;
       g.strokeStyle = "#c8302e";
       g.beginPath();

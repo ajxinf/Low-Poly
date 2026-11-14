@@ -38,7 +38,7 @@ export const Insert: React.FC<{ kind: InsertKind; title: string; readout: string
       <div style={{ position: "absolute", left: 0, right: 0, top: `${scan}%`, height: 1.2 * u, background: `linear-gradient(transparent, ${s.accent}55, transparent)` }} />
       <div style={{ ...label, left: 6 * u, color: s.accent }}>{title}</div>
       <div style={{ ...label, right: 6 * u, color: "#ff5a3d" }}>{readout}</div>
-      <div style={{ position: "absolute", left: 6 * u, top: 10.5 * u, color: "#fff", fontFamily: CAPTION_FONT, fontWeight: 700, fontSize: 2.8 * u, opacity: f % 30 < 18 ? 1 : 0.25 }}>
+      <div style={{ position: "absolute", left: 9 * u, top: 14 * u, color: "#fff", fontFamily: CAPTION_FONT, fontWeight: 700, fontSize: 2.8 * u, opacity: f % 30 < 18 ? 1 : 0.25 }}>
         <span style={{ color: "#ff3b30" }}>●</span> REC
       </div>
       <div style={bracket("left", "top")} />

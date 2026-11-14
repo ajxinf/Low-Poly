@@ -19,7 +19,7 @@
       "scene": "Cold open, toy aisle by the front window: you kneel in a mountain of plush ducks and robots, popping out a battery. Through the glass, across the street, a man on a hardware-store roof points and laughs into a megaphone.",
       "camera": "Low angle push-in through a gap in the shelf, rack focus to the laughing man",
       "onScreenText": "DAY 1",
-      "gag": "Each toy freezes mid-word, mouth open, the moment its battery pops out"
+      "gag": "Each toy freezes mid-word, mouth open, the moment its battery pops out; the toy boxes in the pile say SHAKE ME!"
     },
     {
       "narration": "Because outside, 400 zombies hunt by *sound*.",
@@ -31,12 +31,12 @@
       "gag": "Hundreds of heads tilt the same way at the same time, like birds"
     },
     {
-      "narration": "That guy is Chad. Chad has a hardware store, steel shutters, and a *megaphone*.",
+      "narration": "That guy is Chad. Chad has a hardware store, electric steel shutters, and a *megaphone*.",
       "audioTag": "playful",
       "scene": "Chad's fortress: a hardware store with steel roll-down shutters, floodlights, a humming generator, and a hand-painted sign 'CHAD'S. MEMBERS ONLY'. Chad: tank top, backwards cap, sunglasses, megaphone.",
       "camera": "Crane up the shutters to Chad on the roof",
       "onScreenText": "",
-      "gag": "Chad flexes, megaphone in one hand"
+      "gag": "Chad flexes, megaphone in one hand; a big red ELECTRIC button by the shutters"
     },
     {
       "narration": "On day 1, you knocked on his door. He said, \"Members *only*.\"",
@@ -81,7 +81,7 @@
       "gag": "Chad's floodlights light up his steak on a grill; your bean can is empty"
     },
     {
-      "narration": "Then it gets weirder. You tape every toy to one cart, until it looks like a *hedgehog*.",
+      "narration": "So you tape every toy to one cart, until it looks like a *hedgehog*.",
       "audioTag": "mischievous",
       "scene": "A shopping cart bristling with 212 taped-on toys, arms and tails sticking out every way.",
       "camera": "Slow orbit around the cart",
@@ -156,7 +156,7 @@
       "gag": "The cart leaves a glowing rainbow trail of music notes"
     },
     {
-      "narration": "You see, they only talk when they're shaken, and now that cart is the loudest thing in *town*.",
+      "narration": "You see, shaken toys talk, and now that cart is the loudest thing in *town*.",
       "audioTag": "",
       "scene": "Macro insert on a toy box printed 'SHAKE ME!', then 400 heads swing toward the cart at once.",
       "camera": "Macro insert, then whip to the turning horde",

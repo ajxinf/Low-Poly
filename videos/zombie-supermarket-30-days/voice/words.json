@@ -11,157 +11,157 @@
  },
  {
   "text": "the",
-  "start": 0.4,
-  "end": 0.48
+  "start": 0.36,
+  "end": 0.4
  },
  {
   "text": "batteries",
-  "start": 0.52,
-  "end": 0.88
+  "start": 0.48,
+  "end": 0.8
  },
  {
   "text": "out",
-  "start": 0.96,
-  "end": 1.04
+  "start": 0.88,
+  "end": 0.96
  },
  {
   "text": "of",
-  "start": 1.12,
-  "end": 1.2
+  "start": 1.04,
+  "end": 1.12
  },
  {
   "text": "212",
-  "start": 1.28,
-  "end": 2.24
+  "start": 1.2,
+  "end": 2.16
  },
  {
   "text": "talking",
-  "start": 2.32,
-  "end": 2.64
+  "start": 2.24,
+  "end": 2.56
  },
  {
   "text": "toys,",
-  "start": 2.72,
-  "end": 3.24
+  "start": 2.64,
+  "end": 3.08
  },
  {
   "text": "and",
-  "start": 3.28,
-  "end": 3.36
+  "start": 3.12,
+  "end": 3.2
  },
  {
   "text": "the",
-  "start": 3.4,
+  "start": 3.24,
+  "end": 3.28
+ },
+ {
+  "text": "guy",
+  "start": 3.36,
   "end": 3.44
  },
  {
-  "text": "guy",
-  "start": 3.48,
-  "end": 3.6
- },
- {
   "text": "across",
-  "start": 3.68,
-  "end": 3.92
+  "start": 3.52,
+  "end": 3.84
  },
  {
   "text": "the",
-  "start": 4,
-  "end": 4.08
+  "start": 3.88,
+  "end": 3.92
  },
  {
   "text": "street",
-  "start": 4.16,
-  "end": 4.48
+  "start": 4,
+  "end": 4.32
  },
  {
   "text": "*laughs*",
-  "start": 4.56,
-  "end": 4.88
+  "start": 4.48,
+  "end": 4.72
  },
  {
   "text": "at",
-  "start": 4.96,
-  "end": 5.04
+  "start": 4.8,
+  "end": 4.88
  },
  {
   "text": "you.",
-  "start": 5.24,
-  "end": 5.52
+  "start": 4.96,
+  "end": 5.44
  },
  {
   "text": "Because",
-  "start": 5.6,
-  "end": 5.68
+  "start": 5.52,
+  "end": 5.6
  },
  {
   "text": "outside,",
-  "start": 5.76,
-  "end": 6.48
+  "start": 5.96,
+  "end": 6.36
  },
  {
   "text": "400",
-  "start": 6.56,
-  "end": 7.12
+  "start": 6.4,
+  "end": 6.96
  },
  {
   "text": "zombies",
-  "start": 7.28,
-  "end": 7.68
+  "start": 7.04,
+  "end": 7.52
  },
  {
   "text": "hunt",
-  "start": 7.76,
-  "end": 7.92
+  "start": 7.64,
+  "end": 7.76
  },
  {
   "text": "by",
-  "start": 8,
-  "end": 8.24
+  "start": 7.88,
+  "end": 8
  },
  {
   "text": "*sound*.",
-  "start": 8.44,
-  "end": 8.84
+  "start": 8.08,
+  "end": 8.64
  },
  {
   "text": "That",
-  "start": 9.12,
-  "end": 9.28
+  "start": 8.96,
+  "end": 9.12
  },
  {
   "text": "guy",
-  "start": 9.36,
-  "end": 9.68
+  "start": 9.2,
+  "end": 9.52
  },
  {
   "text": "is",
-  "start": 9.8,
-  "end": 9.92
+  "start": 9.6,
+  "end": 9.84
  },
  {
   "text": "Chad.",
-  "start": 10,
-  "end": 10.52
+  "start": 9.92,
+  "end": 10.64
  },
  {
   "text": "Chad",
   "start": 10.72,
-  "end": 10.96
+  "end": 10.88
  },
  {
   "text": "has",
-  "start": 11.04,
-  "end": 11.12
+  "start": 10.96,
+  "end": 11.04
  },
  {
   "text": "a",
   "start": 11.2,
-  "end": 11.24
+  "end": 11.333
  },
  {
   "text": "hardware",
-  "start": 11.28,
+  "start": 11.467,
   "end": 11.6
  },
  {
@@ -170,728 +170,733 @@
   "end": 12.08
  },
  {
-  "text": "steel",
-  "start": 12.24,
+  "text": "electric",
+  "start": 12.28,
   "end": 12.48
  },
  {
+  "text": "steel",
+  "start": 12.56,
+  "end": 12.8
+ },
+ {
   "text": "shutters,",
-  "start": 12.52,
-  "end": 13
+  "start": 12.88,
+  "end": 13.36
  },
  {
   "text": "and",
-  "start": 13.04,
-  "end": 13.12
+  "start": 13.44,
+  "end": 13.52
  },
  {
   "text": "a",
-  "start": 13.28,
-  "end": 13.333
+  "start": 13.6,
+  "end": 13.653
  },
  {
   "text": "*megaphone*.",
-  "start": 13.387,
-  "end": 14.12
+  "start": 13.707,
+  "end": 14.52
  },
  {
   "text": "On",
-  "start": 14.16,
-  "end": 14.24
+  "start": 14.56,
+  "end": 14.72
  },
  {
   "text": "day",
-  "start": 14.32,
-  "end": 14.48
+  "start": 14.84,
+  "end": 14.96
  },
  {
   "text": "1,",
-  "start": 14.56,
-  "end": 14.933
- },
- {
-  "text": "you",
-  "start": 14.987,
-  "end": 15.04
- },
- {
-  "text": "knocked",
   "start": 15.08,
   "end": 15.28
  },
  {
+  "text": "you",
+  "start": 15.36,
+  "end": 15.44
+ },
+ {
+  "text": "knocked",
+  "start": 15.48,
+  "end": 15.68
+ },
+ {
   "text": "on",
-  "start": 15.32,
-  "end": 15.36
+  "start": 15.72,
+  "end": 15.76
  },
  {
   "text": "his",
-  "start": 15.44,
-  "end": 15.52
+  "start": 15.84,
+  "end": 15.92
  },
  {
   "text": "door.",
-  "start": 15.6,
-  "end": 16.133
+  "start": 16,
+  "end": 16.56
  },
  {
   "text": "He",
-  "start": 16.187,
-  "end": 16.24
- },
- {
-  "text": "said,",
-  "start": 16.36,
+  "start": 16.64,
   "end": 16.72
  },
  {
+  "text": "said,",
+  "start": 16.84,
+  "end": 17.2
+ },
+ {
   "text": "\"Members",
-  "start": 16.76,
-  "end": 17.12
+  "start": 17.24,
+  "end": 17.6
  },
  {
   "text": "*only*.\"",
-  "start": 17.2,
-  "end": 17.8
+  "start": 17.68,
+  "end": 18.4
  },
  {
   "text": "So",
-  "start": 17.84,
-  "end": 17.92
- },
- {
-  "text": "you're",
-  "start": 17.96,
-  "end": 18.08
- },
- {
-  "text": "stuck",
-  "start": 18.16,
-  "end": 18.32
- },
- {
-  "text": "in",
-  "start": 18.4,
-  "end": 18.48
- },
- {
-  "text": "here",
-  "start": 18.56,
+  "start": 18.52,
   "end": 18.64
  },
  {
-  "text": "with",
-  "start": 18.76,
+  "text": "you're",
+  "start": 18.72,
   "end": 18.88
  },
  {
-  "text": "Dave",
-  "start": 19,
+  "text": "stuck",
+  "start": 18.92,
   "end": 19.12
  },
  {
-  "text": "from",
-  "start": 19.2,
-  "end": 19.28
+  "text": "in",
+  "start": 19.16,
+  "end": 19.2
  },
  {
-  "text": "the",
-  "start": 19.36,
+  "text": "here",
+  "start": 19.28,
   "end": 19.44
  },
  {
-  "text": "night",
-  "start": 19.56,
-  "end": 19.68
+  "text": "with",
+  "start": 19.52,
+  "end": 19.6
  },
  {
-  "text": "shift,",
-  "start": 19.84,
+  "text": "Dave",
+  "start": 19.68,
+  "end": 19.92
+ },
+ {
+  "text": "from",
+  "start": 20,
   "end": 20.08
  },
  {
-  "text": "eating",
-  "start": 20.16,
+  "text": "the",
+  "start": 20.12,
+  "end": 20.16
+ },
+ {
+  "text": "night",
+  "start": 20.24,
   "end": 20.4
  },
  {
-  "text": "cold",
+  "text": "shift,",
   "start": 20.48,
-  "end": 20.72
+  "end": 20.88
+ },
+ {
+  "text": "eating",
+  "start": 21.04,
+  "end": 21.2
+ },
+ {
+  "text": "cold",
+  "start": 21.36,
+  "end": 21.52
  },
  {
   "text": "beans",
-  "start": 20.8,
-  "end": 21.12
+  "start": 21.68,
+  "end": 21.84
  },
  {
   "text": "in",
-  "start": 21.2,
-  "end": 21.36
+  "start": 21.92,
+  "end": 22.08
  },
  {
   "text": "total",
-  "start": 21.44,
-  "end": 21.76
+  "start": 22.16,
+  "end": 22.48
  },
  {
   "text": "*silence*.",
-  "start": 21.84,
-  "end": 22.68
+  "start": 22.56,
+  "end": 23.44
  },
  {
   "text": "Every",
-  "start": 22.72,
-  "end": 22.88
+  "start": 23.52,
+  "end": 23.76
  },
  {
   "text": "morning,",
-  "start": 22.96,
-  "end": 23.413
+  "start": 23.84,
+  "end": 24.2
  },
  {
   "text": "Chad",
-  "start": 23.467,
-  "end": 23.68
+  "start": 24.24,
+  "end": 24.48
  },
  {
   "text": "grabs",
-  "start": 23.72,
-  "end": 23.92
+  "start": 24.56,
+  "end": 24.8
  },
  {
   "text": "his",
-  "start": 24,
-  "end": 24.08
+  "start": 24.88,
+  "end": 24.96
  },
  {
   "text": "megaphone.",
-  "start": 24.16,
-  "end": 24.92
+  "start": 25.04,
+  "end": 25.84
  },
  {
   "text": "\"Morning,",
-  "start": 24.96,
-  "end": 25.32
- },
- {
-  "text": "toy",
-  "start": 25.36,
-  "end": 25.6
- },
- {
-  "text": "*boy*!\"",
-  "start": 25.76,
+  "start": 25.88,
   "end": 26.32
  },
  {
-  "text": "400",
+  "text": "toy",
   "start": 26.4,
-  "end": 26.96
+  "end": 26.48
+ },
+ {
+  "text": "*boy*!\"",
+  "start": 26.56,
+  "end": 27.36
+ },
+ {
+  "text": "400",
+  "start": 27.48,
+  "end": 27.92
  },
  {
   "text": "heads",
-  "start": 27.04,
-  "end": 27.28
- },
- {
-  "text": "turn,",
-  "start": 27.36,
-  "end": 27.84
- },
- {
-  "text": "bang",
-  "start": 27.92,
-  "end": 28.08
- },
- {
-  "text": "on",
-  "start": 28.16,
+  "start": 28.08,
   "end": 28.24
  },
  {
-  "text": "his",
-  "start": 28.32,
-  "end": 28.4
+  "text": "turn,",
+  "start": 28.4,
+  "end": 28.8
  },
  {
-  "text": "steel,",
-  "start": 28.48,
-  "end": 28.96
+  "text": "bang",
+  "start": 28.92,
+  "end": 29.04
  },
  {
-  "text": "and",
-  "start": 29.04,
+  "text": "on",
+  "start": 29.08,
   "end": 29.12
  },
  {
-  "text": "give",
+  "text": "his",
   "start": 29.2,
   "end": 29.28
  },
  {
-  "text": "*up*.",
+  "text": "steel,",
   "start": 29.36,
-  "end": 29.92
- },
- {
-  "text": "Dave",
-  "start": 30,
-  "end": 30.24
- },
- {
-  "text": "thinks",
-  "start": 30.28,
-  "end": 30.48
- },
- {
-  "text": "Chad",
-  "start": 30.56,
-  "end": 30.72
- },
- {
-  "text": "is",
-  "start": 30.8,
-  "end": 30.96
- },
- {
-  "text": "winning.",
-  "start": 31.04,
-  "end": 31.68
- },
- {
-  "text": "Dave",
-  "start": 31.8,
-  "end": 31.92
- },
- {
-  "text": "might",
-  "start": 32,
-  "end": 32.08
- },
- {
-  "text": "be",
-  "start": 32.16,
-  "end": 32.24
- },
- {
-  "text": "*right*.",
-  "start": 32.32,
-  "end": 32.92
- },
- {
-  "text": "Then",
-  "start": 33.04,
-  "end": 33.44
- },
- {
-  "text": "it",
-  "start": 33.48,
-  "end": 33.52
- },
- {
-  "text": "gets",
-  "start": 33.6,
-  "end": 33.84
- },
- {
-  "text": "weirder.",
-  "start": 33.92,
-  "end": 34.6
- },
- {
-  "text": "You",
-  "start": 34.64,
-  "end": 34.72
- },
- {
-  "text": "tape",
-  "start": 34.88,
-  "end": 35.04
- },
- {
-  "text": "every",
-  "start": 35.12,
-  "end": 35.36
- },
- {
-  "text": "toy",
-  "start": 35.44,
-  "end": 35.6
- },
- {
-  "text": "to",
-  "start": 35.68,
-  "end": 35.84
- },
- {
-  "text": "one",
-  "start": 35.92,
-  "end": 36.08
- },
- {
-  "text": "cart,",
-  "start": 36.16,
-  "end": 36.56
- },
- {
-  "text": "until",
-  "start": 36.68,
-  "end": 36.8
- },
- {
-  "text": "it",
-  "start": 36.84,
-  "end": 36.88
- },
- {
-  "text": "looks",
-  "start": 36.96,
-  "end": 37.04
- },
- {
-  "text": "like",
-  "start": 37.12,
-  "end": 37.2
- },
- {
-  "text": "a",
-  "start": 37.24,
-  "end": 37.28
- },
- {
-  "text": "*hedgehog*.",
-  "start": 37.32,
-  "end": 38.133
- },
- {
-  "text": "You",
-  "start": 38.187,
-  "end": 38.24
- },
- {
-  "text": "park",
-  "start": 38.32,
-  "end": 38.4
- },
- {
-  "text": "it",
-  "start": 38.48,
-  "end": 38.56
- },
- {
-  "text": "on",
-  "start": 38.6,
-  "end": 38.64
- },
- {
-  "text": "the",
-  "start": 38.68,
-  "end": 38.72
- },
- {
-  "text": "loading",
-  "start": 38.8,
-  "end": 39.04
- },
- {
-  "text": "ramp,",
-  "start": 39.12,
-  "end": 39.493
- },
- {
-  "text": "pointed",
-  "start": 39.547,
-  "end": 39.84
- },
- {
-  "text": "straight",
-  "start": 40,
-  "end": 40.24
- },
- {
-  "text": "at",
-  "start": 40.32,
-  "end": 40.4
- },
- {
-  "text": "Chad's",
-  "start": 40.48,
-  "end": 40.72
- },
- {
-  "text": "front",
-  "start": 40.8,
-  "end": 41.04
- },
- {
-  "text": "*door*.",
-  "start": 41.32,
-  "end": 41.64
- },
- {
-  "text": "Dave",
-  "start": 41.68,
-  "end": 41.84
- },
- {
-  "text": "asks",
-  "start": 41.92,
-  "end": 42.16
- },
- {
-  "text": "why.",
-  "start": 42.24,
-  "end": 42.907
- },
- {
-  "text": "You",
-  "start": 42.933,
-  "end": 42.96
- },
- {
-  "text": "just",
-  "start": 43.04,
-  "end": 43.2
- },
- {
-  "text": "point",
-  "start": 43.28,
-  "end": 43.36
- },
- {
-  "text": "at",
-  "start": 43.44,
-  "end": 43.52
- },
- {
-  "text": "Chad's",
-  "start": 43.56,
-  "end": 43.84
- },
- {
-  "text": "*generator*.",
-  "start": 44.24,
-  "end": 44.648
- },
- {
-  "text": "Every",
-  "start": 44.72,
-  "end": 44.96
- },
- {
-  "text": "night,",
-  "start": 45.12,
-  "end": 45.3
- },
- {
-  "text": "you've",
-  "start": 45.32,
-  "end": 45.36
- },
- {
-  "text": "been",
-  "start": 45.44,
-  "end": 45.6
- },
- {
-  "text": "counting",
-  "start": 45.72,
-  "end": 45.92
- },
- {
-  "text": "his",
-  "start": 46,
-  "end": 46.16
- },
- {
-  "text": "fuel",
-  "start": 46.24,
-  "end": 46.4
- },
- {
-  "text": "cans.",
-  "start": 46.48,
-  "end": 47.08
- },
- {
-  "text": "One",
-  "start": 47.12,
-  "end": 47.36
- },
- {
-  "text": "can",
-  "start": 47.48,
-  "end": 47.6
- },
- {
-  "text": "a",
-  "start": 47.68,
-  "end": 47.76
- },
- {
-  "text": "*day*.",
-  "start": 47.84,
-  "end": 48.36
- },
- {
-  "text": "On",
-  "start": 48.4,
-  "end": 48.48
- },
- {
-  "text": "day",
-  "start": 48.56,
-  "end": 48.64
- },
- {
-  "text": "29,",
-  "start": 48.72,
-  "end": 49.4
- },
- {
-  "text": "you",
-  "start": 49.44,
-  "end": 49.52
- },
- {
-  "text": "put",
-  "start": 49.64,
-  "end": 49.76
- },
- {
-  "text": "every",
-  "start": 49.84,
-  "end": 50.08
- },
- {
-  "text": "battery",
-  "start": 50.16,
-  "end": 50.48
- },
- {
-  "text": "back",
-  "start": 50.56,
-  "end": 50.8
- },
- {
-  "text": "in.",
-  "start": 50.88,
-  "end": 51.32
- },
- {
-  "text": "Very,",
-  "start": 51.44,
-  "end": 51.96
- },
- {
-  "text": "very",
-  "start": 52,
-  "end": 52.32
- },
- {
-  "text": "*gently*.",
-  "start": 52.36,
-  "end": 53.129
- },
- {
-  "text": "On",
-  "start": 53.2,
-  "end": 53.36
- },
- {
-  "text": "day",
-  "start": 53.48,
-  "end": 53.6
- },
- {
-  "text": "30,",
-  "start": 53.68,
-  "end": 54.12
- },
- {
-  "text": "Chad's",
-  "start": 54.16,
-  "end": 54.48
- },
- {
-  "text": "generator",
-  "start": 54.72,
-  "end": 54.96
- },
- {
-  "text": "coughs,",
-  "start": 55.04,
-  "end": 55.653
- },
- {
-  "text": "*dies*,",
-  "start": 55.68,
-  "end": 56.187
+  "end": 29.84
  },
  {
   "text": "and",
-  "start": 56.213,
-  "end": 56.24
+  "start": 29.92,
+  "end": 30
  },
  {
-  "text": "his",
-  "start": 56.32,
-  "end": 56.4
- },
- {
-  "text": "electric",
-  "start": 56.6,
-  "end": 56.8
- },
- {
-  "text": "shutters",
-  "start": 56.88,
-  "end": 57.2
- },
- {
-  "text": "roll",
-  "start": 57.28,
-  "end": 57.6
- },
- {
-  "text": "all",
-  "start": 57.68,
-  "end": 57.84
- },
- {
-  "text": "the",
-  "start": 57.88,
-  "end": 57.92
- },
- {
-  "text": "way",
-  "start": 58,
-  "end": 58.16
+  "text": "give",
+  "start": 30.08,
+  "end": 30.16
  },
  {
   "text": "*up*.",
-  "start": 58.24,
-  "end": 58.68
+  "start": 30.24,
+  "end": 30.8
  },
  {
-  "text": "That's",
-  "start": 58.8,
-  "end": 59.013
+  "text": "Dave",
+  "start": 30.88,
+  "end": 31.12
  },
  {
-  "text": "when",
-  "start": 59.067,
-  "end": 59.12
+  "text": "thinks",
+  "start": 31.16,
+  "end": 31.36
+ },
+ {
+  "text": "Chad",
+  "start": 31.44,
+  "end": 31.6
+ },
+ {
+  "text": "is",
+  "start": 31.68,
+  "end": 31.84
+ },
+ {
+  "text": "winning.",
+  "start": 31.92,
+  "end": 32.56
+ },
+ {
+  "text": "Dave",
+  "start": 32.64,
+  "end": 32.88
+ },
+ {
+  "text": "might",
+  "start": 32.96,
+  "end": 33.12
+ },
+ {
+  "text": "be",
+  "start": 33.2,
+  "end": 33.28
+ },
+ {
+  "text": "*right*.",
+  "start": 33.36,
+  "end": 34
+ },
+ {
+  "text": "So",
+  "start": 34.08,
+  "end": 34.16
  },
  {
   "text": "you",
-  "start": 59.2,
-  "end": 59.28
+  "start": 34.24,
+  "end": 34.32
+ },
+ {
+  "text": "tape",
+  "start": 34.44,
+  "end": 34.56
+ },
+ {
+  "text": "every",
+  "start": 34.64,
+  "end": 34.88
+ },
+ {
+  "text": "toy",
+  "start": 34.96,
+  "end": 35.12
+ },
+ {
+  "text": "to",
+  "start": 35.2,
+  "end": 35.28
+ },
+ {
+  "text": "one",
+  "start": 35.36,
+  "end": 35.6
+ },
+ {
+  "text": "cart,",
+  "start": 35.76,
+  "end": 36
+ },
+ {
+  "text": "until",
+  "start": 36.08,
+  "end": 36.16
+ },
+ {
+  "text": "it",
+  "start": 36.2,
+  "end": 36.24
+ },
+ {
+  "text": "looks",
+  "start": 36.32,
+  "end": 36.48
+ },
+ {
+  "text": "like",
+  "start": 36.52,
+  "end": 36.56
+ },
+ {
+  "text": "a",
+  "start": 36.72,
+  "end": 36.747
+ },
+ {
+  "text": "*hedgehog*.",
+  "start": 36.773,
+  "end": 37.56
+ },
+ {
+  "text": "You",
+  "start": 37.6,
+  "end": 37.68
+ },
+ {
+  "text": "park",
+  "start": 37.76,
+  "end": 37.84
+ },
+ {
+  "text": "it",
+  "start": 37.92,
+  "end": 37.96
+ },
+ {
+  "text": "on",
+  "start": 38,
+  "end": 38.08
+ },
+ {
+  "text": "the",
+  "start": 38.12,
+  "end": 38.16
+ },
+ {
+  "text": "loading",
+  "start": 38.32,
+  "end": 38.48
+ },
+ {
+  "text": "ramp,",
+  "start": 38.52,
+  "end": 38.84
+ },
+ {
+  "text": "pointed",
+  "start": 38.88,
+  "end": 39.28
+ },
+ {
+  "text": "straight",
+  "start": 39.44,
+  "end": 39.6
+ },
+ {
+  "text": "at",
+  "start": 39.68,
+  "end": 39.84
+ },
+ {
+  "text": "Chad's",
+  "start": 39.88,
+  "end": 40.16
+ },
+ {
+  "text": "front",
+  "start": 40.28,
+  "end": 40.4
+ },
+ {
+  "text": "*door*.",
+  "start": 40.48,
+  "end": 41.08
+ },
+ {
+  "text": "Dave",
+  "start": 41.12,
+  "end": 41.28
+ },
+ {
+  "text": "asks",
+  "start": 41.36,
+  "end": 41.68
+ },
+ {
+  "text": "why.",
+  "start": 42,
+  "end": 42.347
+ },
+ {
+  "text": "You",
+  "start": 42.373,
+  "end": 42.4
+ },
+ {
+  "text": "just",
+  "start": 42.48,
+  "end": 42.64
+ },
+ {
+  "text": "point",
+  "start": 42.72,
+  "end": 42.8
+ },
+ {
+  "text": "at",
+  "start": 42.88,
+  "end": 42.96
+ },
+ {
+  "text": "Chad's",
+  "start": 43,
+  "end": 43.28
+ },
+ {
+  "text": "*generator*.",
+  "start": 43.72,
+  "end": 44.168
+ },
+ {
+  "text": "Every",
+  "start": 44.24,
+  "end": 44.48
+ },
+ {
+  "text": "night,",
+  "start": 44.6,
+  "end": 44.76
+ },
+ {
+  "text": "you've",
+  "start": 44.8,
+  "end": 44.88
+ },
+ {
+  "text": "been",
+  "start": 44.96,
+  "end": 45.04
+ },
+ {
+  "text": "counting",
+  "start": 45.12,
+  "end": 45.36
+ },
+ {
+  "text": "his",
+  "start": 45.48,
+  "end": 45.6
+ },
+ {
+  "text": "fuel",
+  "start": 45.72,
+  "end": 45.84
+ },
+ {
+  "text": "cans.",
+  "start": 45.88,
+  "end": 46.52
+ },
+ {
+  "text": "One",
+  "start": 46.56,
+  "end": 46.72
+ },
+ {
+  "text": "can",
+  "start": 46.8,
+  "end": 46.96
+ },
+ {
+  "text": "a",
+  "start": 47,
+  "end": 47.04
+ },
+ {
+  "text": "*day*.",
+  "start": 47.12,
+  "end": 47.733
+ },
+ {
+  "text": "On",
+  "start": 47.787,
+  "end": 47.84
+ },
+ {
+  "text": "day",
+  "start": 47.92,
+  "end": 48
+ },
+ {
+  "text": "29,",
+  "start": 48.12,
+  "end": 48.68
+ },
+ {
+  "text": "you",
+  "start": 48.72,
+  "end": 48.8
+ },
+ {
+  "text": "put",
+  "start": 48.92,
+  "end": 49.04
+ },
+ {
+  "text": "every",
+  "start": 49.12,
+  "end": 49.36
+ },
+ {
+  "text": "battery",
+  "start": 49.44,
+  "end": 49.76
+ },
+ {
+  "text": "back",
+  "start": 49.84,
+  "end": 50
+ },
+ {
+  "text": "in.",
+  "start": 50.16,
+  "end": 50.6
+ },
+ {
+  "text": "Very,",
+  "start": 51.04,
+  "end": 51.16
+ },
+ {
+  "text": "very",
+  "start": 51.2,
+  "end": 51.52
+ },
+ {
+  "text": "*gently*.",
+  "start": 51.6,
+  "end": 52.329
+ },
+ {
+  "text": "On",
+  "start": 52.4,
+  "end": 52.56
+ },
+ {
+  "text": "day",
+  "start": 52.68,
+  "end": 52.8
+ },
+ {
+  "text": "30,",
+  "start": 52.88,
+  "end": 53.4
+ },
+ {
+  "text": "Chad's",
+  "start": 53.44,
+  "end": 53.76
+ },
+ {
+  "text": "generator",
+  "start": 54,
+  "end": 54.24
+ },
+ {
+  "text": "coughs,",
+  "start": 54.32,
+  "end": 54.88
+ },
+ {
+  "text": "*dies*,",
+  "start": 54.96,
+  "end": 55.48
+ },
+ {
+  "text": "and",
+  "start": 55.52,
+  "end": 55.6
+ },
+ {
+  "text": "his",
+  "start": 55.64,
+  "end": 55.68
+ },
+ {
+  "text": "electric",
+  "start": 55.76,
+  "end": 56.16
+ },
+ {
+  "text": "shutters",
+  "start": 56.2,
+  "end": 56.48
+ },
+ {
+  "text": "roll",
+  "start": 56.56,
+  "end": 56.88
+ },
+ {
+  "text": "all",
+  "start": 56.96,
+  "end": 57.12
+ },
+ {
+  "text": "the",
+  "start": 57.16,
+  "end": 57.2
+ },
+ {
+  "text": "way",
+  "start": 57.28,
+  "end": 57.44
+ },
+ {
+  "text": "*up*.",
+  "start": 57.52,
+  "end": 58.011
+ },
+ {
+  "text": "That's",
+  "start": 58.08,
+  "end": 58.32
+ },
+ {
+  "text": "when",
+  "start": 58.36,
+  "end": 58.4
+ },
+ {
+  "text": "you",
+  "start": 58.48,
+  "end": 58.56
  },
  {
   "text": "kick",
-  "start": 59.36,
+  "start": 58.64,
+  "end": 58.8
+ },
+ {
+  "text": "the",
+  "start": 58.84,
+  "end": 58.88
+ },
+ {
+  "text": "cart",
+  "start": 58.96,
+  "end": 59.2
+ },
+ {
+  "text": "down",
+  "start": 59.28,
   "end": 59.44
  },
  {
@@ -900,293 +905,263 @@
   "end": 59.6
  },
  {
-  "text": "cart",
-  "start": 59.72,
-  "end": 59.84
- },
- {
-  "text": "down",
-  "start": 59.92,
-  "end": 60
- },
- {
-  "text": "the",
-  "start": 60.08,
-  "end": 60.16
- },
- {
   "text": "*ramp*.",
-  "start": 60.24,
-  "end": 60.76
+  "start": 59.64,
+  "end": 60.2
  },
  {
   "text": "Every",
-  "start": 60.8,
-  "end": 61.12
+  "start": 60.24,
+  "end": 60.56
  },
  {
   "text": "bump",
-  "start": 61.16,
-  "end": 61.36
+  "start": 60.6,
+  "end": 60.8
  },
  {
   "text": "makes",
-  "start": 61.52,
-  "end": 61.68
+  "start": 60.96,
+  "end": 61.12
  },
  {
   "text": "212",
-  "start": 61.76,
-  "end": 62.48
+  "start": 61.2,
+  "end": 62
  },
  {
   "text": "toys",
-  "start": 62.56,
-  "end": 62.88
+  "start": 62.08,
+  "end": 62.4
  },
  {
   "text": "scream",
-  "start": 62.96,
-  "end": 63.28
+  "start": 62.48,
+  "end": 62.8
  },
  {
   "text": "at",
-  "start": 63.36,
-  "end": 63.52
+  "start": 62.88,
+  "end": 63.04
  },
  {
   "text": "*once*.",
-  "start": 63.6,
-  "end": 64.107
+  "start": 63.12,
+  "end": 63.707
  },
  {
   "text": "You",
-  "start": 64.133,
-  "end": 64.16
+  "start": 63.733,
+  "end": 63.76
  },
  {
   "text": "see,",
-  "start": 64.24,
-  "end": 64.507
+  "start": 63.84,
+  "end": 64.2
  },
  {
-  "text": "they",
-  "start": 64.533,
+  "text": "shaken",
+  "start": 64.24,
   "end": 64.56
  },
  {
-  "text": "only",
+  "text": "toys",
   "start": 64.64,
-  "end": 64.88
+  "end": 64.96
  },
  {
-  "text": "talk",
-  "start": 64.96,
-  "end": 65.2
- },
- {
-  "text": "when",
+  "text": "talk,",
   "start": 65.24,
-  "end": 65.28
- },
- {
-  "text": "they're",
-  "start": 65.32,
-  "end": 65.44
- },
- {
-  "text": "shaken,",
-  "start": 65.52,
-  "end": 66.04
+  "end": 65.573
  },
  {
   "text": "and",
-  "start": 66.08,
-  "end": 66.16
+  "start": 65.627,
+  "end": 65.68
  },
  {
   "text": "now",
-  "start": 66.24,
-  "end": 66.32
+  "start": 65.76,
+  "end": 66
  },
  {
   "text": "that",
-  "start": 66.44,
-  "end": 66.56
+  "start": 66.08,
+  "end": 66.24
  },
  {
   "text": "cart",
-  "start": 66.68,
-  "end": 66.8
+  "start": 66.32,
+  "end": 66.56
  },
  {
   "text": "is",
-  "start": 66.88,
-  "end": 66.96
+  "start": 66.64,
+  "end": 66.72
  },
  {
   "text": "the",
-  "start": 67.08,
-  "end": 67.2
+  "start": 66.84,
+  "end": 66.96
  },
  {
   "text": "loudest",
-  "start": 67.24,
-  "end": 67.6
+  "start": 67,
+  "end": 67.36
  },
  {
   "text": "thing",
-  "start": 67.68,
-  "end": 67.76
+  "start": 67.44,
+  "end": 67.52
  },
  {
   "text": "in",
-  "start": 67.84,
-  "end": 67.92
+  "start": 67.6,
+  "end": 67.68
  },
  {
   "text": "*town*.",
-  "start": 68.2,
-  "end": 68.51
+  "start": 67.7,
+  "end": 67.98
  },
  {
   "text": "And",
-  "start": 68.69,
-  "end": 68.72
+  "start": 68.32,
+  "end": 68.48
  },
  {
   "text": "400",
-  "start": 68.8,
-  "end": 69.28
+  "start": 68.56,
+  "end": 69.04
  },
  {
   "text": "zombies",
-  "start": 69.36,
-  "end": 69.84
+  "start": 69.08,
+  "end": 69.52
  },
  {
   "text": "chase",
-  "start": 69.88,
-  "end": 70.08
+  "start": 69.6,
+  "end": 69.76
  },
  {
   "text": "it",
-  "start": 70.16,
-  "end": 70.24
+  "start": 69.84,
+  "end": 69.92
  },
  {
   "text": "like",
-  "start": 70.36,
-  "end": 70.48
+  "start": 70.04,
+  "end": 70.16
  },
  {
   "text": "dogs",
-  "start": 70.6,
-  "end": 70.72
+  "start": 70.32,
+  "end": 70.48
  },
  {
   "text": "after",
-  "start": 70.8,
-  "end": 71.04
+  "start": 70.56,
+  "end": 70.72
  },
  {
   "text": "a",
-  "start": 71.2,
-  "end": 71.333
+  "start": 70.8,
+  "end": 70.88
  },
  {
   "text": "ball,",
-  "start": 71.467,
-  "end": 71.64
+  "start": 70.96,
+  "end": 71.36
  },
  {
   "text": "straight",
-  "start": 71.68,
-  "end": 72
+  "start": 71.44,
+  "end": 71.68
  },
  {
   "text": "through",
-  "start": 72.12,
-  "end": 72.24
+  "start": 71.76,
+  "end": 71.92
  },
  {
   "text": "Chad's",
+  "start": 72,
+  "end": 72.24
+ },
+ {
+  "text": "open",
   "start": 72.32,
   "end": 72.56
  },
  {
-  "text": "open",
-  "start": 72.72,
-  "end": 72.88
- },
- {
   "text": "*door*.",
-  "start": 73.12,
-  "end": 73.4
+  "start": 72.58,
+  "end": 72.84
  },
  {
   "text": "Chad",
-  "start": 73.44,
-  "end": 73.68
+  "start": 73.2,
+  "end": 73.44
  },
  {
   "text": "makes",
+  "start": 73.52,
+  "end": 73.6
+ },
+ {
+  "text": "it",
+  "start": 73.64,
+  "end": 73.68
+ },
+ {
+  "text": "to",
   "start": 73.76,
   "end": 73.84
  },
  {
-  "text": "it",
-  "start": 73.88,
-  "end": 73.92
- },
- {
-  "text": "to",
-  "start": 73.96,
-  "end": 74
- },
- {
   "text": "the",
-  "start": 74.08,
-  "end": 74.16
+  "start": 73.92,
+  "end": 74
  },
  {
   "text": "roof.",
   "start": 74.24,
-  "end": 74.68
+  "end": 74.507
  },
  {
   "text": "He's",
-  "start": 74.72,
-  "end": 74.88
+  "start": 74.533,
+  "end": 74.72
  },
  {
   "text": "still",
-  "start": 75,
-  "end": 75.12
+  "start": 74.8,
+  "end": 75.04
  },
  {
   "text": "holding",
-  "start": 75.24,
-  "end": 75.36
+  "start": 75.16,
+  "end": 75.28
  },
  {
   "text": "his",
-  "start": 75.44,
-  "end": 75.52
+  "start": 75.36,
+  "end": 75.44
  },
  {
   "text": "*megaphone*.",
-  "start": 75.6,
-  "end": 76.26
+  "start": 75.52,
+  "end": 76.25
  },
  {
   "text": "But",
-  "start": 76.38,
-  "end": 76.4
+  "start": 76.31,
+  "end": 76.32
  },
  {
   "text": "for",
-  "start": 76.44,
+  "start": 76.4,
   "end": 76.48
  },
  {
@@ -1217,11 +1192,11 @@
  {
   "text": "days,",
   "start": 77.68,
-  "end": 78.2
+  "end": 78.267
  },
  {
   "text": "the",
-  "start": 78.24,
+  "start": 78.293,
   "end": 78.32
  },
  {
@@ -1241,7 +1216,7 @@
  },
  {
   "text": "street",
-  "start": 79.24,
+  "start": 79.12,
   "end": 79.44
  },
  {
@@ -1256,12 +1231,12 @@
  },
  {
   "text": "a",
-  "start": 79.88,
-  "end": 79.92
+  "start": 80,
+  "end": 80.04
  },
  {
   "text": "*sound*.",
-  "start": 80,
-  "end": 80.56
+  "start": 80.08,
+  "end": 80.64
  }
 ]

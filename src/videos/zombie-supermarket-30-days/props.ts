@@ -1,5 +1,5 @@
 import {
-  AdditiveBlending, BoxGeometry, BufferAttribute, BufferGeometry, CatmullRomCurve3, CylinderGeometry, Group, Mesh, MeshBasicMaterial, Object3D,
+  AdditiveBlending, BoxGeometry, BufferAttribute, CanvasTexture, BufferGeometry, CatmullRomCurve3, CylinderGeometry, Group, Mesh, MeshBasicMaterial, Object3D,
   PlaneGeometry, ShaderMaterial, SphereGeometry, TorusGeometry, TubeGeometry, Vector3,
 } from "three";
 import { MAT } from "../../../kit/toon/build/kit";
@@ -10,8 +10,8 @@ import type { Hand } from "../../../kit/toon/cast";
 import { youLook } from "../../../kit/toon/protagonist";
 import { NOINK, SKY } from "../../../kit/toon/ink";
 import {
-  CART_IN, CHAD, DOCK, FLOODS, FUEL_AT, GENERATOR, GRILL, ROOF_Y, SHUTTER_AT, scrawlTex,
-  battery, dinoToy, duckToy, floodGlass, fuelCan, hedgehogCart, megaphone, shutter, toothbrush,
+  CART_IN, CHAD, CHART, CHART_AT, DOCK, FLOODS, FUEL_AT, GENERATOR, GRILL, ROOF_Y, SHUTTER_AT, scrawlTex,
+  battery, chartTex, dinoToy, duckToy, floodGlass, fuelCan, hedgehogCart, megaphone, shutter, toothbrush,
 } from "./build";
 import { BEAT, CART_RUN, cartAt } from "./roles";
 import type { S } from "./story";
@@ -116,13 +116,15 @@ const shutterProp: MovingProp = {
   make: shutter,
   pose: (o, F) => {
     o.position.copy(SHUTTER_AT);
-    const open = ease((F - BEAT.electric + 4) / (BEAT.up - BEAT.electric));
+    // B25 opens on Chad's slippers under a shutter already rising (review H3: 0.7 s of blank shutter before).
+    const open = F < BEAT.electric - 12 ? 0 : 0.22 + 0.78 * ease((F - BEAT.electric + 12) / (BEAT.up - BEAT.electric + 12));
     const c = o.getObjectByName("curtain")!;
     c.position.y = open * (CHAD.shutterH - 0.15);
     c.scale.y = 1 - 0.95 * open;
     const lid = o.getObjectByName("lid")!;
     const slotOpen = F >= Math.round(16.19 * 30) - 2 && F < BEAT.only - 1; // "He said" .. "only" (slams)
     lid.position.y = slotOpen ? 0.17 : 0;
+    o.getObjectByName("slotShades")!.visible = slotOpen;
     o.getObjectByName("slot")!.visible = open < 0.05;
   },
   touches: ["CHAD'S HARDWARE"],
@@ -291,6 +293,21 @@ const torchPool = (at: (F: number) => Vector3, size = 1.1, k = 0.9): MovingProp 
 
 // ---------------------------------------------------------------- per shot
 
+/** The tally chart ticking: crosses go on one by one during "One can a day", up to 29 of 30 (the last has the skull).
+ * Review C4: a chart already crossed out to the end read as "fuel gone" while the voice said "one can a day". */
+const TALLY = new Map<number, CanvasTexture>();
+const tallyOverlay: MovingProp = {
+  name: "tally ticks",
+  make: () => new Mesh(new PlaneGeometry(CHART.w, CHART.h), new MeshBasicMaterial({ map: chartTex(29) })),
+  pose: (o, F) => {
+    const n = 18 + Math.round(11 * clamp01((F - BEAT.oneCan + 4) / (BEAT.day - BEAT.oneCan + 10)));
+    if (!TALLY.has(n)) TALLY.set(n, chartTex(n));
+    ((o as Mesh).material as MeshBasicMaterial).map = TALLY.get(n)!;
+    o.position.copy(CHART_AT).add(new Vector3(-0.035, 0, 0)); // a hair in front of the painted chart face
+    o.rotation.set(0, -Math.PI / 2, 0);
+  },
+};
+
 /** The duck's "QUACK!" bubble (toys talk until the battery comes out): pops on "batteries". Faces the lens. */
 const quackBubble = (s: S): MovingProp => ({
   name: "quack bubble",
@@ -302,9 +319,9 @@ const quackBubble = (s: S): MovingProp => ({
   pose: (o, F) => {
     const t0 = Math.round(0.52 * 30) - 4; // pops just before the battery flies
     if (F > t0 + 4) return false;
-    o.position.copy(handOf(s, "you", "both", F, 0.3)).add(new Vector3(0, 0.12, 0)).addScaledVector(rightOf(s, F), 0.32); // beside the duck, clear of your face
+    o.position.copy(handOf(s, "you", "both", F, 0.3)).add(new Vector3(0, 0.12, 0)).addScaledVector(rightOf(s, F), 0.2); // beside the duck, inside the frame
     faceCam(o, s, F);
-    o.scale.setScalar((F < t0 ? 1 + 0.04 * Math.sin(F * 0.8) : 1 + 0.25 * (F - t0)) * 0.75);
+    o.scale.setScalar((F < t0 ? 1 + 0.04 * Math.sin(F * 0.8) : 1 - 0.22 * (F - t0)) * 0.6); // pops inward
     return true;
   },
   heldBy: "you",
@@ -364,7 +381,7 @@ export const propsFor = (s: S): MovingProp[] => {
     case "B13": out.push(spatulaProp(s), grillSmoke); break;
     case "B15": case "B16": out.push(cartIn); break;
     case "B17": out.push(cartExt()); break;
-    case "B20": out.push(torchPool((F) => s.pose(F - s.from).look.clone().add(new Vector3(-0.04, 0, 0)), 1.6, 0.8)); break;
+    case "B20": out.push(tallyOverlay, torchPool((F) => s.pose(F - s.from).look.clone().add(new Vector3(-0.04, 0, 0)), 1.6, 0.8)); break;
     case "B21": case "B22": {
       const you = s.cast!.find((c) => c.name === "you")!.at(0);
       out.push(cartIn, dinoProp(s), batteryIn(s), torchPool(() => you.clone().add(new Vector3(0.1, 1.0, 0.25)), 0.9, 0.7));
